@@ -136,6 +136,9 @@ class ThreadRepository {
       pageSize: 50,
     );
     final companions = res.results.map((t) => _modelToRow(t, folder)).toList();
+    final localDraftRows = folder == 'drafts' && replace
+        ? await db.threadDao.getLocalDrafts(mailboxId)
+        : const <ThreadRow>[];
 
     await db.transaction(() async {
       // On a fresh load (page 1) clear the folder so threads that left it
@@ -143,8 +146,12 @@ class ThreadRepository {
       if (replace) {
         await db.threadDao.deleteByMailboxFolder(mailboxId, folder);
       }
-      if (companions.isNotEmpty) {
-        await db.threadDao.upsertAll(companions);
+      final rows = [
+        ...companions,
+        ...localDraftRows.map(_threadRowToCompanion),
+      ];
+      if (rows.isNotEmpty) {
+        await db.threadDao.upsertAll(rows);
       }
     });
   }
@@ -184,6 +191,26 @@ class ThreadRepository {
         participantsJson: Value(jsonEncode(t.participants)),
         folder: Value(folder),
         updatedAt: DateTime.now().toUtc(),
+      );
+
+  ThreadsCompanion _threadRowToCompanion(ThreadRow row) =>
+      ThreadsCompanion.insert(
+        id: row.id,
+        mailboxId: row.mailboxId,
+        subject: row.subject,
+        messageCount: Value(row.messageCount),
+        hasUnread: Value(row.hasUnread),
+        unreadCount: Value(row.unreadCount),
+        snippet: Value(row.snippet),
+        latestDirection: Value(row.latestDirection),
+        hasAttachments: Value(row.hasAttachments),
+        attachmentFilenamesJson: Value(row.attachmentFilenamesJson),
+        labelsJson: Value(row.labelsJson),
+        searchHighlight: Value(row.searchHighlight),
+        lastMessageAt: row.lastMessageAt,
+        participantsJson: Value(row.participantsJson),
+        folder: Value(row.folder),
+        updatedAt: row.updatedAt,
       );
 
   List<String> _decodeStringList(String json) {
