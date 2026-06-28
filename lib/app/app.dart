@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hedwig_client/app/router.dart';
 import 'package:hedwig_client/app/theme/theme_controller.dart';
@@ -18,6 +20,12 @@ class HedwigApp extends ConsumerWidget {
       darkTheme: _buildTheme(Brightness.dark),
       routerConfig: router,
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        FlutterQuillLocalizations.delegate,
+      ],
     );
   }
 
