@@ -14,7 +14,7 @@ class AppConfig extends _$AppConfig {
   }
 
   Future<void> setBaseUrl(String url) async {
-    final normalizedUrl = url.trimRight().replaceAll(RegExp(r'/$'), '');
+    final normalizedUrl = url.trimRight().replaceAll(RegExp(r'/+$'), '');
     final prefs = ref.read(prefsStorageProvider);
     await prefs.setString(_kBaseUrlKey, normalizedUrl);
     state = normalizedUrl;
