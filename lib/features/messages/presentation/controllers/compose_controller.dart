@@ -32,6 +32,28 @@ class ComposeAttachmentRequest {
     'content': content,
     if (contentId != null && contentId!.isNotEmpty) 'content_id': contentId,
   };
+
+  Map<String, dynamic> toDraftJson() => {
+    ...toPayload(),
+    'size_bytes': sizeBytes,
+  };
+
+  factory ComposeAttachmentRequest.fromDraftJson(Map<String, dynamic> json) {
+    return ComposeAttachmentRequest(
+      filename: json['filename'] as String? ?? 'attachment',
+      contentType:
+          json['content_type'] as String? ?? 'application/octet-stream',
+      content: json['content'] as String? ?? '',
+      sizeBytes: json['size_bytes'] as int? ?? 0,
+      contentId: json['content_id'] as String?,
+    );
+  }
+}
+
+class SavedDraft {
+  const SavedDraft({required this.id});
+
+  final String id;
 }
 
 @riverpod
@@ -94,6 +116,38 @@ class ComposeController extends _$ComposeController {
     });
   }
 
+  Future<SavedDraft> saveDraft(
+    SendMessageRequest req, {
+    String? draftId,
+    List<ComposeAttachmentRequest> attachments = const [],
+    List<dynamic>? bodyDelta,
+    bool htmlSourceMode = false,
+  }) async {
+    state = const AsyncLoading();
+    late final SavedDraft savedDraft;
+    state = await AsyncValue.guard(() async {
+      final db = ref.read(appDatabaseProvider);
+      final localId =
+          draftId ?? 'draft-${DateTime.now().microsecondsSinceEpoch}';
+      await _upsertDraftMessage(
+        db,
+        localId,
+        req,
+        attachments,
+        bodyDelta: bodyDelta,
+        htmlSourceMode: htmlSourceMode,
+      );
+      savedDraft = SavedDraft(id: localId);
+    });
+    if (state.hasError) {
+      Error.throwWithStackTrace(
+        state.error!,
+        state.stackTrace ?? StackTrace.current,
+      );
+    }
+    return savedDraft;
+  }
+
   Future<void> undoLastSend() async {
     final outboxId = lastQueuedOutboxId;
     final localId = lastLocalMessageId;
@@ -103,6 +157,14 @@ class ComposeController extends _$ComposeController {
     await db.messageDao.deleteById(localId);
     lastQueuedOutboxId = null;
     lastLocalMessageId = null;
+  }
+
+  Future<void> deleteDraft(String draftId) async {
+    final db = ref.read(appDatabaseProvider);
+    await db.transaction(() async {
+      await db.messageDao.deleteById(draftId);
+      await db.threadDao.deleteByIdFolder(draftId, 'drafts');
+    });
   }
 
   /// Inserts a local `queued` row immediately so the message shows up in
@@ -166,5 +228,99 @@ class ComposeController extends _$ComposeController {
         createdAt: DateTime.now().toUtc(),
       ),
     ]);
+  }
+
+  Future<void> _upsertDraftMessage(
+    AppDatabase db,
+    String localId,
+    SendMessageRequest req,
+    List<ComposeAttachmentRequest> attachments, {
+    List<dynamic>? bodyDelta,
+    bool htmlSourceMode = false,
+  }) async {
+    final mailbox = await db.mailboxDao.getById(req.mailboxId);
+    final now = DateTime.now().toUtc();
+    final subject = req.subject.trim();
+    final metadata = {
+      if (req.senderIdentityId != null)
+        'sender_identity_id': req.senderIdentityId,
+      if (req.replyToMessageId != null)
+        'reply_to_message_id': req.replyToMessageId,
+      'compose_html': true,
+      'html_source_mode': htmlSourceMode,
+      'body_delta': ?bodyDelta,
+      'compose_attachments': attachments.map((a) => a.toDraftJson()).toList(),
+    };
+    final attachmentRows = attachments
+        .asMap()
+        .entries
+        .map(
+          (entry) => {
+            'id': '$localId-attachment-${entry.key}',
+            'filename': entry.value.filename,
+            'content_type': entry.value.contentType,
+            'size_bytes': entry.value.sizeBytes,
+            'is_inline': entry.value.contentId?.isNotEmpty == true,
+            if (entry.value.contentId?.isNotEmpty == true)
+              'content_id': entry.value.contentId,
+          },
+        )
+        .toList();
+    final participants = [
+      if (req.to.isNotEmpty) ...req.to.map((e) => e.email) else 'Draft',
+    ];
+    final snippet = (req.bodyText ?? '').trim();
+
+    await db.transaction(() async {
+      await db.messageDao.upsertAll([
+        MessagesCompanion.insert(
+          id: localId,
+          mailboxId: req.mailboxId,
+          threadId: Value(localId),
+          direction: 'outbound',
+          status: 'draft',
+          folder: const Value('drafts'),
+          fromAddress: mailbox?.emailAddress ?? '',
+          toAddressesJson: Value(
+            jsonEncode(req.to.map((e) => e.toJson()).toList()),
+          ),
+          ccAddressesJson: Value(
+            jsonEncode(req.cc.map((e) => e.toJson()).toList()),
+          ),
+          bccAddressesJson: Value(
+            jsonEncode(req.bcc.map((e) => e.toJson()).toList()),
+          ),
+          subject: subject,
+          snippet: Value(snippet.isEmpty ? null : snippet),
+          bodyText: Value(req.bodyText),
+          bodyHtml: Value(req.bodyHtml),
+          hasAttachments: Value(attachments.isNotEmpty),
+          attachmentsJson: Value(jsonEncode(attachmentRows)),
+          metadataJson: Value(jsonEncode(metadata)),
+          scheduledAt: Value(req.scheduledAt),
+          createdAt: now,
+        ),
+      ]);
+      await db.threadDao.upsertAll([
+        ThreadsCompanion.insert(
+          id: localId,
+          mailboxId: req.mailboxId,
+          subject: subject.isEmpty ? '(no subject)' : subject,
+          messageCount: const Value(1),
+          hasUnread: const Value(false),
+          unreadCount: const Value(0),
+          snippet: Value(snippet.isEmpty ? null : snippet),
+          latestDirection: const Value('outbound'),
+          hasAttachments: Value(attachments.isNotEmpty),
+          attachmentFilenamesJson: Value(
+            jsonEncode(attachments.map((a) => a.filename).toList()),
+          ),
+          participantsJson: Value(jsonEncode(participants)),
+          folder: const Value('drafts'),
+          updatedAt: now,
+          lastMessageAt: now,
+        ),
+      ]);
+    });
   }
 }
