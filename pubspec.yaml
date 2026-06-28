@@ -10,6 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   flutter_web_plugins:
     sdk: flutter
 
@@ -39,17 +41,22 @@ dependencies:
   # Connectivity
   connectivity_plus: ^6.1.4
 
+  # File selection
+  file_picker: ^10.3.8
+
   # Icons
   cupertino_icons: ^1.0.8
 
   # HTML rendering for email bodies
+  flutter_quill: ^11.5.0
+  flutter_quill_delta_from_html: ^1.5.3
   flutter_widget_from_html_core: ^0.15.1
 
   # Open attachment URLs
   url_launcher: ^6.3.1
 
   # Localised date/time formatting
-  intl: ^0.19.0
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:
