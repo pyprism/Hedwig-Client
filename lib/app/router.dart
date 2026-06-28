@@ -140,6 +140,7 @@ GoRouter router(Ref ref) {
               replyToMessageId: state.uri.queryParameters['reply'],
               mode: state.uri.queryParameters['mode'],
               to: state.uri.queryParameters['to'],
+              draftMessageId: state.uri.queryParameters['draft'],
             ),
           ),
           GoRoute(
