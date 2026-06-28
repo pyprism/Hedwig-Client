@@ -34,5 +34,25 @@ void main() {
         'content_id': 'logo@hedwig',
       });
     });
+
+    test('round-trips through the draft attachment shape', () {
+      const attachment = ComposeAttachmentRequest(
+        filename: 'logo.png',
+        contentType: 'image/png',
+        content: 'SGVkd2ln',
+        sizeBytes: 6,
+        contentId: 'logo@hedwig',
+      );
+
+      final restored = ComposeAttachmentRequest.fromDraftJson(
+        attachment.toDraftJson(),
+      );
+
+      expect(restored.filename, attachment.filename);
+      expect(restored.contentType, attachment.contentType);
+      expect(restored.content, attachment.content);
+      expect(restored.sizeBytes, attachment.sizeBytes);
+      expect(restored.contentId, attachment.contentId);
+    });
   });
 }
