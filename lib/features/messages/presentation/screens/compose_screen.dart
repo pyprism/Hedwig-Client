@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hedwig_client/core/api/dio_client.dart';
@@ -11,6 +14,9 @@ import 'package:hedwig_client/features/contacts/data/repositories/contact_reposi
 import 'package:hedwig_client/features/mailboxes/presentation/controllers/mailbox_controller.dart';
 import 'package:hedwig_client/features/messages/data/repositories/message_repository.dart';
 import 'package:hedwig_client/features/messages/presentation/controllers/compose_controller.dart';
+import 'package:hedwig_client/features/messages/presentation/utils/email_body_converter.dart';
+import 'package:hedwig_client/features/threads/data/repositories/thread_repository.dart';
+import 'package:hedwig_client/features/threads/presentation/controllers/thread_controller.dart';
 import 'package:hedwig_client/shared/models/message.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -52,11 +58,18 @@ class _SenderIdentity {
 }
 
 class ComposeScreen extends ConsumerStatefulWidget {
-  const ComposeScreen({super.key, this.replyToMessageId, this.mode, this.to});
+  const ComposeScreen({
+    super.key,
+    this.replyToMessageId,
+    this.mode,
+    this.to,
+    this.draftMessageId,
+  });
 
   final String? replyToMessageId;
   final String? mode;
   final String? to;
+  final String? draftMessageId;
 
   @override
   ConsumerState<ComposeScreen> createState() => _ComposeScreenState();
@@ -68,7 +81,10 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
   final _ccCtrl = TextEditingController();
   final _bccCtrl = TextEditingController();
   final _subjectCtrl = TextEditingController();
-  final _bodyCtrl = TextEditingController();
+  final _htmlSourceCtrl = TextEditingController();
+  final _bodyController = QuillController.basic();
+  final _bodyFocusNode = FocusNode();
+  final _bodyScrollController = ScrollController();
 
   final List<String> _toChips = [];
   final List<String> _ccChips = [];
@@ -76,7 +92,7 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
   final List<ComposeAttachmentRequest> _attachments = [];
   bool _showCc = false;
   bool _showBcc = false;
-  bool _composeHtml = false;
+  bool _htmlSourceMode = false;
   bool _draftLoaded = false;
   bool _signatureInserted = false;
   bool _prefillStarted = false;
@@ -85,12 +101,16 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
   Future<List<_SenderIdentity>>? _senderIdentitiesFuture;
   String? _error;
   DateTime? _scheduledAt;
+  String? _savedDraftMessageId;
+  String? _draftReplyToMessageId;
 
   @override
   void initState() {
     super.initState();
+    _savedDraftMessageId = widget.draftMessageId;
     _subjectCtrl.addListener(_saveDraft);
-    _bodyCtrl.addListener(_saveDraft);
+    _htmlSourceCtrl.addListener(_saveDraft);
+    _bodyController.addListener(_saveDraft);
   }
 
   @override
@@ -99,19 +119,37 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
     _ccCtrl.dispose();
     _bccCtrl.dispose();
     _subjectCtrl.dispose();
-    _bodyCtrl.dispose();
+    _htmlSourceCtrl.dispose();
+    _bodyController.dispose();
+    _bodyFocusNode.dispose();
+    _bodyScrollController.dispose();
     super.dispose();
   }
 
-  String get _draftKey => 'compose_draft_${widget.replyToMessageId ?? 'new'}';
+  String get _draftKey {
+    final savedId = _savedDraftMessageId ?? widget.draftMessageId;
+    if (savedId != null) return 'compose_draft_saved_$savedId';
+    return 'compose_draft_${widget.replyToMessageId ?? 'new'}';
+  }
 
   bool get _hasDraftContent =>
       _toChips.isNotEmpty ||
       _ccChips.isNotEmpty ||
       _bccChips.isNotEmpty ||
       _subjectCtrl.text.trim().isNotEmpty ||
-      _bodyCtrl.text.trim().isNotEmpty ||
+      _hasBodyContent ||
       _attachments.isNotEmpty;
+
+  bool get _hasBodyContent =>
+      _bodyPlainText.trim().isNotEmpty || _bodyHtml.trim().isNotEmpty;
+
+  String get _bodyPlainText => _htmlSourceMode
+      ? plainTextFromHtml(_htmlSourceCtrl.text)
+      : emailPlainTextFromDocument(_bodyController.document);
+
+  String get _bodyHtml => _htmlSourceMode
+      ? _htmlSourceCtrl.text.trim()
+      : emailHtmlFromDocument(_bodyController.document);
 
   Future<void> _saveDraft() async {
     if (!_draftLoaded) return;
@@ -123,8 +161,17 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
         'cc': _ccChips,
         'bcc': _bccChips,
         'subject': _subjectCtrl.text,
-        'body': _bodyCtrl.text,
-        'compose_html': _composeHtml,
+        'body': _bodyHtml,
+        'body_delta': _htmlSourceMode
+            ? null
+            : _bodyController.document.toDelta().toJson(),
+        'compose_html': true,
+        'html_source_mode': _htmlSourceMode,
+        'sender_identity_id': _selectedSenderIdentityId,
+        'reply_to_message_id':
+            widget.replyToMessageId ?? _draftReplyToMessageId,
+        'scheduled_at': _scheduledAt?.toIso8601String(),
+        'attachments': _attachments.map((a) => a.toDraftJson()).toList(),
       }),
     );
   }
@@ -132,20 +179,17 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
   Future<void> _loadDraftAndPrefill() async {
     if (_prefillStarted) return;
     _prefillStarted = true;
+    if (widget.draftMessageId != null) {
+      final loaded = await _loadSavedDraft(widget.draftMessageId!);
+      if (loaded) return;
+    }
+
     final prefs = await SharedPreferences.getInstance();
     final draft = prefs.getString(_draftKey);
     if (draft != null) {
       final data = jsonDecode(draft) as Map<String, dynamic>;
       setState(() {
-        _toChips.addAll((data['to'] as List? ?? []).cast<String>());
-        _ccChips.addAll((data['cc'] as List? ?? []).cast<String>());
-        _bccChips.addAll((data['bcc'] as List? ?? []).cast<String>());
-        _subjectCtrl.text = data['subject'] as String? ?? '';
-        _bodyCtrl.text = data['body'] as String? ?? '';
-        _composeHtml = data['compose_html'] as bool? ?? false;
-        _showCc = _ccChips.isNotEmpty;
-        _showBcc = _bccChips.isNotEmpty;
-        _draftLoaded = true;
+        _applyDraftData(data);
       });
       return;
     }
@@ -163,8 +207,9 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
           _subjectCtrl.text = subject.toLowerCase().startsWith('fwd:')
               ? subject
               : 'Fwd: $subject';
-          _bodyCtrl.text =
-              '\n\n---------- Forwarded message ----------\nFrom: ${original.fromName ?? original.fromAddress} <${original.fromAddress}>\nSubject: $subject\n\n${original.bodyText ?? original.snippet ?? ''}';
+          _setBodyFromText(
+            '\n\n---------- Forwarded message ----------\nFrom: ${original.fromName ?? original.fromAddress} <${original.fromAddress}>\nSubject: $subject\n\n${original.bodyText ?? original.snippet ?? ''}',
+          );
         } else {
           _subjectCtrl.text = subject.toLowerCase().startsWith('re:')
               ? subject
@@ -174,8 +219,9 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
             _ccChips.addAll(original.ccAddresses.map((row) => row.email));
             _showCc = _ccChips.isNotEmpty;
           }
-          _bodyCtrl.text =
-              '\n\nOn ${DateFormat('MMM d, yyyy HH:mm').format((original.receivedAt ?? original.createdAt ?? DateTime.now()).toLocal())}, ${original.fromAddress} wrote:\n${original.bodyText ?? original.snippet ?? ''}';
+          _setBodyFromText(
+            '\n\nOn ${DateFormat('MMM d, yyyy HH:mm').format((original.receivedAt ?? original.createdAt ?? DateTime.now()).toLocal())}, ${original.fromAddress} wrote:\n${original.bodyText ?? original.snippet ?? ''}',
+          );
         }
         _draftLoaded = true;
       });
@@ -196,28 +242,45 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
       if (mounted) context.pop();
       return;
     }
-    final discard = await showDialog<bool>(
+    final action = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Discard draft?'),
-        content: const Text(
-          'Your unsent message will be removed from this device.',
+        content: Text(
+          _savedDraftMessageId == null
+              ? 'Your unsent message will be removed from this device.'
+              : 'Your unsent message will be removed from Drafts.',
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
+            onPressed: () => Navigator.of(ctx).pop('cancel'),
+            child: const Text('Keep editing'),
           ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop('discard'),
             child: const Text('Discard'),
+          ),
+          FilledButton.icon(
+            onPressed: () => Navigator.of(ctx).pop('save'),
+            icon: const Icon(Icons.drafts_outlined),
+            label: const Text('Save draft'),
           ),
         ],
       ),
     );
-    if (discard != true) return;
+    if (action == 'save') {
+      await _saveMailboxDraft(closeAfter: true);
+      return;
+    }
+    if (action != 'discard') return;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_draftKey);
+    final savedDraftMessageId = _savedDraftMessageId;
+    if (savedDraftMessageId != null) {
+      await ref
+          .read(composeControllerProvider.notifier)
+          .deleteDraft(savedDraftMessageId);
+    }
     if (mounted) context.pop();
   }
 
@@ -228,7 +291,7 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
         chips.add(val);
         ctrl.clear();
       });
-      _saveDraft();
+      unawaited(_saveDraft());
     }
   }
 
@@ -259,151 +322,136 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
   int get _attachmentBytes =>
       _attachments.fold(0, (total, item) => total + item.sizeBytes);
 
-  Future<void> _showAddAttachmentDialog() async {
+  Future<void> _pickAttachments() async {
     if (_attachments.length >= _maxAttachments) {
       _showSnack('At most $_maxAttachments attachments are allowed.');
       return;
     }
 
-    final filenameCtrl = TextEditingController();
-    final contentTypeCtrl = TextEditingController(
-      text: 'application/octet-stream',
+    final remainingSlots = _maxAttachments - _attachments.length;
+    final result = await FilePicker.platform.pickFiles(
+      allowMultiple: true,
+      withData: true,
+      type: FileType.any,
+      dialogTitle: 'Attach files',
     );
-    final contentCtrl = TextEditingController();
-    final contentIdCtrl = TextEditingController();
-    var isInline = false;
-    String? dialogError;
+    if (result == null || result.files.isEmpty) return;
 
-    await showDialog<void>(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          title: const Text('Add attachment'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: filenameCtrl,
-                  decoration: const InputDecoration(labelText: 'Filename'),
-                  autofocus: true,
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: contentTypeCtrl,
-                  decoration: const InputDecoration(labelText: 'Content type'),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: contentCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Base64 content',
-                  ),
-                  minLines: 4,
-                  maxLines: 8,
-                ),
-                const SizedBox(height: 12),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text('Inline image'),
-                  subtitle: const Text('Adds a content ID for HTML cid: use'),
-                  value: isInline,
-                  onChanged: (value) => setDialogState(() {
-                    isInline = value;
-                    if (value && contentIdCtrl.text.trim().isEmpty) {
-                      contentIdCtrl.text =
-                          'inline-${DateTime.now().microsecondsSinceEpoch}@hedwig';
-                    }
-                  }),
-                ),
-                if (isInline)
-                  TextField(
-                    controller: contentIdCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Content ID',
-                      helperText: 'Use as <img src="cid:content-id">',
-                    ),
-                  ),
-                if (dialogError != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    dialogError!,
-                    style: TextStyle(color: Theme.of(ctx).colorScheme.error),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () {
-                final filename = filenameCtrl.text.trim();
-                final contentType = contentTypeCtrl.text.trim().isEmpty
-                    ? 'application/octet-stream'
-                    : contentTypeCtrl.text.trim();
-                final content = contentCtrl.text.replaceAll(RegExp(r'\s+'), '');
+    var availableBytes = _maxAttachmentBytes - _attachmentBytes;
+    final accepted = <ComposeAttachmentRequest>[];
+    var skippedCount = 0;
+    var skippedBytes = 0;
+    var missingBytes = 0;
 
-                if (filename.isEmpty) {
-                  setDialogState(() => dialogError = 'Filename is required.');
-                  return;
-                }
-                if (content.isEmpty) {
-                  setDialogState(
-                    () => dialogError = 'Base64 content is required.',
-                  );
-                  return;
-                }
+    for (final file in result.files.take(remainingSlots)) {
+      final bytes = file.bytes;
+      if (bytes == null) {
+        missingBytes++;
+        continue;
+      }
+      if (file.size > availableBytes) {
+        skippedBytes++;
+        continue;
+      }
 
-                late final int sizeBytes;
-                try {
-                  sizeBytes = base64Decode(content).length;
-                } on FormatException {
-                  setDialogState(
-                    () => dialogError = 'Base64 content is invalid.',
-                  );
-                  return;
-                }
-
-                if (_attachmentBytes + sizeBytes > _maxAttachmentBytes) {
-                  setDialogState(
-                    () => dialogError = 'Total attachment size exceeds 10 MB.',
-                  );
-                  return;
-                }
-
-                setState(() {
-                  _attachments.add(
-                    ComposeAttachmentRequest(
-                      filename: filename,
-                      contentType: contentType,
-                      content: content,
-                      sizeBytes: sizeBytes,
-                      contentId: isInline ? contentIdCtrl.text.trim() : null,
-                    ),
-                  );
-                  if (isInline) {
-                    _composeHtml = true;
-                    _bodyCtrl.text +=
-                        '\n<p><img src="cid:${contentIdCtrl.text.trim()}" alt="$filename"></p>';
-                  }
-                });
-                Navigator.of(ctx).pop();
-              },
-              child: const Text('Add'),
-            ),
-          ],
+      accepted.add(
+        ComposeAttachmentRequest(
+          filename: file.name,
+          contentType: _contentTypeFor(file.name),
+          content: base64Encode(bytes),
+          sizeBytes: file.size,
         ),
-      ),
-    );
+      );
+      availableBytes -= file.size;
+    }
 
-    filenameCtrl.dispose();
-    contentTypeCtrl.dispose();
-    contentCtrl.dispose();
-    contentIdCtrl.dispose();
+    if (result.files.length > remainingSlots) {
+      skippedCount = result.files.length - remainingSlots;
+    }
+
+    if (accepted.isNotEmpty) {
+      setState(() => _attachments.addAll(accepted));
+      await _saveDraft();
+    }
+
+    final notes = <String>[
+      if (accepted.isNotEmpty)
+        '${accepted.length} ${accepted.length == 1 ? 'file' : 'files'} attached.',
+      if (skippedCount > 0)
+        '$skippedCount skipped because only $remainingSlots attachment slots remained.',
+      if (skippedBytes > 0)
+        '$skippedBytes skipped because the total limit is 10 MB.',
+      if (missingBytes > 0)
+        '$missingBytes skipped because file bytes were unavailable.',
+    ];
+    if (notes.isNotEmpty) _showSnack(notes.join(' '));
+  }
+
+  void _removeAttachment(int index) {
+    setState(() => _attachments.removeAt(index));
+    unawaited(_saveDraft());
+  }
+
+  void _insertAttachmentInline(int index) {
+    final attachment = _attachments[index];
+    if (!_isImageContentType(attachment.contentType)) return;
+
+    final contentId = attachment.contentId?.trim().isNotEmpty == true
+        ? attachment.contentId!
+        : 'inline-${DateTime.now().microsecondsSinceEpoch}@hedwig';
+
+    setState(() {
+      _attachments[index] = ComposeAttachmentRequest(
+        filename: attachment.filename,
+        contentType: attachment.contentType,
+        content: attachment.content,
+        sizeBytes: attachment.sizeBytes,
+        contentId: contentId,
+      );
+      _appendHtmlFragment(
+        '<p><img src="cid:$contentId" alt="${const HtmlEscape().convert(attachment.filename)}"></p>',
+      );
+    });
+    unawaited(_saveDraft());
+  }
+
+  String _contentTypeFor(String filename) {
+    final extension = filename.split('.').lastOrNull?.toLowerCase();
+    return switch (extension) {
+      'apng' => 'image/apng',
+      'avif' => 'image/avif',
+      'bmp' => 'image/bmp',
+      'gif' => 'image/gif',
+      'jpg' || 'jpeg' => 'image/jpeg',
+      'png' => 'image/png',
+      'svg' => 'image/svg+xml',
+      'webp' => 'image/webp',
+      'pdf' => 'application/pdf',
+      'txt' => 'text/plain',
+      'csv' => 'text/csv',
+      'html' || 'htm' => 'text/html',
+      'json' => 'application/json',
+      'xml' => 'application/xml',
+      'zip' => 'application/zip',
+      'doc' => 'application/msword',
+      'docx' =>
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'xls' => 'application/vnd.ms-excel',
+      'xlsx' =>
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'ppt' => 'application/vnd.ms-powerpoint',
+      'pptx' =>
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'mp3' => 'audio/mpeg',
+      'wav' => 'audio/wav',
+      'mp4' => 'video/mp4',
+      'mov' => 'video/quicktime',
+      _ => 'application/octet-stream',
+    };
+  }
+
+  bool _isImageContentType(String contentType) {
+    return contentType.toLowerCase().startsWith('image/');
   }
 
   void _showSnack(String message) {
@@ -441,8 +489,85 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
     });
   }
 
+  void _addPendingRecipientChips() {
+    void add(TextEditingController controller, List<String> chips) {
+      final value = controller.text.trim();
+      if (value.isNotEmpty && value.contains('@') && !chips.contains(value)) {
+        chips.add(value);
+        controller.clear();
+      }
+    }
+
+    add(_toCtrl, _toChips);
+    add(_ccCtrl, _ccChips);
+    add(_bccCtrl, _bccChips);
+  }
+
+  List<dynamic>? get _draftBodyDelta =>
+      _htmlSourceMode ? null : _bodyController.document.toDelta().toJson();
+
+  SendMessageRequest _composeRequest(String mailboxId) {
+    return SendMessageRequest(
+      mailboxId: mailboxId,
+      senderIdentityId: _selectedSenderIdentityId,
+      to: _toChips.map((e) => EmailAddress(email: e)).toList(),
+      cc: _ccChips.map((e) => EmailAddress(email: e)).toList(),
+      bcc: _bccChips.map((e) => EmailAddress(email: e)).toList(),
+      subject: _subjectCtrl.text.trim(),
+      bodyText: _bodyPlainText.trim(),
+      bodyHtml: _bodyHtml,
+      replyToMessageId: widget.replyToMessageId ?? _draftReplyToMessageId,
+      scheduledAt: _scheduledAt,
+    );
+  }
+
+  Future<void> _saveMailboxDraft({required bool closeAfter}) async {
+    setState(() {
+      _addPendingRecipientChips();
+      _error = null;
+    });
+
+    if (!_hasDraftContent) {
+      if (closeAfter && mounted) context.pop();
+      return;
+    }
+
+    final mailboxId = ref.read(selectedMailboxProvider);
+    if (mailboxId == null) {
+      setState(() => _error = 'No mailbox selected.');
+      return;
+    }
+
+    try {
+      final composeController = ref.read(composeControllerProvider.notifier);
+      final result = await composeController.saveDraft(
+        _composeRequest(mailboxId),
+        draftId: _savedDraftMessageId,
+        attachments: _attachments,
+        bodyDelta: _draftBodyDelta,
+        htmlSourceMode: _htmlSourceMode,
+      );
+      _savedDraftMessageId = result.id;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_draftKey);
+      ref.invalidate(threadListProvider);
+      ref.invalidate(threadCountsProvider(mailboxId));
+      if (!mounted) return;
+      if (closeAfter) context.pop();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Draft saved.')));
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e is ApiException ? e.failure.userMessage : e.toString();
+      });
+    }
+  }
+
   Future<void> _send() async {
     if (!_formKey.currentState!.validate()) return;
+    setState(_addPendingRecipientChips);
     if (_toChips.isEmpty) {
       setState(() => _error = 'Add at least one recipient.');
       return;
@@ -456,20 +581,7 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
 
     setState(() => _error = null);
 
-    final req = SendMessageRequest(
-      mailboxId: mailboxId,
-      senderIdentityId: _selectedSenderIdentityId,
-      to: _toChips.map((e) => EmailAddress(email: e)).toList(),
-      cc: _ccChips.map((e) => EmailAddress(email: e)).toList(),
-      bcc: _bccChips.map((e) => EmailAddress(email: e)).toList(),
-      subject: _subjectCtrl.text.trim(),
-      bodyText: _composeHtml
-          ? _plainTextFromHtml(_bodyCtrl.text)
-          : _bodyCtrl.text.trim(),
-      bodyHtml: _composeHtml ? _bodyCtrl.text.trim() : null,
-      replyToMessageId: widget.replyToMessageId,
-      scheduledAt: _scheduledAt,
-    );
+    final req = _composeRequest(mailboxId);
 
     final composeController = ref.read(composeControllerProvider.notifier);
     await composeController.send(req, attachments: _attachments);
@@ -483,6 +595,12 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
     } else if (mounted) {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_draftKey);
+      final savedDraftMessageId = _savedDraftMessageId;
+      if (savedDraftMessageId != null) {
+        await composeController.deleteDraft(savedDraftMessageId);
+        ref.invalidate(threadListProvider);
+        ref.invalidate(threadCountsProvider(mailboxId));
+      }
       if (!mounted) return;
       context.pop();
       ScaffoldMessenger.of(context).showSnackBar(
@@ -542,7 +660,11 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
               onPressed: _discard,
             ),
             title: Text(
-              widget.replyToMessageId != null ? 'Reply' : 'New message',
+              widget.draftMessageId != null
+                  ? 'Edit draft'
+                  : widget.replyToMessageId != null
+                  ? 'Reply'
+                  : 'New message',
             ),
             actions: [
               if (isLoading)
@@ -558,7 +680,12 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
                 IconButton(
                   icon: const Icon(Icons.attach_file),
                   tooltip: 'Attach file',
-                  onPressed: _showAddAttachmentDialog,
+                  onPressed: _pickAttachments,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.drafts_outlined),
+                  tooltip: 'Save draft',
+                  onPressed: () => _saveMailboxDraft(closeAfter: true),
                 ),
                 IconButton(
                   icon: Icon(
@@ -692,30 +819,39 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
                     },
                   ),
                 if (_attachments.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  _AttachmentSummary(
+                    attachmentCount: _attachments.length,
+                    totalBytes: _attachmentBytes,
+                    maxBytes: _maxAttachmentBytes,
+                    formatBytes: _formatBytes,
+                  ),
                   const SizedBox(height: 8),
-                  ..._attachments.asMap().entries.map(
-                    (entry) => ListTile(
-                      dense: true,
-                      leading: const Icon(Icons.attach_file, size: 18),
-                      title: Text(
-                        entry.value.filename,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                  ..._attachments.asMap().entries.map((entry) {
+                    final attachment = entry.value;
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: _AttachmentItem(
+                        attachment: attachment,
+                        formatBytes: _formatBytes,
+                        canInsertInline: _isImageContentType(
+                          attachment.contentType,
+                        ),
+                        onInsertInline: attachment.contentId?.isNotEmpty == true
+                            ? null
+                            : () => _insertAttachmentInline(entry.key),
+                        onRemove: () => _removeAttachment(entry.key),
                       ),
-                      subtitle: Text(
-                        [
-                          entry.value.contentType,
-                          _formatBytes(entry.value.sizeBytes),
-                          if (entry.value.contentId?.isNotEmpty == true)
-                            'inline',
-                        ].join(' · '),
-                      ),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.close, size: 18),
-                        tooltip: 'Remove attachment',
-                        onPressed: () =>
-                            setState(() => _attachments.removeAt(entry.key)),
-                      ),
+                    );
+                  }),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: _attachments.length >= _maxAttachments
+                          ? null
+                          : _pickAttachments,
+                      icon: const Icon(Icons.add),
+                      label: const Text('Add more'),
                     ),
                   ),
                 ],
@@ -733,27 +869,93 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
                 const Divider(),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('HTML body'),
-                  value: _composeHtml,
-                  onChanged: (value) {
-                    setState(() => _composeHtml = value);
-                    _saveDraft();
-                  },
+                  title: const Text('HTML source'),
+                  value: _htmlSourceMode,
+                  onChanged: _setHtmlSourceMode,
                 ),
-                TextFormField(
-                  controller: _bodyCtrl,
-                  decoration: InputDecoration(
-                    hintText: _composeHtml
-                        ? '<p>Message body</p>'
-                        : 'Message body',
-                    border: InputBorder.none,
+                if (_htmlSourceMode)
+                  TextFormField(
+                    controller: _htmlSourceCtrl,
+                    decoration: const InputDecoration(
+                      hintText: '<p>Message body</p>',
+                      border: InputBorder.none,
+                    ),
+                    maxLines: null,
+                    minLines: 12,
+                    keyboardType: TextInputType.multiline,
+                    validator: (_) => _hasBodyContent ? null : 'Body required',
+                  )
+                else
+                  FormField<void>(
+                    validator: (_) => _hasBodyContent ? null : 'Body required',
+                    builder: (field) {
+                      final errorText = field.errorText;
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          DecoratedBox(
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: errorText == null
+                                    ? Theme.of(context).dividerColor
+                                    : Theme.of(context).colorScheme.error,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Column(
+                              children: [
+                                QuillSimpleToolbar(
+                                  controller: _bodyController,
+                                  config: QuillSimpleToolbarConfig(
+                                    showAlignmentButtons: true,
+                                    showBackgroundColorButton: false,
+                                    showCodeBlock: false,
+                                    showDirection: false,
+                                    showFontFamily: false,
+                                    showInlineCode: false,
+                                    showLineHeightButton: false,
+                                    showSearchButton: false,
+                                    showSubscript: false,
+                                    showSuperscript: false,
+                                    buttonOptions:
+                                        QuillSimpleToolbarButtonOptions(
+                                          base: QuillToolbarBaseButtonOptions(
+                                            afterButtonPressed: () {
+                                              _bodyFocusNode.requestFocus();
+                                            },
+                                          ),
+                                        ),
+                                  ),
+                                ),
+                                const Divider(height: 1),
+                                SizedBox(
+                                  height: 320,
+                                  child: QuillEditor(
+                                    controller: _bodyController,
+                                    focusNode: _bodyFocusNode,
+                                    scrollController: _bodyScrollController,
+                                    config: const QuillEditorConfig(
+                                      placeholder: 'Message body',
+                                      padding: EdgeInsets.all(12),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (errorText != null) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              errorText,
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.error,
+                              ),
+                            ),
+                          ],
+                        ],
+                      );
+                    },
                   ),
-                  maxLines: null,
-                  minLines: 12,
-                  keyboardType: TextInputType.multiline,
-                  validator: (v) =>
-                      (v == null || v.trim().isEmpty) ? 'Body required' : null,
-                ),
                 if (_error != null) ...[
                   const SizedBox(height: 8),
                   Text(
@@ -779,23 +981,164 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
     return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 
+  Future<bool> _loadSavedDraft(String draftId) async {
+    final row = await ref
+        .read(messageRepositoryProvider)
+        .db
+        .messageDao
+        .getById(draftId);
+    if (!mounted) return true;
+    if (row == null || row.status != 'draft') {
+      setState(() => _draftLoaded = true);
+      return false;
+    }
+
+    Map<String, dynamic> metadata;
+    try {
+      metadata = jsonDecode(row.metadataJson) as Map<String, dynamic>;
+    } catch (_) {
+      metadata = {};
+    }
+
+    setState(() {
+      _savedDraftMessageId = row.id;
+      _applyDraftData({
+        'to': _decodeDraftEmailList(row.toAddressesJson),
+        'cc': _decodeDraftEmailList(row.ccAddressesJson),
+        'bcc': _decodeDraftEmailList(row.bccAddressesJson),
+        'subject': row.subject,
+        'body': row.bodyHtml ?? row.bodyText ?? '',
+        'body_delta': metadata['body_delta'],
+        'compose_html': row.bodyHtml != null,
+        'html_source_mode': metadata['html_source_mode'] as bool? ?? false,
+        'sender_identity_id': metadata['sender_identity_id'],
+        'reply_to_message_id': metadata['reply_to_message_id'],
+        'scheduled_at': row.scheduledAt?.toIso8601String(),
+        'attachments': metadata['compose_attachments'],
+      });
+    });
+    return true;
+  }
+
+  List<String> _decodeDraftEmailList(String json) {
+    try {
+      return (jsonDecode(json) as List)
+          .map((item) {
+            if (item is String) return item;
+            if (item is Map<String, dynamic>) {
+              return item['email'] as String? ?? '';
+            }
+            return '';
+          })
+          .where((email) => email.isNotEmpty)
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  void _applyDraftData(Map<String, dynamic> data) {
+    _toChips
+      ..clear()
+      ..addAll((data['to'] as List? ?? []).cast<String>());
+    _ccChips
+      ..clear()
+      ..addAll((data['cc'] as List? ?? []).cast<String>());
+    _bccChips
+      ..clear()
+      ..addAll((data['bcc'] as List? ?? []).cast<String>());
+    _attachments
+      ..clear()
+      ..addAll(
+        (data['attachments'] as List? ?? [])
+            .whereType<Map<String, dynamic>>()
+            .map(ComposeAttachmentRequest.fromDraftJson),
+      );
+    _subjectCtrl.text = data['subject'] as String? ?? '';
+    _selectedSenderIdentityId = data['sender_identity_id'] as String?;
+    _draftReplyToMessageId = data['reply_to_message_id'] as String?;
+    final scheduled = data['scheduled_at'] as String?;
+    _scheduledAt = scheduled == null ? null : DateTime.tryParse(scheduled);
+    _loadDraftBody(data);
+    _showCc = _ccChips.isNotEmpty;
+    _showBcc = _bccChips.isNotEmpty;
+    _draftLoaded = true;
+  }
+
+  void _loadDraftBody(Map<String, dynamic> data) {
+    final delta = data['body_delta'];
+    final sourceMode = data['html_source_mode'] as bool? ?? false;
+    final body = data['body'] as String? ?? '';
+    final wasHtml = data['compose_html'] as bool? ?? true;
+
+    _htmlSourceMode = sourceMode;
+    if (sourceMode) {
+      _htmlSourceCtrl.text = body;
+      return;
+    }
+
+    if (delta is List) {
+      _setBodyDocument(Document.fromJson(delta));
+      return;
+    }
+
+    _setBodyDocument(emailDocumentFromBody(body: body, isHtml: wasHtml));
+  }
+
+  void _setBodyFromText(String text) {
+    _htmlSourceMode = false;
+    _setBodyDocument(emailDocumentFromBody(body: text, isHtml: false));
+  }
+
+  void _setBodyFromHtml(String html) {
+    _htmlSourceMode = false;
+    _setBodyDocument(emailDocumentFromBody(body: html, isHtml: true));
+  }
+
+  void _setBodyDocument(Document document) {
+    final offset = document.length <= 0 ? 0 : document.length - 1;
+    _bodyController.document = document;
+    _bodyController.updateSelection(
+      TextSelection.collapsed(offset: offset),
+      ChangeSource.local,
+    );
+  }
+
+  void _setHtmlSourceMode(bool value) {
+    setState(() {
+      if (value) {
+        _htmlSourceCtrl.text = _bodyHtml;
+      } else {
+        _setBodyFromHtml(_htmlSourceCtrl.text);
+      }
+      _htmlSourceMode = value;
+    });
+    unawaited(_saveDraft());
+  }
+
+  void _appendHtmlFragment(String html) {
+    if (!_htmlSourceMode) {
+      _htmlSourceCtrl.text = _bodyHtml;
+    }
+    _htmlSourceCtrl.text = '${_htmlSourceCtrl.text.trimRight()}\n$html';
+    _htmlSourceMode = true;
+  }
+
   void _insertSignature({String? text, String? html}) {
-    if (_signatureInserted || _bodyCtrl.text.trim().isNotEmpty) return;
+    if (_signatureInserted || _hasBodyContent) return;
     final signature = (html != null && html.trim().isNotEmpty)
         ? html.trim()
         : text?.trim();
     if (signature == null || signature.isEmpty) return;
     setState(() {
-      _composeHtml = html != null && html.trim().isNotEmpty;
-      _bodyCtrl.text = _composeHtml ? '<br><br>$signature' : '\n\n$signature';
+      if (html != null && html.trim().isNotEmpty) {
+        _setBodyFromHtml('<br><br>$signature');
+      } else {
+        _setBodyFromText('\n\n$signature');
+      }
       _signatureInserted = true;
     });
   }
-
-  String _plainTextFromHtml(String html) => html
-      .replaceAll(RegExp(r'<[^>]+>'), ' ')
-      .replaceAll(RegExp(r'\s+'), ' ')
-      .trim();
 }
 
 class _ChipField extends StatelessWidget {
@@ -877,5 +1220,180 @@ class _ChipField extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+class _AttachmentSummary extends StatelessWidget {
+  const _AttachmentSummary({
+    required this.attachmentCount,
+    required this.totalBytes,
+    required this.maxBytes,
+    required this.formatBytes,
+  });
+
+  final int attachmentCount;
+  final int totalBytes;
+  final int maxBytes;
+  final String Function(int) formatBytes;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final progress = totalBytes / maxBytes;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(
+              Icons.attach_file,
+              size: 18,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                '$attachmentCount ${attachmentCount == 1 ? 'attachment' : 'attachments'}',
+                style: theme.textTheme.labelLarge,
+              ),
+            ),
+            Text(
+              '${formatBytes(totalBytes)} / ${formatBytes(maxBytes)}',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: LinearProgressIndicator(value: progress.clamp(0, 1)),
+        ),
+      ],
+    );
+  }
+}
+
+class _AttachmentItem extends StatelessWidget {
+  const _AttachmentItem({
+    required this.attachment,
+    required this.formatBytes,
+    required this.canInsertInline,
+    required this.onRemove,
+    this.onInsertInline,
+  });
+
+  final ComposeAttachmentRequest attachment;
+  final String Function(int) formatBytes;
+  final bool canInsertInline;
+  final VoidCallback? onInsertInline;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isInline = attachment.contentId?.isNotEmpty == true;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border.all(color: theme.colorScheme.outlineVariant),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Row(
+          children: [
+            _AttachmentIcon(contentType: attachment.contentType),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    attachment.filename,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    [
+                      attachment.contentType,
+                      formatBytes(attachment.sizeBytes),
+                      if (isInline) 'inline',
+                    ].join(' · '),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            if (canInsertInline)
+              IconButton(
+                icon: Icon(isInline ? Icons.image : Icons.add_photo_alternate),
+                tooltip: isInline ? 'Inserted inline' : 'Insert inline',
+                onPressed: onInsertInline,
+              ),
+            IconButton(
+              icon: const Icon(Icons.close),
+              tooltip: 'Remove attachment',
+              onPressed: onRemove,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AttachmentIcon extends StatelessWidget {
+  const _AttachmentIcon({required this.contentType});
+
+  final String contentType;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final icon = _iconFor(contentType);
+
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Icon(icon, color: theme.colorScheme.onSurfaceVariant),
+    );
+  }
+
+  IconData _iconFor(String contentType) {
+    final normalized = contentType.toLowerCase();
+    if (normalized.startsWith('image/')) return Icons.image;
+    if (normalized.startsWith('audio/')) return Icons.audio_file;
+    if (normalized.startsWith('video/')) return Icons.video_file;
+    if (normalized == 'application/pdf') return Icons.picture_as_pdf;
+    if (normalized.contains('spreadsheet') || normalized.contains('excel')) {
+      return Icons.table_chart;
+    }
+    if (normalized.contains('presentation') ||
+        normalized.contains('powerpoint')) {
+      return Icons.slideshow;
+    }
+    if (normalized.contains('wordprocessing') ||
+        normalized.contains('msword')) {
+      return Icons.description;
+    }
+    if (normalized.startsWith('text/')) return Icons.subject;
+    if (normalized.contains('zip')) return Icons.folder_zip;
+    return Icons.insert_drive_file;
   }
 }
