@@ -121,6 +121,10 @@ class _ThreadListScreenState extends ConsumerState<ThreadListScreen> {
   }
 
   void _openThread(MailThread thread) {
+    if (ref.read(selectedFolderProvider) == 'drafts') {
+      context.push('/compose?draft=${Uri.encodeComponent(thread.id)}');
+      return;
+    }
     if (thread.hasUnread) {
       unawaited(_markThreadRead(thread));
     }
