@@ -5,13 +5,17 @@
 ///   flutter build web --release --dart-define=FLAVOR=prod
 abstract final class EnvConfig {
   /// Build flavor: dev | staging | prod
-  static const String flavor =
-      String.fromEnvironment('FLAVOR', defaultValue: 'prod');
+  static const String flavor = String.fromEnvironment(
+    'FLAVOR',
+    defaultValue: 'prod',
+  );
 
   /// Optional default base URL shown in the login field.
   /// The user can override it at runtime; this is only a convenience pre-fill.
-  static const String defaultApiUrl =
-      String.fromEnvironment('DEFAULT_API_URL', defaultValue: '');
+  static const String defaultApiUrl = String.fromEnvironment(
+    'DEFAULT_API_URL',
+    defaultValue: '',
+  );
 
   /// Whether to show the debug banner in MaterialApp.
   static const bool showDebugBanner = flavor != 'prod';
