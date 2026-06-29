@@ -6,7 +6,7 @@ part of 'compose_controller.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$composeControllerHash() => r'3337cbe4b05ef16c7efc20fb64c1dca159b933da';
+String _$composeControllerHash() => r'eb3dc51c7ce12fe9964985593555d1fd0ad78d01';
 
 /// See also [ComposeController].
 @ProviderFor(ComposeController)
