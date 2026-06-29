@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:dio/dio.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hedwig_client/core/api/dio_client.dart';
+import 'package:hedwig_client/core/api/error_interceptor.dart';
 import 'package:hedwig_client/core/db/app_database.dart';
 import 'package:hedwig_client/features/messages/data/datasources/message_remote_datasource.dart';
 import 'package:hedwig_client/shared/models/message.dart';
@@ -263,14 +265,31 @@ class MessageRepository {
         await _syncThreadFolderCache(previous, folder);
       }
     }
-    await remote.bulkState(
-      ids,
+
+    final payload = _statePayload(
       isRead: isRead,
       isStarred: isStarred,
       isImportant: isImportant,
       folder: folder,
       snoozedUntil: snoozedUntil,
     );
+    try {
+      await remote.bulkState(
+        ids,
+        isRead: isRead,
+        isStarred: isStarred,
+        isImportant: isImportant,
+        folder: folder,
+        snoozedUntil: snoozedUntil,
+      );
+    } catch (e) {
+      // Offline-safe: the optimistic local write already happened, so queue
+      // one state_change per id for the sync engine to flush on reconnect.
+      debugPrint('[MessageRepository] bulk state update queued: $e');
+      for (final id in ids) {
+        await _enqueueStateChange(id, payload);
+      }
+    }
   }
 
   /// Cancels a pending scheduled send. Requires connectivity — unlike other
@@ -285,12 +304,21 @@ class MessageRepository {
 
   Future<void> restore(String messageId) async {
     final previous = await db.messageDao.getById(messageId);
-    await remote.restore(messageId);
+
+    // Optimistic local update first (restore == per-user folder state change).
     await db.messageDao.updateState(messageId, folder: 'inbox');
     if (previous != null) {
       await _syncThreadFolderCache(previous, 'inbox');
     }
     await _cacheUserState(messageId, folder: 'inbox', deletedAt: null);
+
+    try {
+      await remote.restore(messageId);
+    } catch (e) {
+      // Offline-safe: queue the folder change so the sync engine reconciles it.
+      debugPrint('[MessageRepository] restore queued: $e');
+      await _enqueueStateChange(messageId, _statePayload(folder: 'inbox'));
+    }
   }
 
   Future<void> _syncThreadFolderCache(
@@ -346,7 +374,13 @@ class MessageRepository {
   }
 
   Future<void> permanentDelete(String messageId) async {
-    await remote.permanentDelete(messageId);
+    // Permanent delete can't be deferred to the outbox (it's a hard server
+    // delete), so surface a typed Failure when offline instead of a raw throw.
+    try {
+      await remote.permanentDelete(messageId);
+    } on DioException catch (e) {
+      throw ApiException(failureFromError(e.error ?? e));
+    }
     await db.messageDao.deleteById(messageId);
     await (db.delete(
       db.messageUserStates,
