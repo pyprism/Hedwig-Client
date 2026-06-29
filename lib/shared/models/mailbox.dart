@@ -4,7 +4,7 @@ part 'mailbox.freezed.dart';
 part 'mailbox.g.dart';
 
 @freezed
-class Mailbox with _$Mailbox {
+abstract class Mailbox with _$Mailbox {
   const factory Mailbox({
     required String id,
     @JsonKey(name: 'domain') required String domainId,
