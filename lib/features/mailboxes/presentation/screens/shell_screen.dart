@@ -275,11 +275,7 @@ class _DrawerContent extends ConsumerWidget {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              Image.asset(
-                'assets/icons/app_icon.png',
-                width: 28,
-                height: 28,
-              ),
+              Image.asset('assets/icons/app_icon.png', width: 28, height: 28),
               const SizedBox(width: 8),
               Text('Hedwig', style: theme.textTheme.titleLarge),
             ],
