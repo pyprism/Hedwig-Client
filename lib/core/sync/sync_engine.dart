@@ -135,7 +135,15 @@ class SyncEngine {
         //           id; later saves PATCH that same remote draft.
         final map = jsonDecode(entry.payloadJson) as Map<String, dynamic>;
         final localId = map['localId'] as String?;
-        final serverDraftId = map['serverDraftId'] as String?;
+        // Resolve the server draft id at dispatch time rather than trusting the
+        // payload: a save enqueued while an earlier save for the same draft was
+        // in-flight (status 'sending', so not coalesced) carries a stale null
+        // id. By the time it dispatches the first POST has reconciled the real
+        // id into the local row's metadata; reading it here turns this save into
+        // a PATCH instead of a second POST (which would duplicate the draft).
+        final serverDraftId =
+            (map['serverDraftId'] as String?) ??
+            (localId == null ? null : await _resolveServerDraftId(db, localId));
         final body = map['body'] as Map<String, dynamic>;
         if (serverDraftId == null) {
           final res = await dio.post('mail/messages/draft/', data: body);
@@ -216,6 +224,20 @@ class SyncEngine {
       metadata['server_draft_thread_id'] = serverThreadId;
     }
     await db.messageDao.setMetadataJson(localId, jsonEncode(metadata));
+  }
+
+  /// Reads the server draft id reconciled onto a local draft row by an earlier
+  /// [_storeServerDraftId]. Null until the first POST has landed.
+  Future<String?> _resolveServerDraftId(AppDatabase db, String localId) async {
+    final row = await db.messageDao.getById(localId);
+    if (row == null) return null;
+    try {
+      final metadata = jsonDecode(row.metadataJson) as Map<String, dynamic>;
+      final value = metadata['server_draft_id'] as String?;
+      return (value != null && value.isNotEmpty) ? value : null;
+    } catch (_) {
+      return null;
+    }
   }
 
   Duration _backoff(int attempt) {
