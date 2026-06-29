@@ -32,9 +32,8 @@ class OutboxBadge extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final count = ref.watch(pendingOutboxCountProvider).valueOrNull ?? 0;
-    final deadLetterCount =
-        ref.watch(deadLetterOutboxCountProvider).valueOrNull ?? 0;
+    final count = ref.watch(pendingOutboxCountProvider).value ?? 0;
+    final deadLetterCount = ref.watch(deadLetterOutboxCountProvider).value ?? 0;
 
     if (count == 0 && deadLetterCount == 0) return child;
 
