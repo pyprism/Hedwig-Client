@@ -58,6 +58,9 @@ class AuthController extends _$AuthController {
       final user = await ref
           .read(authRepositoryProvider)
           .login(baseUrl: baseUrl, username: username, password: password);
+      // Seed the cache so an offline restart (token present, getMe unreachable)
+      // can still recognize this user instead of falling back to unauthenticated.
+      await ref.read(userCacheProvider).save(user);
       if (user.mustChangePassword) {
         return AuthState.mustChangePassword(user: user);
       }
@@ -83,6 +86,7 @@ class AuthController extends _$AuthController {
             password: password,
             displayName: displayName,
           );
+      await ref.read(userCacheProvider).save(user);
       if (user.mustChangePassword) {
         return AuthState.mustChangePassword(user: user);
       }

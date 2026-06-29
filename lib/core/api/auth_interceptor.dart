@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hedwig_client/core/storage/secure_storage.dart';
+import 'package:hedwig_client/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'auth_interceptor.g.dart';
@@ -116,8 +117,11 @@ class AuthInterceptor extends Interceptor {
 
   Future<void> _logout() async {
     await _ref.read(tokenStorageProvider).clearTokens();
-    // Auth state is reactively derived from token presence;
-    // clearing tokens causes the router guard to redirect to /login.
+    // authControllerProvider is keep-alive and reads the token once in build();
+    // clearing tokens alone won't change its state. Invalidate so build() re-runs,
+    // finds no access token, and emits unauthenticated — the router guard then
+    // redirects to /login instead of leaving the user stranded on failing calls.
+    _ref.invalidate(authControllerProvider);
   }
 
   bool _isAuthEndpoint(String path) {
