@@ -1,5 +1,5 @@
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -9,651 +9,398 @@ part of 'auth_state.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
-
 /// @nodoc
 mixin _$AuthState {
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() loading,
-    required TResult Function() unauthenticated,
-    required TResult Function(HedwigUser user) authenticated,
-    required TResult Function(HedwigUser user) mustChangePassword,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? loading,
-    TResult? Function()? unauthenticated,
-    TResult? Function(HedwigUser user)? authenticated,
-    TResult? Function(HedwigUser user)? mustChangePassword,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? loading,
-    TResult Function()? unauthenticated,
-    TResult Function(HedwigUser user)? authenticated,
-    TResult Function(HedwigUser user)? mustChangePassword,
-    required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(AuthLoading value) loading,
-    required TResult Function(Unauthenticated value) unauthenticated,
-    required TResult Function(Authenticated value) authenticated,
-    required TResult Function(MustChangePassword value) mustChangePassword,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(AuthLoading value)? loading,
-    TResult? Function(Unauthenticated value)? unauthenticated,
-    TResult? Function(Authenticated value)? authenticated,
-    TResult? Function(MustChangePassword value)? mustChangePassword,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(AuthLoading value)? loading,
-    TResult Function(Unauthenticated value)? unauthenticated,
-    TResult Function(Authenticated value)? authenticated,
-    TResult Function(MustChangePassword value)? mustChangePassword,
-    required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthState);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'AuthState()';
+}
+
+
 }
 
 /// @nodoc
-abstract class $AuthStateCopyWith<$Res> {
-  factory $AuthStateCopyWith(AuthState value, $Res Function(AuthState) then) =
-      _$AuthStateCopyWithImpl<$Res, AuthState>;
+class $AuthStateCopyWith<$Res>  {
+$AuthStateCopyWith(AuthState _, $Res Function(AuthState) __);
 }
 
-/// @nodoc
-class _$AuthStateCopyWithImpl<$Res, $Val extends AuthState>
-    implements $AuthStateCopyWith<$Res> {
-  _$AuthStateCopyWithImpl(this._value, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+/// Adds pattern-matching-related methods to [AuthState].
+extension AuthStatePatterns on AuthState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
 
-  /// Create a copy of AuthState
-  /// with the given fields replaced by the non-null parameter values.
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( AuthLoading value)?  loading,TResult Function( Unauthenticated value)?  unauthenticated,TResult Function( Authenticated value)?  authenticated,TResult Function( MustChangePassword value)?  mustChangePassword,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case AuthLoading() when loading != null:
+return loading(_that);case Unauthenticated() when unauthenticated != null:
+return unauthenticated(_that);case Authenticated() when authenticated != null:
+return authenticated(_that);case MustChangePassword() when mustChangePassword != null:
+return mustChangePassword(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( AuthLoading value)  loading,required TResult Function( Unauthenticated value)  unauthenticated,required TResult Function( Authenticated value)  authenticated,required TResult Function( MustChangePassword value)  mustChangePassword,}){
+final _that = this;
+switch (_that) {
+case AuthLoading():
+return loading(_that);case Unauthenticated():
+return unauthenticated(_that);case Authenticated():
+return authenticated(_that);case MustChangePassword():
+return mustChangePassword(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( AuthLoading value)?  loading,TResult? Function( Unauthenticated value)?  unauthenticated,TResult? Function( Authenticated value)?  authenticated,TResult? Function( MustChangePassword value)?  mustChangePassword,}){
+final _that = this;
+switch (_that) {
+case AuthLoading() when loading != null:
+return loading(_that);case Unauthenticated() when unauthenticated != null:
+return unauthenticated(_that);case Authenticated() when authenticated != null:
+return authenticated(_that);case MustChangePassword() when mustChangePassword != null:
+return mustChangePassword(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  loading,TResult Function()?  unauthenticated,TResult Function( HedwigUser user)?  authenticated,TResult Function( HedwigUser user)?  mustChangePassword,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case AuthLoading() when loading != null:
+return loading();case Unauthenticated() when unauthenticated != null:
+return unauthenticated();case Authenticated() when authenticated != null:
+return authenticated(_that.user);case MustChangePassword() when mustChangePassword != null:
+return mustChangePassword(_that.user);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  loading,required TResult Function()  unauthenticated,required TResult Function( HedwigUser user)  authenticated,required TResult Function( HedwigUser user)  mustChangePassword,}) {final _that = this;
+switch (_that) {
+case AuthLoading():
+return loading();case Unauthenticated():
+return unauthenticated();case Authenticated():
+return authenticated(_that.user);case MustChangePassword():
+return mustChangePassword(_that.user);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  loading,TResult? Function()?  unauthenticated,TResult? Function( HedwigUser user)?  authenticated,TResult? Function( HedwigUser user)?  mustChangePassword,}) {final _that = this;
+switch (_that) {
+case AuthLoading() when loading != null:
+return loading();case Unauthenticated() when unauthenticated != null:
+return unauthenticated();case Authenticated() when authenticated != null:
+return authenticated(_that.user);case MustChangePassword() when mustChangePassword != null:
+return mustChangePassword(_that.user);case _:
+  return null;
+
+}
 }
 
-/// @nodoc
-abstract class _$$AuthLoadingImplCopyWith<$Res> {
-  factory _$$AuthLoadingImplCopyWith(
-    _$AuthLoadingImpl value,
-    $Res Function(_$AuthLoadingImpl) then,
-  ) = __$$AuthLoadingImplCopyWithImpl<$Res>;
-}
-
-/// @nodoc
-class __$$AuthLoadingImplCopyWithImpl<$Res>
-    extends _$AuthStateCopyWithImpl<$Res, _$AuthLoadingImpl>
-    implements _$$AuthLoadingImplCopyWith<$Res> {
-  __$$AuthLoadingImplCopyWithImpl(
-    _$AuthLoadingImpl _value,
-    $Res Function(_$AuthLoadingImpl) _then,
-  ) : super(_value, _then);
-
-  /// Create a copy of AuthState
-  /// with the given fields replaced by the non-null parameter values.
-}
-
-/// @nodoc
-
-class _$AuthLoadingImpl implements AuthLoading {
-  const _$AuthLoadingImpl();
-
-  @override
-  String toString() {
-    return 'AuthState.loading()';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType && other is _$AuthLoadingImpl);
-  }
-
-  @override
-  int get hashCode => runtimeType.hashCode;
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() loading,
-    required TResult Function() unauthenticated,
-    required TResult Function(HedwigUser user) authenticated,
-    required TResult Function(HedwigUser user) mustChangePassword,
-  }) {
-    return loading();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? loading,
-    TResult? Function()? unauthenticated,
-    TResult? Function(HedwigUser user)? authenticated,
-    TResult? Function(HedwigUser user)? mustChangePassword,
-  }) {
-    return loading?.call();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? loading,
-    TResult Function()? unauthenticated,
-    TResult Function(HedwigUser user)? authenticated,
-    TResult Function(HedwigUser user)? mustChangePassword,
-    required TResult orElse(),
-  }) {
-    if (loading != null) {
-      return loading();
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(AuthLoading value) loading,
-    required TResult Function(Unauthenticated value) unauthenticated,
-    required TResult Function(Authenticated value) authenticated,
-    required TResult Function(MustChangePassword value) mustChangePassword,
-  }) {
-    return loading(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(AuthLoading value)? loading,
-    TResult? Function(Unauthenticated value)? unauthenticated,
-    TResult? Function(Authenticated value)? authenticated,
-    TResult? Function(MustChangePassword value)? mustChangePassword,
-  }) {
-    return loading?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(AuthLoading value)? loading,
-    TResult Function(Unauthenticated value)? unauthenticated,
-    TResult Function(Authenticated value)? authenticated,
-    TResult Function(MustChangePassword value)? mustChangePassword,
-    required TResult orElse(),
-  }) {
-    if (loading != null) {
-      return loading(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class AuthLoading implements AuthState {
-  const factory AuthLoading() = _$AuthLoadingImpl;
-}
-
-/// @nodoc
-abstract class _$$UnauthenticatedImplCopyWith<$Res> {
-  factory _$$UnauthenticatedImplCopyWith(
-    _$UnauthenticatedImpl value,
-    $Res Function(_$UnauthenticatedImpl) then,
-  ) = __$$UnauthenticatedImplCopyWithImpl<$Res>;
-}
-
-/// @nodoc
-class __$$UnauthenticatedImplCopyWithImpl<$Res>
-    extends _$AuthStateCopyWithImpl<$Res, _$UnauthenticatedImpl>
-    implements _$$UnauthenticatedImplCopyWith<$Res> {
-  __$$UnauthenticatedImplCopyWithImpl(
-    _$UnauthenticatedImpl _value,
-    $Res Function(_$UnauthenticatedImpl) _then,
-  ) : super(_value, _then);
-
-  /// Create a copy of AuthState
-  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 
-class _$UnauthenticatedImpl implements Unauthenticated {
-  const _$UnauthenticatedImpl();
 
-  @override
-  String toString() {
-    return 'AuthState.unauthenticated()';
-  }
+class AuthLoading implements AuthState {
+  const AuthLoading();
+  
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType && other is _$UnauthenticatedImpl);
-  }
 
-  @override
-  int get hashCode => runtimeType.hashCode;
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() loading,
-    required TResult Function() unauthenticated,
-    required TResult Function(HedwigUser user) authenticated,
-    required TResult Function(HedwigUser user) mustChangePassword,
-  }) {
-    return unauthenticated();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? loading,
-    TResult? Function()? unauthenticated,
-    TResult? Function(HedwigUser user)? authenticated,
-    TResult? Function(HedwigUser user)? mustChangePassword,
-  }) {
-    return unauthenticated?.call();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? loading,
-    TResult Function()? unauthenticated,
-    TResult Function(HedwigUser user)? authenticated,
-    TResult Function(HedwigUser user)? mustChangePassword,
-    required TResult orElse(),
-  }) {
-    if (unauthenticated != null) {
-      return unauthenticated();
-    }
-    return orElse();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(AuthLoading value) loading,
-    required TResult Function(Unauthenticated value) unauthenticated,
-    required TResult Function(Authenticated value) authenticated,
-    required TResult Function(MustChangePassword value) mustChangePassword,
-  }) {
-    return unauthenticated(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(AuthLoading value)? loading,
-    TResult? Function(Unauthenticated value)? unauthenticated,
-    TResult? Function(Authenticated value)? authenticated,
-    TResult? Function(MustChangePassword value)? mustChangePassword,
-  }) {
-    return unauthenticated?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(AuthLoading value)? loading,
-    TResult Function(Unauthenticated value)? unauthenticated,
-    TResult Function(Authenticated value)? authenticated,
-    TResult Function(MustChangePassword value)? mustChangePassword,
-    required TResult orElse(),
-  }) {
-    if (unauthenticated != null) {
-      return unauthenticated(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthLoading);
 }
 
-abstract class Unauthenticated implements AuthState {
-  const factory Unauthenticated() = _$UnauthenticatedImpl;
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'AuthState.loading()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class Unauthenticated implements AuthState {
+  const Unauthenticated();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Unauthenticated);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'AuthState.unauthenticated()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class Authenticated implements AuthState {
+  const Authenticated({required this.user});
+  
+
+ final  HedwigUser user;
+
+/// Create a copy of AuthState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$AuthenticatedCopyWith<Authenticated> get copyWith => _$AuthenticatedCopyWithImpl<Authenticated>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Authenticated&&(identical(other.user, user) || other.user == user));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,user);
+
+@override
+String toString() {
+  return 'AuthState.authenticated(user: $user)';
+}
+
+
 }
 
 /// @nodoc
-abstract class _$$AuthenticatedImplCopyWith<$Res> {
-  factory _$$AuthenticatedImplCopyWith(
-    _$AuthenticatedImpl value,
-    $Res Function(_$AuthenticatedImpl) then,
-  ) = __$$AuthenticatedImplCopyWithImpl<$Res>;
-  @useResult
-  $Res call({HedwigUser user});
+abstract mixin class $AuthenticatedCopyWith<$Res> implements $AuthStateCopyWith<$Res> {
+  factory $AuthenticatedCopyWith(Authenticated value, $Res Function(Authenticated) _then) = _$AuthenticatedCopyWithImpl;
+@useResult
+$Res call({
+ HedwigUser user
+});
 
-  $HedwigUserCopyWith<$Res> get user;
+
+$HedwigUserCopyWith<$Res> get user;
+
+}
+/// @nodoc
+class _$AuthenticatedCopyWithImpl<$Res>
+    implements $AuthenticatedCopyWith<$Res> {
+  _$AuthenticatedCopyWithImpl(this._self, this._then);
+
+  final Authenticated _self;
+  final $Res Function(Authenticated) _then;
+
+/// Create a copy of AuthState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? user = null,}) {
+  return _then(Authenticated(
+user: null == user ? _self.user : user // ignore: cast_nullable_to_non_nullable
+as HedwigUser,
+  ));
 }
 
-/// @nodoc
-class __$$AuthenticatedImplCopyWithImpl<$Res>
-    extends _$AuthStateCopyWithImpl<$Res, _$AuthenticatedImpl>
-    implements _$$AuthenticatedImplCopyWith<$Res> {
-  __$$AuthenticatedImplCopyWithImpl(
-    _$AuthenticatedImpl _value,
-    $Res Function(_$AuthenticatedImpl) _then,
-  ) : super(_value, _then);
-
-  /// Create a copy of AuthState
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({Object? user = null}) {
-    return _then(
-      _$AuthenticatedImpl(
-        user: null == user
-            ? _value.user
-            : user // ignore: cast_nullable_to_non_nullable
-                  as HedwigUser,
-      ),
-    );
-  }
-
-  /// Create a copy of AuthState
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $HedwigUserCopyWith<$Res> get user {
-    return $HedwigUserCopyWith<$Res>(_value.user, (value) {
-      return _then(_value.copyWith(user: value));
-    });
-  }
+/// Create a copy of AuthState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$HedwigUserCopyWith<$Res> get user {
+  
+  return $HedwigUserCopyWith<$Res>(_self.user, (value) {
+    return _then(_self.copyWith(user: value));
+  });
+}
 }
 
 /// @nodoc
 
-class _$AuthenticatedImpl implements Authenticated {
-  const _$AuthenticatedImpl({required this.user});
 
-  @override
-  final HedwigUser user;
+class MustChangePassword implements AuthState {
+  const MustChangePassword({required this.user});
+  
 
-  @override
-  String toString() {
-    return 'AuthState.authenticated(user: $user)';
-  }
+ final  HedwigUser user;
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$AuthenticatedImpl &&
-            (identical(other.user, user) || other.user == user));
-  }
+/// Create a copy of AuthState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$MustChangePasswordCopyWith<MustChangePassword> get copyWith => _$MustChangePasswordCopyWithImpl<MustChangePassword>(this, _$identity);
 
-  @override
-  int get hashCode => Object.hash(runtimeType, user);
 
-  /// Create a copy of AuthState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$AuthenticatedImplCopyWith<_$AuthenticatedImpl> get copyWith =>
-      __$$AuthenticatedImplCopyWithImpl<_$AuthenticatedImpl>(this, _$identity);
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() loading,
-    required TResult Function() unauthenticated,
-    required TResult Function(HedwigUser user) authenticated,
-    required TResult Function(HedwigUser user) mustChangePassword,
-  }) {
-    return authenticated(user);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? loading,
-    TResult? Function()? unauthenticated,
-    TResult? Function(HedwigUser user)? authenticated,
-    TResult? Function(HedwigUser user)? mustChangePassword,
-  }) {
-    return authenticated?.call(user);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? loading,
-    TResult Function()? unauthenticated,
-    TResult Function(HedwigUser user)? authenticated,
-    TResult Function(HedwigUser user)? mustChangePassword,
-    required TResult orElse(),
-  }) {
-    if (authenticated != null) {
-      return authenticated(user);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(AuthLoading value) loading,
-    required TResult Function(Unauthenticated value) unauthenticated,
-    required TResult Function(Authenticated value) authenticated,
-    required TResult Function(MustChangePassword value) mustChangePassword,
-  }) {
-    return authenticated(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(AuthLoading value)? loading,
-    TResult? Function(Unauthenticated value)? unauthenticated,
-    TResult? Function(Authenticated value)? authenticated,
-    TResult? Function(MustChangePassword value)? mustChangePassword,
-  }) {
-    return authenticated?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(AuthLoading value)? loading,
-    TResult Function(Unauthenticated value)? unauthenticated,
-    TResult Function(Authenticated value)? authenticated,
-    TResult Function(MustChangePassword value)? mustChangePassword,
-    required TResult orElse(),
-  }) {
-    if (authenticated != null) {
-      return authenticated(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MustChangePassword&&(identical(other.user, user) || other.user == user));
 }
 
-abstract class Authenticated implements AuthState {
-  const factory Authenticated({required final HedwigUser user}) =
-      _$AuthenticatedImpl;
 
-  HedwigUser get user;
+@override
+int get hashCode => Object.hash(runtimeType,user);
 
-  /// Create a copy of AuthState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$AuthenticatedImplCopyWith<_$AuthenticatedImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+@override
+String toString() {
+  return 'AuthState.mustChangePassword(user: $user)';
+}
+
+
 }
 
 /// @nodoc
-abstract class _$$MustChangePasswordImplCopyWith<$Res> {
-  factory _$$MustChangePasswordImplCopyWith(
-    _$MustChangePasswordImpl value,
-    $Res Function(_$MustChangePasswordImpl) then,
-  ) = __$$MustChangePasswordImplCopyWithImpl<$Res>;
-  @useResult
-  $Res call({HedwigUser user});
+abstract mixin class $MustChangePasswordCopyWith<$Res> implements $AuthStateCopyWith<$Res> {
+  factory $MustChangePasswordCopyWith(MustChangePassword value, $Res Function(MustChangePassword) _then) = _$MustChangePasswordCopyWithImpl;
+@useResult
+$Res call({
+ HedwigUser user
+});
 
-  $HedwigUserCopyWith<$Res> get user;
+
+$HedwigUserCopyWith<$Res> get user;
+
 }
-
 /// @nodoc
-class __$$MustChangePasswordImplCopyWithImpl<$Res>
-    extends _$AuthStateCopyWithImpl<$Res, _$MustChangePasswordImpl>
-    implements _$$MustChangePasswordImplCopyWith<$Res> {
-  __$$MustChangePasswordImplCopyWithImpl(
-    _$MustChangePasswordImpl _value,
-    $Res Function(_$MustChangePasswordImpl) _then,
-  ) : super(_value, _then);
+class _$MustChangePasswordCopyWithImpl<$Res>
+    implements $MustChangePasswordCopyWith<$Res> {
+  _$MustChangePasswordCopyWithImpl(this._self, this._then);
 
-  /// Create a copy of AuthState
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({Object? user = null}) {
-    return _then(
-      _$MustChangePasswordImpl(
-        user: null == user
-            ? _value.user
-            : user // ignore: cast_nullable_to_non_nullable
-                  as HedwigUser,
-      ),
-    );
-  }
+  final MustChangePassword _self;
+  final $Res Function(MustChangePassword) _then;
 
-  /// Create a copy of AuthState
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $HedwigUserCopyWith<$Res> get user {
-    return $HedwigUserCopyWith<$Res>(_value.user, (value) {
-      return _then(_value.copyWith(user: value));
-    });
-  }
+/// Create a copy of AuthState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? user = null,}) {
+  return _then(MustChangePassword(
+user: null == user ? _self.user : user // ignore: cast_nullable_to_non_nullable
+as HedwigUser,
+  ));
 }
 
-/// @nodoc
-
-class _$MustChangePasswordImpl implements MustChangePassword {
-  const _$MustChangePasswordImpl({required this.user});
-
-  @override
-  final HedwigUser user;
-
-  @override
-  String toString() {
-    return 'AuthState.mustChangePassword(user: $user)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$MustChangePasswordImpl &&
-            (identical(other.user, user) || other.user == user));
-  }
-
-  @override
-  int get hashCode => Object.hash(runtimeType, user);
-
-  /// Create a copy of AuthState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$MustChangePasswordImplCopyWith<_$MustChangePasswordImpl> get copyWith =>
-      __$$MustChangePasswordImplCopyWithImpl<_$MustChangePasswordImpl>(
-        this,
-        _$identity,
-      );
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() loading,
-    required TResult Function() unauthenticated,
-    required TResult Function(HedwigUser user) authenticated,
-    required TResult Function(HedwigUser user) mustChangePassword,
-  }) {
-    return mustChangePassword(user);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? loading,
-    TResult? Function()? unauthenticated,
-    TResult? Function(HedwigUser user)? authenticated,
-    TResult? Function(HedwigUser user)? mustChangePassword,
-  }) {
-    return mustChangePassword?.call(user);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? loading,
-    TResult Function()? unauthenticated,
-    TResult Function(HedwigUser user)? authenticated,
-    TResult Function(HedwigUser user)? mustChangePassword,
-    required TResult orElse(),
-  }) {
-    if (mustChangePassword != null) {
-      return mustChangePassword(user);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(AuthLoading value) loading,
-    required TResult Function(Unauthenticated value) unauthenticated,
-    required TResult Function(Authenticated value) authenticated,
-    required TResult Function(MustChangePassword value) mustChangePassword,
-  }) {
-    return mustChangePassword(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(AuthLoading value)? loading,
-    TResult? Function(Unauthenticated value)? unauthenticated,
-    TResult? Function(Authenticated value)? authenticated,
-    TResult? Function(MustChangePassword value)? mustChangePassword,
-  }) {
-    return mustChangePassword?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(AuthLoading value)? loading,
-    TResult Function(Unauthenticated value)? unauthenticated,
-    TResult Function(Authenticated value)? authenticated,
-    TResult Function(MustChangePassword value)? mustChangePassword,
-    required TResult orElse(),
-  }) {
-    if (mustChangePassword != null) {
-      return mustChangePassword(this);
-    }
-    return orElse();
-  }
+/// Create a copy of AuthState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$HedwigUserCopyWith<$Res> get user {
+  
+  return $HedwigUserCopyWith<$Res>(_self.user, (value) {
+    return _then(_self.copyWith(user: value));
+  });
+}
 }
 
-abstract class MustChangePassword implements AuthState {
-  const factory MustChangePassword({required final HedwigUser user}) =
-      _$MustChangePasswordImpl;
-
-  HedwigUser get user;
-
-  /// Create a copy of AuthState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$MustChangePasswordImplCopyWith<_$MustChangePasswordImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
+// dart format on
