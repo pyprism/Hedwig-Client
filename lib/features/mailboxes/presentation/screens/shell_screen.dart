@@ -266,8 +266,7 @@ class _DrawerContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final labels =
-        ref.watch(labelListProvider(selectedMailbox.id)).valueOrNull ?? [];
+    final labels = ref.watch(labelListProvider(selectedMailbox.id)).value ?? [];
     final counts = _watchLiveThreadCounts(ref, selectedMailbox.id);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -367,7 +366,7 @@ ThreadCounts? _watchLiveThreadCounts(WidgetRef ref, String mailboxId) {
   ref.listen(_countRefreshTickProvider(mailboxId), (_, _) {
     ref.invalidate(threadCountsProvider(mailboxId));
   });
-  return ref.watch(threadCountsProvider(mailboxId)).valueOrNull;
+  return ref.watch(threadCountsProvider(mailboxId)).value;
 }
 
 class _CountBadge extends StatelessWidget {

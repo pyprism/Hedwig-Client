@@ -63,7 +63,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeControllerProvider);
     final density = ref.watch(messageDensityProvider);
-    final authState = ref.watch(authControllerProvider).valueOrNull;
+    final authState = ref.watch(authControllerProvider).value;
     final user = switch (authState) {
       Authenticated(:final user) => user,
       MustChangePassword(:final user) => user,
