@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hedwig_client/core/storage/prefs_storage.dart';
 import 'package:hedwig_client/shared/models/user.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';

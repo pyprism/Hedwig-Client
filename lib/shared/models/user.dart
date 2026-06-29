@@ -4,7 +4,7 @@ part 'user.freezed.dart';
 part 'user.g.dart';
 
 @freezed
-class HedwigUser with _$HedwigUser {
+abstract class HedwigUser with _$HedwigUser {
   const factory HedwigUser({
     required String id,
     required String username,

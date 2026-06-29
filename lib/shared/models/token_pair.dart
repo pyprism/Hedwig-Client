@@ -4,7 +4,7 @@ part 'token_pair.freezed.dart';
 part 'token_pair.g.dart';
 
 @freezed
-class TokenPair with _$TokenPair {
+abstract class TokenPair with _$TokenPair {
   const factory TokenPair({required String access, required String refresh}) =
       _TokenPair;
 
