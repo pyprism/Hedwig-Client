@@ -1,5 +1,4 @@
 import 'package:drift/drift.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hedwig_client/core/api/dio_client.dart';
 import 'package:hedwig_client/core/db/app_database.dart';
 import 'package:hedwig_client/features/contacts/data/datasources/contact_remote_datasource.dart';
