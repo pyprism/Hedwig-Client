@@ -42,3 +42,10 @@ flutter build linux      # Linux
   push/PR to `master`.
 - `.github/workflows/release.yml` — on a published GitHub Release, builds
   binaries for all platforms and uploads them to that release.
+
+## Icon Credit
+Hedwig icons created by Freepik - Flaticon
+[https://www.flaticon.com/free-icon/potter_13717556](https://www.flaticon.com/free-icon/potter_13717556)
+
+## License
+MIT
