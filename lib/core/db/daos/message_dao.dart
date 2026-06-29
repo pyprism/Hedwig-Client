@@ -56,6 +56,23 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
     });
   }
 
+  /// Locally-authored drafts (id `draft-%`) for a mailbox. Their metadata may
+  /// carry a `server_draft_thread_id` used to dedupe the same draft when it is
+  /// also fetched from the server (cross-device).
+  Future<List<MessageRow>> getLocalDraftMessages(String mailboxId) =>
+      (select(messages)..where(
+            (m) =>
+                m.mailboxId.equals(mailboxId) &
+                m.status.equals('draft') &
+                m.id.like('draft-%'),
+          ))
+          .get();
+
+  Future<void> setMetadataJson(String id, String metadataJson) =>
+      (update(messages)..where((m) => m.id.equals(id))).write(
+        MessagesCompanion(metadataJson: Value(metadataJson)),
+      );
+
   Future<void> updateState(
     String id, {
     bool? isRead,

@@ -9,9 +9,9 @@ class OutboxDao extends DatabaseAccessor<AppDatabase> with _$OutboxDaoMixin {
   OutboxDao(super.db);
 
   Stream<int> watchPendingCount() => customSelect(
-        "SELECT COUNT(*) AS c FROM outbox_entries WHERE status IN ('pending','failed')",
-        readsFrom: {outboxEntries},
-      ).watchSingle().map((row) => row.read<int>('c'));
+    "SELECT COUNT(*) AS c FROM outbox_entries WHERE status IN ('pending','failed')",
+    readsFrom: {outboxEntries},
+  ).watchSingle().map((row) => row.read<int>('c'));
 
   Stream<List<OutboxEntry>> watchPending() =>
       (select(outboxEntries)
@@ -28,13 +28,26 @@ class OutboxDao extends DatabaseAccessor<AppDatabase> with _$OutboxDaoMixin {
   Future<int> enqueue({
     required String operation,
     required String payloadJson,
-  }) =>
-      into(outboxEntries).insert(
-        OutboxEntriesCompanion.insert(
-          operation: operation,
-          payloadJson: payloadJson,
-          createdAt: DateTime.now().toUtc(),
-          updatedAt: DateTime.now().toUtc(),
+  }) => into(outboxEntries).insert(
+    OutboxEntriesCompanion.insert(
+      operation: operation,
+      payloadJson: payloadJson,
+      createdAt: DateTime.now().toUtc(),
+      updatedAt: DateTime.now().toUtc(),
+    ),
+  );
+
+  /// Overwrites a still-queued entry's payload, resetting it to a fresh
+  /// pending state. Used to coalesce repeated draft saves into one outbox op
+  /// so rapid re-saves don't create duplicate server drafts.
+  Future<void> updatePayload(int id, String payloadJson) =>
+      (update(outboxEntries)..where((e) => e.id.equals(id))).write(
+        OutboxEntriesCompanion(
+          payloadJson: Value(payloadJson),
+          status: const Value('pending'),
+          retryCount: const Value(0),
+          lastError: const Value(null),
+          updatedAt: Value(DateTime.now().toUtc()),
         ),
       );
 
@@ -71,9 +84,9 @@ class OutboxDao extends DatabaseAccessor<AppDatabase> with _$OutboxDaoMixin {
       );
 
   Stream<int> watchDeadLetterCount() => customSelect(
-        "SELECT COUNT(*) AS c FROM outbox_entries WHERE status = 'dead_letter'",
-        readsFrom: {outboxEntries},
-      ).watchSingle().map((row) => row.read<int>('c'));
+    "SELECT COUNT(*) AS c FROM outbox_entries WHERE status = 'dead_letter'",
+    readsFrom: {outboxEntries},
+  ).watchSingle().map((row) => row.read<int>('c'));
 
   Stream<List<OutboxEntry>> watchDeadLetter() =>
       (select(outboxEntries)

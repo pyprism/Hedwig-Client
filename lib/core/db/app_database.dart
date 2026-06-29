@@ -29,6 +29,10 @@ part 'app_database.g.dart';
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
+  /// Builds the database over a caller-supplied executor (e.g. an in-memory
+  /// `NativeDatabase.memory()`) for tests, bypassing the platform connection.
+  AppDatabase.forTesting(super.executor);
+
   @override
   int get schemaVersion => 9;
 

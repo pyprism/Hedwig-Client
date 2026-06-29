@@ -33,6 +33,17 @@ class ThreadDao extends DatabaseAccessor<AppDatabase> with _$ThreadDaoMixin {
           ))
           .get();
 
+  /// Optimistic outbound thread rows for a just-queued send (id `local-%`),
+  /// preserved across a Sent-folder refresh until the server reconciles them.
+  Future<List<ThreadRow>> getLocalSent(String mailboxId) =>
+      (select(threads)..where(
+            (t) =>
+                t.mailboxId.equals(mailboxId) &
+                t.folder.equals('sent') &
+                t.id.like('local-%'),
+          ))
+          .get();
+
   Future<void> upsertAll(List<ThreadsCompanion> rows) async {
     await batch((b) {
       b.insertAllOnConflictUpdate(threads, rows);
