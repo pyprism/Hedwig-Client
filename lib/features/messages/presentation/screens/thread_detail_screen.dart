@@ -7,12 +7,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hedwig_client/core/api/error_interceptor.dart';
+import 'package:hedwig_client/core/error/failure.dart';
 import 'package:hedwig_client/core/widgets/empty_state.dart';
 import 'package:hedwig_client/core/widgets/error_display.dart';
 import 'package:hedwig_client/core/widgets/loading_widget.dart';
 import 'package:hedwig_client/features/labels/data/repositories/label_repository.dart';
 import 'package:hedwig_client/features/labels/presentation/controllers/label_controller.dart';
 import 'package:hedwig_client/features/messages/data/repositories/message_repository.dart';
+import 'package:hedwig_client/features/messages/presentation/controllers/compose_controller.dart';
 import 'package:hedwig_client/features/messages/presentation/controllers/message_controller.dart';
 import 'package:hedwig_client/shared/models/label.dart';
 import 'package:hedwig_client/shared/models/message.dart';
@@ -622,13 +624,31 @@ class _ActionBar extends ConsumerWidget {
       message.status == 'queued' &&
       !message.id.startsWith('local-');
 
+  bool get _isDraft => message.status == 'draft' || message.folder == 'drafts';
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
       child: Row(
         children: [
-          if (_isCancellableSend) ...[
+          if (_isDraft) ...[
+            Wrap(
+              spacing: 4,
+              children: [
+                FilledButton.icon(
+                  icon: const Icon(Icons.edit_outlined),
+                  label: const Text('Edit draft'),
+                  onPressed: () => context.push('/compose?draft=${message.id}'),
+                ),
+                TextButton.icon(
+                  icon: const Icon(Icons.send),
+                  label: const Text('Send now'),
+                  onPressed: () => _sendDraftNow(context, ref),
+                ),
+              ],
+            ),
+          ] else if (_isCancellableSend) ...[
             if (message.scheduledAt != null)
               Padding(
                 padding: const EdgeInsets.only(right: 8),
@@ -699,6 +719,14 @@ class _ActionBar extends ConsumerWidget {
                 unawaited(
                   context.push('/compose?reply=${message.id}&mode=forward'),
                 );
+                return;
+              }
+              if (action == 'edit_draft') {
+                unawaited(context.push('/compose?draft=${message.id}'));
+                return;
+              }
+              if (action == 'send_draft') {
+                await _sendDraftNow(context, ref);
                 return;
               }
               if (action == 'copy_body') {
@@ -783,6 +811,16 @@ class _ActionBar extends ConsumerWidget {
                   value: 'edit_failed',
                   child: Text('Edit and resend'),
                 ),
+              if (_isDraft) ...[
+                const PopupMenuItem(
+                  value: 'edit_draft',
+                  child: Text('Edit draft'),
+                ),
+                const PopupMenuItem(
+                  value: 'send_draft',
+                  child: Text('Send draft now'),
+                ),
+              ],
               const PopupMenuItem(
                 value: 'copy_body',
                 child: Text('Copy message body'),
@@ -860,6 +898,72 @@ class _ActionBar extends ConsumerWidget {
     } else {
       await actions.applyToMessage(messageId: message.id, labelId: labelId);
     }
+  }
+
+  Future<void> _sendDraftNow(BuildContext context, WidgetRef ref) async {
+    if (message.toAddresses.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Add at least one recipient.')),
+      );
+      return;
+    }
+    if ((message.bodyText ?? '').trim().isEmpty &&
+        (message.bodyHtml ?? '').trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Draft needs a message body.')),
+      );
+      return;
+    }
+
+    final attachments = _draftAttachments(message);
+    final metadata = message.metadata;
+    final composeController = ref.read(composeControllerProvider.notifier);
+    await composeController.send(
+      SendMessageRequest(
+        mailboxId: message.mailboxId,
+        senderIdentityId: metadata['sender_identity_id'] as String?,
+        to: message.toAddresses,
+        cc: message.ccAddresses,
+        bcc: message.bccAddresses,
+        subject: message.subject,
+        bodyText: message.bodyText,
+        bodyHtml: message.bodyHtml,
+        replyToMessageId: metadata['reply_to_message_id'] as String?,
+        scheduledAt: message.scheduledAt,
+      ),
+      attachments: attachments,
+    );
+
+    final result = ref.read(composeControllerProvider);
+    if (result.hasError) {
+      if (!context.mounted) return;
+      final error = result.error;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            error is ApiException ? error.failure.userMessage : '$error',
+          ),
+        ),
+      );
+      return;
+    }
+
+    await composeController.deleteDraft(message.id);
+    ref.invalidate(threadMessagesProvider(message.threadId ?? message.id));
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Draft queued. Sending shortly.')),
+    );
+  }
+
+  List<ComposeAttachmentRequest> _draftAttachments(MailMessage message) {
+    final rows = message.metadata['compose_attachments'] as List? ?? [];
+    return rows
+        .whereType<Map>()
+        .map((row) => Map<String, dynamic>.from(row))
+        .map(ComposeAttachmentRequest.fromDraftJson)
+        .where((attachment) => attachment.content.isNotEmpty)
+        .toList();
   }
 
   Future<void> _permanentDelete(BuildContext context, WidgetRef ref) async {

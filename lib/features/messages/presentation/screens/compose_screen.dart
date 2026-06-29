@@ -23,6 +23,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 const _maxAttachments = 10;
 const _maxAttachmentBytes = 10 * 1024 * 1024;
+// Provider recipient cap (to+cc+bcc) and subject length, mirroring docs/api.md.
+const _maxRecipients = 50;
+const _maxSubjectChars = 998;
 
 class _SendIntent extends Intent {
   const _SendIntent();
@@ -101,6 +104,7 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
   Future<List<_SenderIdentity>>? _senderIdentitiesFuture;
   String? _error;
   DateTime? _scheduledAt;
+  String? _composeMailboxId;
   String? _savedDraftMessageId;
   String? _draftReplyToMessageId;
 
@@ -151,29 +155,42 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
       ? _htmlSourceCtrl.text.trim()
       : emailHtmlFromDocument(_bodyController.document);
 
+  String? get _effectiveMailboxId =>
+      _composeMailboxId ??
+      ref.read(selectedMailboxProvider) ??
+      // Compose can be reached via a deep link or web refresh before any
+      // mailbox has been selected (the /compose route carries no mailbox), so
+      // fall back to the first available mailbox like the shell does.
+      ref.read(mailboxListProvider).valueOrNull?.firstOrNull?.id;
+
   Future<void> _saveDraft() async {
     if (!_draftLoaded) return;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-      _draftKey,
-      jsonEncode({
-        'to': _toChips,
-        'cc': _ccChips,
-        'bcc': _bccChips,
-        'subject': _subjectCtrl.text,
-        'body': _bodyHtml,
-        'body_delta': _htmlSourceMode
-            ? null
-            : _bodyController.document.toDelta().toJson(),
-        'compose_html': true,
-        'html_source_mode': _htmlSourceMode,
-        'sender_identity_id': _selectedSenderIdentityId,
-        'reply_to_message_id':
-            widget.replyToMessageId ?? _draftReplyToMessageId,
-        'scheduled_at': _scheduledAt?.toIso8601String(),
-        'attachments': _attachments.map((a) => a.toDraftJson()).toList(),
-      }),
-    );
+    try {
+      await prefs.setString(
+        _draftKey,
+        jsonEncode({
+          'to': _toChips,
+          'cc': _ccChips,
+          'bcc': _bccChips,
+          'subject': _subjectCtrl.text,
+          'body': _bodyHtml,
+          'body_delta': _htmlSourceMode
+              ? null
+              : _bodyController.document.toDelta().toJson(),
+          'compose_html': true,
+          'html_source_mode': _htmlSourceMode,
+          'sender_identity_id': _selectedSenderIdentityId,
+          'reply_to_message_id':
+              widget.replyToMessageId ?? _draftReplyToMessageId,
+          'scheduled_at': _scheduledAt?.toIso8601String(),
+          'attachments': _attachments.map((a) => a.toDraftJson()).toList(),
+        }),
+      );
+    } catch (_) {
+      // Browser localStorage can reject large base64 attachments. The explicit
+      // mailbox draft save uses Drift/IndexedDB and remains the source of truth.
+    }
   }
 
   Future<void> _loadDraftAndPrefill() async {
@@ -298,7 +315,6 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
   Future<List<_SenderIdentity>> _senderIdentitiesFor(String mailboxId) {
     if (_senderIdentityMailboxId != mailboxId) {
       _senderIdentityMailboxId = mailboxId;
-      _selectedSenderIdentityId = null;
       _senderIdentitiesFuture = _loadSenderIdentities(mailboxId);
     }
     return _senderIdentitiesFuture!;
@@ -532,7 +548,7 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
       return;
     }
 
-    final mailboxId = ref.read(selectedMailboxProvider);
+    final mailboxId = _effectiveMailboxId;
     if (mailboxId == null) {
       setState(() => _error = 'No mailbox selected.');
       return;
@@ -573,7 +589,16 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
       return;
     }
 
-    final mailboxId = ref.read(selectedMailboxProvider);
+    final recipientCount = _toChips.length + _ccChips.length + _bccChips.length;
+    if (recipientCount > _maxRecipients) {
+      setState(
+        () => _error =
+            'Too many recipients ($recipientCount). Limit is $_maxRecipients.',
+      );
+      return;
+    }
+
+    final mailboxId = _effectiveMailboxId;
     if (mailboxId == null) {
       setState(() => _error = 'No mailbox selected.');
       return;
@@ -584,6 +609,15 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
     final req = _composeRequest(mailboxId);
 
     final composeController = ref.read(composeControllerProvider.notifier);
+
+    // A draft loaded from another device carries reference-only attachments
+    // (no local bytes), so it can't go through the normal send path — promote
+    // it server-side via the send-draft endpoint, which uses the staged bytes.
+    if (_attachments.any((a) => a.isReference)) {
+      await _sendViaDraft(composeController, req, mailboxId);
+      return;
+    }
+
     await composeController.send(req, attachments: _attachments);
 
     final result = ref.read(composeControllerProvider);
@@ -621,10 +655,46 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
     }
   }
 
+  Future<void> _sendViaDraft(
+    ComposeController composeController,
+    SendMessageRequest req,
+    String mailboxId,
+  ) async {
+    final localDraftId = _savedDraftMessageId;
+    if (localDraftId == null) {
+      setState(() => _error = 'Draft not saved yet. Try again.');
+      return;
+    }
+    await composeController.sendDraft(
+      localDraftId: localDraftId,
+      req: req,
+      attachments: _attachments,
+    );
+    final result = ref.read(composeControllerProvider);
+    if (result.hasError && mounted) {
+      final e = result.error;
+      setState(() {
+        _error = e is ApiException ? e.failure.userMessage : e.toString();
+      });
+      return;
+    }
+    if (!mounted) return;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_draftKey);
+    ref.invalidate(threadListProvider);
+    ref.invalidate(threadCountsProvider(mailboxId));
+    if (!mounted) return;
+    context.pop();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Message queued. Sending shortly.')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isLoading = ref.watch(composeControllerProvider).isLoading;
-    final mailboxId = ref.watch(selectedMailboxProvider);
+    final selectedMailboxId = ref.watch(selectedMailboxProvider);
+    final mailboxId = _composeMailboxId ?? selectedMailboxId;
     final mailboxes = ref.watch(mailboxListProvider).valueOrNull ?? [];
     final selectedMailbox = mailboxes
         .where((mailbox) => mailbox.id == mailboxId)
@@ -858,6 +928,15 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
                 const Divider(),
                 TextFormField(
                   controller: _subjectCtrl,
+                  maxLength: _maxSubjectChars,
+                  // Hide the per-field counter; the cap just fails fast.
+                  buildCounter:
+                      (
+                        _, {
+                        required currentLength,
+                        required isFocused,
+                        maxLength,
+                      }) => null,
                   decoration: const InputDecoration(
                     labelText: 'Subject',
                     border: InputBorder.none,
@@ -982,38 +1061,46 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
   }
 
   Future<bool> _loadSavedDraft(String draftId) async {
-    final row = await ref
-        .read(messageRepositoryProvider)
-        .db
-        .messageDao
-        .getById(draftId);
+    final messageDao = ref.read(messageRepositoryProvider).db.messageDao;
+    var row = await messageDao.getById(draftId);
+    if (row == null) {
+      // No local copy — this is a draft authored on another device, reached via
+      // its server thread id. Fetch and cache it, then load that cached row.
+      final cached = await ref
+          .read(composeControllerProvider.notifier)
+          .cacheRemoteDraft(draftId);
+      if (!mounted) return true;
+      if (cached) row = await messageDao.getById(draftId);
+    }
     if (!mounted) return true;
-    if (row == null || row.status != 'draft') {
+    final draftRow = row;
+    if (draftRow == null || draftRow.status != 'draft') {
       setState(() => _draftLoaded = true);
       return false;
     }
 
     Map<String, dynamic> metadata;
     try {
-      metadata = jsonDecode(row.metadataJson) as Map<String, dynamic>;
+      metadata = jsonDecode(draftRow.metadataJson) as Map<String, dynamic>;
     } catch (_) {
       metadata = {};
     }
 
     setState(() {
-      _savedDraftMessageId = row.id;
+      _savedDraftMessageId = draftRow.id;
+      _composeMailboxId = draftRow.mailboxId;
       _applyDraftData({
-        'to': _decodeDraftEmailList(row.toAddressesJson),
-        'cc': _decodeDraftEmailList(row.ccAddressesJson),
-        'bcc': _decodeDraftEmailList(row.bccAddressesJson),
-        'subject': row.subject,
-        'body': row.bodyHtml ?? row.bodyText ?? '',
+        'to': _decodeDraftEmailList(draftRow.toAddressesJson),
+        'cc': _decodeDraftEmailList(draftRow.ccAddressesJson),
+        'bcc': _decodeDraftEmailList(draftRow.bccAddressesJson),
+        'subject': draftRow.subject,
+        'body': draftRow.bodyHtml ?? draftRow.bodyText ?? '',
         'body_delta': metadata['body_delta'],
-        'compose_html': row.bodyHtml != null,
+        'compose_html': draftRow.bodyHtml != null,
         'html_source_mode': metadata['html_source_mode'] as bool? ?? false,
         'sender_identity_id': metadata['sender_identity_id'],
         'reply_to_message_id': metadata['reply_to_message_id'],
-        'scheduled_at': row.scheduledAt?.toIso8601String(),
+        'scheduled_at': draftRow.scheduledAt?.toIso8601String(),
         'attachments': metadata['compose_attachments'],
       });
     });
