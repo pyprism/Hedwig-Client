@@ -112,6 +112,10 @@ class SyncEngine {
           await db.messageDao.upsertAll([messageToRow(msg)]);
           if (localId != null) {
             await db.messageDao.deleteById(localId);
+            // Drop the optimistic thread row created for a new composition; the
+            // reconciled server message carries the real thread.
+            await db.threadDao.deleteByIdFolder(localId, 'sent');
+            await db.threadDao.deleteByIdFolder(localId, 'scheduled');
           }
           if (!_terminalSendStatuses.contains(msg.status)) {
             unawaited(_pollSendStatus(msg.id));
@@ -125,9 +129,93 @@ class SyncEngine {
         final id = map['id'] as String;
         final body = map['body'] as Map<String, dynamic>;
         await dio.patch('mail/messages/$id/state/', data: body);
+      case 'save_draft':
+        // Payload: {"localId": "<draft row id>", "serverDraftId"?: "...",
+        //           "body": {...}}. First save POSTs and remembers the server
+        //           id; later saves PATCH that same remote draft.
+        final map = jsonDecode(entry.payloadJson) as Map<String, dynamic>;
+        final localId = map['localId'] as String?;
+        final serverDraftId = map['serverDraftId'] as String?;
+        final body = map['body'] as Map<String, dynamic>;
+        if (serverDraftId == null) {
+          final res = await dio.post('mail/messages/draft/', data: body);
+          final data = res.data as Map<String, dynamic>;
+          final newId = data['id'] as String?;
+          final threadId = data['thread'] as String?;
+          if (localId != null && newId != null) {
+            await _storeServerDraftId(dio, db, localId, newId, threadId);
+          }
+        } else {
+          await dio.patch('mail/messages/$serverDraftId/draft/', data: body);
+        }
+      case 'send_draft':
+        // Payload: {"serverDraftId": "..."}. Promotes a server draft into a
+        // queued send (reusing its staged attachments) and reconciles the
+        // resulting message into the local cache.
+        final map = jsonDecode(entry.payloadJson) as Map<String, dynamic>;
+        final serverDraftId = map['serverDraftId'] as String?;
+        if (serverDraftId != null) {
+          final res = await dio.post(
+            'mail/messages/$serverDraftId/send-draft/',
+          );
+          try {
+            final msg = MailMessage.fromJson(res.data as Map<String, dynamic>);
+            await db.messageDao.upsertAll([messageToRow(msg)]);
+            if (!_terminalSendStatuses.contains(msg.status)) {
+              unawaited(_pollSendStatus(msg.id));
+            }
+          } catch (e) {
+            debugPrint('[SyncEngine] send_draft reconcile error: $e');
+          }
+        }
+      case 'delete_draft':
+        // Payload: {"serverDraftId": "..."}
+        final map = jsonDecode(entry.payloadJson) as Map<String, dynamic>;
+        final serverDraftId = map['serverDraftId'] as String?;
+        if (serverDraftId != null) {
+          try {
+            await dio.delete('mail/messages/$serverDraftId/');
+          } on DioException catch (e) {
+            // Already gone server-side — nothing left to delete.
+            if (e.response?.statusCode != 404) rethrow;
+          }
+        }
       default:
         debugPrint('[SyncEngine] unknown operation: ${entry.operation}');
     }
+  }
+
+  /// Records the server-assigned draft id on the local draft row so later
+  /// saves PATCH it instead of creating a new one. If the local draft is
+  /// already gone (sent or discarded before this reconcile landed), the freshly
+  /// created server draft is orphaned, so delete it.
+  Future<void> _storeServerDraftId(
+    Dio dio,
+    AppDatabase db,
+    String localId,
+    String serverId,
+    String? serverThreadId,
+  ) async {
+    final row = await db.messageDao.getById(localId);
+    if (row == null) {
+      try {
+        await dio.delete('mail/messages/$serverId/');
+      } catch (_) {}
+      return;
+    }
+    Map<String, dynamic> metadata;
+    try {
+      metadata = jsonDecode(row.metadataJson) as Map<String, dynamic>;
+    } catch (_) {
+      metadata = {};
+    }
+    metadata['server_draft_id'] = serverId;
+    // The server draft's thread id lets the drafts list dedupe this local draft
+    // against the same draft fetched from the server on another device.
+    if (serverThreadId != null) {
+      metadata['server_draft_thread_id'] = serverThreadId;
+    }
+    await db.messageDao.setMetadataJson(localId, jsonEncode(metadata));
   }
 
   Duration _backoff(int attempt) {
