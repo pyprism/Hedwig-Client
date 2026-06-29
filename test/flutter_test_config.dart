@@ -1,20 +1,11 @@
 import 'dart:async';
-import 'dart:io';
 
-import 'package:golden_toolkit/golden_toolkit.dart';
+import 'package:flutter_test/flutter_test.dart';
 
-/// Global test bootstrap. Loads real fonts so golden text isn't rendered as
-/// Ahem boxes, and only asserts goldens on the platform they were generated on
-/// (macOS) — font hinting/anti-aliasing differs per OS, so CI on Linux would
-/// otherwise false-fail. Non-golden tests are unaffected.
+/// Global test bootstrap. Ensures the test binding is initialized before any
+/// test runs so code touching platform channels (e.g. connectivity) doesn't
+/// trip "Binding has not yet been initialized".
 Future<void> testExecutable(FutureOr<void> Function() testMain) async {
-  return GoldenToolkit.runWithConfiguration(
-    () async {
-      await loadAppFonts();
-      await testMain();
-    },
-    config: GoldenToolkitConfiguration(
-      skipGoldenAssertion: () => !Platform.isMacOS,
-    ),
-  );
+  TestWidgetsFlutterBinding.ensureInitialized();
+  await testMain();
 }
