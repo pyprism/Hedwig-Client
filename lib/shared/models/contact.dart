@@ -4,7 +4,7 @@ part 'contact.freezed.dart';
 part 'contact.g.dart';
 
 @freezed
-class Contact with _$Contact {
+abstract class Contact with _$Contact {
   const factory Contact({
     required String id,
     @JsonKey(name: 'mailbox') required String mailboxId,
