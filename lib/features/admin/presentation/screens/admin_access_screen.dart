@@ -29,20 +29,21 @@ class AccessGrant {
   final DateTime? expiresAt;
 
   factory AccessGrant.fromJson(Map<String, dynamic> j) => AccessGrant(
-        id: j['id'] as String,
-        username: (j['user'] as Map<String, dynamic>?)?['username'] as String? ??
-            j['user'] as String? ?? '?',
-        permission: j['permission'] as String? ?? '',
-        accessType: j['access_type'] as String? ?? '',
-        isActive: j['is_active'] as bool? ?? true,
-        mailboxEmail:
-            (j['mailbox'] as Map<String, dynamic>?)?['email_address'] as String?,
-        domainName:
-            (j['domain'] as Map<String, dynamic>?)?['name'] as String?,
-        expiresAt: j['expires_at'] == null
-            ? null
-            : DateTime.tryParse(j['expires_at'] as String),
-      );
+    id: j['id'] as String,
+    username:
+        (j['user'] as Map<String, dynamic>?)?['username'] as String? ??
+        j['user'] as String? ??
+        '?',
+    permission: j['permission'] as String? ?? '',
+    accessType: j['access_type'] as String? ?? '',
+    isActive: j['is_active'] as bool? ?? true,
+    mailboxEmail:
+        (j['mailbox'] as Map<String, dynamic>?)?['email_address'] as String?,
+    domainName: (j['domain'] as Map<String, dynamic>?)?['name'] as String?,
+    expiresAt: j['expires_at'] == null
+        ? null
+        : DateTime.tryParse(j['expires_at'] as String),
+  );
 }
 
 @riverpod
@@ -80,8 +81,7 @@ class AdminAccessScreen extends ConsumerWidget {
             itemCount: grants.length,
             itemBuilder: (context, i) {
               final g = grants[i];
-              final scope =
-                  g.mailboxEmail ?? g.domainName ?? g.accessType;
+              final scope = g.mailboxEmail ?? g.domainName ?? g.accessType;
               return ListTile(
                 leading: Icon(
                   Icons.key,
@@ -105,5 +105,6 @@ class AdminAccessScreen extends ConsumerWidget {
     );
   }
 
-  String _fmt(DateTime dt) => '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
+  String _fmt(DateTime dt) =>
+      '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
 }

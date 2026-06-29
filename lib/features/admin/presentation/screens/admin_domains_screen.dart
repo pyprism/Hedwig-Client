@@ -25,14 +25,14 @@ class AdminDomain {
   final List<Map<String, dynamic>> dnsRecordSet;
 
   factory AdminDomain.fromJson(Map<String, dynamic> j) => AdminDomain(
-        id: j['id'] as String,
-        name: j['name'] as String,
-        status: j['status'] as String? ?? 'pending',
-        outboundEnabled: j['outbound_enabled'] as bool? ?? true,
-        inboundEnabled: j['inbound_enabled'] as bool? ?? true,
-        dnsRecordSet: (j['dns_record_set'] as List? ?? [])
-            .cast<Map<String, dynamic>>(),
-      );
+    id: j['id'] as String,
+    name: j['name'] as String,
+    status: j['status'] as String? ?? 'pending',
+    outboundEnabled: j['outbound_enabled'] as bool? ?? true,
+    inboundEnabled: j['inbound_enabled'] as bool? ?? true,
+    dnsRecordSet: (j['dns_record_set'] as List? ?? [])
+        .cast<Map<String, dynamic>>(),
+  );
 }
 
 @riverpod
@@ -86,9 +86,7 @@ class AdminDomainsScreen extends ConsumerWidget {
                       child: Text('No DNS records found.'),
                     )
                   else
-                    ...d.dnsRecordSet.map(
-                      (rec) => _DnsRecordTile(record: rec),
-                    ),
+                    ...d.dnsRecordSet.map((rec) => _DnsRecordTile(record: rec)),
                 ],
               );
             },
@@ -117,16 +115,15 @@ class _DnsRecordTile extends StatelessWidget {
       ),
       title: Text(
         '${record['record_type']} ${record['host']}',
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              fontFamily: 'monospace',
-            ),
+        style: Theme.of(
+          context,
+        ).textTheme.bodySmall?.copyWith(fontFamily: 'monospace'),
       ),
       subtitle: Text(
         record['value'] as String? ?? '',
-        style: Theme.of(context)
-            .textTheme
-            .bodySmall
-            ?.copyWith(fontFamily: 'monospace'),
+        style: Theme.of(
+          context,
+        ).textTheme.bodySmall?.copyWith(fontFamily: 'monospace'),
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
       ),

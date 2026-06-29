@@ -28,16 +28,16 @@ class EmailProvider {
   final String? lastHealthCheckError;
 
   factory EmailProvider.fromJson(Map<String, dynamic> j) => EmailProvider(
-        id: j['id'] as String,
-        name: j['name'] as String,
-        providerType: j['provider_type'] as String? ?? '',
-        isActive: j['is_active'] as bool? ?? true,
-        defaultFromEmail: j['default_from_email'] as String?,
-        lastHealthCheckAt: j['last_health_check_at'] == null
-            ? null
-            : DateTime.tryParse(j['last_health_check_at'] as String),
-        lastHealthCheckError: j['last_health_check_error'] as String?,
-      );
+    id: j['id'] as String,
+    name: j['name'] as String,
+    providerType: j['provider_type'] as String? ?? '',
+    isActive: j['is_active'] as bool? ?? true,
+    defaultFromEmail: j['default_from_email'] as String?,
+    lastHealthCheckAt: j['last_health_check_at'] == null
+        ? null
+        : DateTime.tryParse(j['last_health_check_at'] as String),
+    lastHealthCheckError: j['last_health_check_error'] as String?,
+  );
 }
 
 @riverpod
@@ -45,7 +45,8 @@ Future<List<EmailProvider>> adminProviders(Ref ref) async {
   final res = await ref
       .watch(dioClientProvider)
       .get('providers/email-providers/', queryParameters: {'page_size': 100});
-  final results = (res.data['results'] as List? ?? []).cast<Map<String, dynamic>>();
+  final results = (res.data['results'] as List? ?? [])
+      .cast<Map<String, dynamic>>();
   return results.map(EmailProvider.fromJson).toList();
 }
 
@@ -83,21 +84,26 @@ class AdminProvidersScreen extends ConsumerWidget {
                   Icons.dns,
                   color: p.isActive
                       ? (healthy
-                          ? Theme.of(context).colorScheme.primary
-                          : Colors.orange)
+                            ? Theme.of(context).colorScheme.primary
+                            : Colors.orange)
                       : Theme.of(context).colorScheme.outline,
                 ),
                 title: Text(p.name),
                 subtitle: Text(
-                    '${p.providerType}${p.defaultFromEmail != null ? ' · ${p.defaultFromEmail}' : ''}'),
+                  '${p.providerType}${p.defaultFromEmail != null ? ' · ${p.defaultFromEmail}' : ''}',
+                ),
                 trailing: p.lastHealthCheckError != null
                     ? Tooltip(
                         message: p.lastHealthCheckError!,
-                        child: const Icon(Icons.warning_amber,
-                            color: Colors.orange),
+                        child: const Icon(
+                          Icons.warning_amber,
+                          color: Colors.orange,
+                        ),
                       )
-                    : const Icon(Icons.check_circle_outline,
-                        color: Colors.green),
+                    : const Icon(
+                        Icons.check_circle_outline,
+                        color: Colors.green,
+                      ),
               );
             },
           );
@@ -120,46 +126,54 @@ class AdminProvidersScreen extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
-                  controller: nameCtrl,
-                  decoration: const InputDecoration(labelText: 'Name')),
+                controller: nameCtrl,
+                decoration: const InputDecoration(labelText: 'Name'),
+              ),
               const SizedBox(height: 8),
               TextField(
-                  controller: tokenCtrl,
-                  decoration:
-                      const InputDecoration(labelText: 'Postmark server token'),
-                  obscureText: true),
+                controller: tokenCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Postmark server token',
+                ),
+                obscureText: true,
+              ),
               const SizedBox(height: 8),
               TextField(
-                  controller: fromEmailCtrl,
-                  decoration:
-                      const InputDecoration(labelText: 'Default from email')),
+                controller: fromEmailCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Default from email',
+                ),
+              ),
             ],
           ),
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Cancel')),
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
+          ),
           FilledButton(
             onPressed: () async {
               Navigator.of(ctx).pop();
               try {
-                await ref.read(dioClientProvider).post(
-                  'providers/email-providers/',
-                  data: {
-                    'name': nameCtrl.text.trim(),
-                    'provider_type': 'postmark',
-                    'credentials': {'server_token': tokenCtrl.text.trim()},
-                    'default_from_email': fromEmailCtrl.text.trim(),
-                  },
-                );
+                await ref
+                    .read(dioClientProvider)
+                    .post(
+                      'providers/email-providers/',
+                      data: {
+                        'name': nameCtrl.text.trim(),
+                        'provider_type': 'postmark',
+                        'credentials': {'server_token': tokenCtrl.text.trim()},
+                        'default_from_email': fromEmailCtrl.text.trim(),
+                      },
+                    );
                 ref.invalidate(adminProvidersProvider);
               } on DioException catch (e) {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                        content:
-                            Text('Error: ${e.response?.data ?? e.message}')),
+                      content: Text('Error: ${e.response?.data ?? e.message}'),
+                    ),
                   );
                 }
               }

@@ -23,12 +23,12 @@ class AdminMailbox {
   final bool sendEnabled;
 
   factory AdminMailbox.fromJson(Map<String, dynamic> j) => AdminMailbox(
-        id: j['id'] as String,
-        emailAddress: j['email_address'] as String? ?? '',
-        displayName: j['display_name'] as String?,
-        isActive: j['is_active'] as bool? ?? true,
-        sendEnabled: j['send_enabled'] as bool? ?? true,
-      );
+    id: j['id'] as String,
+    emailAddress: j['email_address'] as String? ?? '',
+    displayName: j['display_name'] as String?,
+    isActive: j['is_active'] as bool? ?? true,
+    sendEnabled: j['send_enabled'] as bool? ?? true,
+  );
 }
 
 @riverpod
@@ -85,13 +85,20 @@ class AdminMailboxesScreen extends ConsumerWidget {
                     if (!m.sendEnabled)
                       const Tooltip(
                         message: 'Send disabled',
-                        child: Icon(Icons.block, size: 16, color: Colors.orange),
+                        child: Icon(
+                          Icons.block,
+                          size: 16,
+                          color: Colors.orange,
+                        ),
                       ),
                     if (!m.isActive)
                       const Tooltip(
                         message: 'Inactive',
-                        child: Icon(Icons.pause_circle_outline,
-                            size: 16, color: Colors.grey),
+                        child: Icon(
+                          Icons.pause_circle_outline,
+                          size: 16,
+                          color: Colors.grey,
+                        ),
                       ),
                   ],
                 ),
@@ -113,8 +120,12 @@ class AdminMailboxesScreen extends ConsumerWidget {
     try {
       final res = await ref
           .read(dioClientProvider)
-          .get('providers/domains/', queryParameters: {'page_size': 100, 'status': 'verified'});
-      domains = (res.data['results'] as List? ?? []).cast<Map<String, dynamic>>();
+          .get(
+            'providers/domains/',
+            queryParameters: {'page_size': 100, 'status': 'verified'},
+          );
+      domains = (res.data['results'] as List? ?? [])
+          .cast<Map<String, dynamic>>();
       if (domains.isNotEmpty) selectedDomainId = domains.first['id'] as String;
     } catch (_) {}
 
@@ -133,10 +144,12 @@ class AdminMailboxesScreen extends ConsumerWidget {
                   initialValue: selectedDomainId,
                   decoration: const InputDecoration(labelText: 'Domain'),
                   items: domains
-                      .map((d) => DropdownMenuItem(
-                            value: d['id'] as String,
-                            child: Text(d['name'] as String? ?? ''),
-                          ))
+                      .map(
+                        (d) => DropdownMenuItem(
+                          value: d['id'] as String,
+                          child: Text(d['name'] as String? ?? ''),
+                        ),
+                      )
                       .toList(),
                   onChanged: (v) => setState(() => selectedDomainId = v),
                 )
@@ -144,40 +157,46 @@ class AdminMailboxesScreen extends ConsumerWidget {
                 const Text('No verified domains found.'),
               const SizedBox(height: 8),
               TextField(
-                  controller: localPartCtrl,
-                  decoration:
-                      const InputDecoration(labelText: 'Local part (before @)')),
+                controller: localPartCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Local part (before @)',
+                ),
+              ),
               const SizedBox(height: 8),
               TextField(
-                  controller: displayNameCtrl,
-                  decoration:
-                      const InputDecoration(labelText: 'Display name')),
+                controller: displayNameCtrl,
+                decoration: const InputDecoration(labelText: 'Display name'),
+              ),
             ],
           ),
           actions: [
             TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('Cancel')),
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Cancel'),
+            ),
             FilledButton(
               onPressed: selectedDomainId == null
                   ? null
                   : () async {
                       Navigator.of(ctx).pop();
                       try {
-                        await ref.read(dioClientProvider).post(
-                          'mail/mailboxes/',
-                          data: {
-                            'domain': selectedDomainId,
-                            'local_part': localPartCtrl.text.trim(),
-                            if (displayNameCtrl.text.trim().isNotEmpty)
-                              'display_name': displayNameCtrl.text.trim(),
-                          },
-                        );
+                        await ref
+                            .read(dioClientProvider)
+                            .post(
+                              'mail/mailboxes/',
+                              data: {
+                                'domain': selectedDomainId,
+                                'local_part': localPartCtrl.text.trim(),
+                                if (displayNameCtrl.text.trim().isNotEmpty)
+                                  'display_name': displayNameCtrl.text.trim(),
+                              },
+                            );
                         ref.invalidate(adminMailboxesProvider);
                       } catch (e) {
                         if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Error: $e')));
+                          ScaffoldMessenger.of(
+                            context,
+                          ).showSnackBar(SnackBar(content: Text('Error: $e')));
                         }
                       }
                     },

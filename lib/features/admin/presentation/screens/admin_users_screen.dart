@@ -29,17 +29,17 @@ class AdminUser {
   final DateTime? lastSeenAt;
 
   factory AdminUser.fromJson(Map<String, dynamic> j) => AdminUser(
-        id: j['id'] as String,
-        username: j['username'] as String,
-        email: j['email'] as String? ?? '',
-        isStaff: j['is_staff'] as bool? ?? false,
-        isActive: j['is_active'] as bool? ?? true,
-        mustChangePassword: j['must_change_password'] as bool? ?? false,
-        displayName: j['display_name'] as String?,
-        lastSeenAt: j['last_seen_at'] == null
-            ? null
-            : DateTime.tryParse(j['last_seen_at'] as String),
-      );
+    id: j['id'] as String,
+    username: j['username'] as String,
+    email: j['email'] as String? ?? '',
+    isStaff: j['is_staff'] as bool? ?? false,
+    isActive: j['is_active'] as bool? ?? true,
+    mustChangePassword: j['must_change_password'] as bool? ?? false,
+    displayName: j['display_name'] as String?,
+    lastSeenAt: j['last_seen_at'] == null
+        ? null
+        : DateTime.tryParse(j['last_seen_at'] as String),
+  );
 }
 
 @riverpod
@@ -82,13 +82,14 @@ class AdminUsersScreen extends ConsumerWidget {
               final u = users[i];
               return ListTile(
                 leading: CircleAvatar(
-                  backgroundColor:
-                      Theme.of(context).colorScheme.primaryContainer,
+                  backgroundColor: Theme.of(
+                    context,
+                  ).colorScheme.primaryContainer,
                   child: Text(
                     u.username.substring(0, 1).toUpperCase(),
                     style: TextStyle(
-                        color:
-                            Theme.of(context).colorScheme.onPrimaryContainer),
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    ),
                   ),
                 ),
                 title: Text(u.displayName ?? u.username),
@@ -99,8 +100,10 @@ class AdminUsersScreen extends ConsumerWidget {
                     if (u.isStaff)
                       const Tooltip(
                         message: 'Staff',
-                        child: Icon(Icons.admin_panel_settings_outlined,
-                            size: 16),
+                        child: Icon(
+                          Icons.admin_panel_settings_outlined,
+                          size: 16,
+                        ),
                       ),
                     if (!u.isActive)
                       const Tooltip(
@@ -110,8 +113,11 @@ class AdminUsersScreen extends ConsumerWidget {
                     if (u.mustChangePassword)
                       const Tooltip(
                         message: 'Must change password',
-                        child: Icon(Icons.lock_reset,
-                            size: 16, color: Colors.orange),
+                        child: Icon(
+                          Icons.lock_reset,
+                          size: 16,
+                          color: Colors.orange,
+                        ),
                       ),
                   ],
                 ),
@@ -138,19 +144,23 @@ class AdminUsersScreen extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
-                  controller: usernameCtrl,
-                  decoration: const InputDecoration(labelText: 'Username')),
+                controller: usernameCtrl,
+                decoration: const InputDecoration(labelText: 'Username'),
+              ),
               const SizedBox(height: 8),
               TextField(
-                  controller: emailCtrl,
-                  decoration: const InputDecoration(labelText: 'Email'),
-                  keyboardType: TextInputType.emailAddress),
+                controller: emailCtrl,
+                decoration: const InputDecoration(labelText: 'Email'),
+                keyboardType: TextInputType.emailAddress,
+              ),
               const SizedBox(height: 8),
               TextField(
-                  controller: passwordCtrl,
-                  decoration:
-                      const InputDecoration(labelText: 'Temporary password'),
-                  obscureText: true),
+                controller: passwordCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Temporary password',
+                ),
+                obscureText: true,
+              ),
               CheckboxListTile(
                 value: mustChange,
                 onChanged: (v) => setState(() => mustChange = v ?? true),
@@ -161,26 +171,30 @@ class AdminUsersScreen extends ConsumerWidget {
           ),
           actions: [
             TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('Cancel')),
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Cancel'),
+            ),
             FilledButton(
               onPressed: () async {
                 Navigator.of(ctx).pop();
                 try {
-                  await ref.read(dioClientProvider).post(
-                    'accounts/users/',
-                    data: {
-                      'username': usernameCtrl.text.trim(),
-                      'email': emailCtrl.text.trim(),
-                      'password': passwordCtrl.text,
-                      'must_change_password': mustChange,
-                    },
-                  );
+                  await ref
+                      .read(dioClientProvider)
+                      .post(
+                        'accounts/users/',
+                        data: {
+                          'username': usernameCtrl.text.trim(),
+                          'email': emailCtrl.text.trim(),
+                          'password': passwordCtrl.text,
+                          'must_change_password': mustChange,
+                        },
+                      );
                   ref.invalidate(adminUsersProvider);
                 } catch (e) {
                   if (context.mounted) {
-                    ScaffoldMessenger.of(context)
-                        .showSnackBar(SnackBar(content: Text('Error: $e')));
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text('Error: $e')));
                   }
                 }
               },

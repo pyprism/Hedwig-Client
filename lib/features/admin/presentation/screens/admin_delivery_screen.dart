@@ -23,21 +23,23 @@ class DeliveryEvent {
   final String? reason;
 
   factory DeliveryEvent.fromJson(Map<String, dynamic> j) => DeliveryEvent(
-        id: j['id'] as String,
-        eventType: j['event_type'] as String? ?? '',
-        occurredAt: DateTime.tryParse(j['occurred_at'] as String? ?? '') ??
-            DateTime.now(),
-        recipient: j['recipient'] as String?,
-        reason: j['reason'] as String?,
-      );
+    id: j['id'] as String,
+    eventType: j['event_type'] as String? ?? '',
+    occurredAt:
+        DateTime.tryParse(j['occurred_at'] as String? ?? '') ?? DateTime.now(),
+    recipient: j['recipient'] as String?,
+    reason: j['reason'] as String?,
+  );
 }
 
 @riverpod
 Future<List<DeliveryEvent>> adminDeliveryEvents(Ref ref) async {
   final res = await ref
       .watch(dioClientProvider)
-      .get('providers/delivery-events/',
-          queryParameters: {'page_size': 50, 'ordering': '-occurred_at'});
+      .get(
+        'providers/delivery-events/',
+        queryParameters: {'page_size': 50, 'ordering': '-occurred_at'},
+      );
   return (res.data['results'] as List? ?? [])
       .cast<Map<String, dynamic>>()
       .map(DeliveryEvent.fromJson)
@@ -86,17 +88,18 @@ class AdminDeliveryScreen extends ConsumerWidget {
                 ),
                 onTap: e.reason != null
                     ? () => showDialog<void>(
-                          context: context,
-                          builder: (_) => AlertDialog(
-                            title: Text(e.eventType),
-                            content: Text(e.reason!),
-                            actions: [
-                              TextButton(
-                                  onPressed: () => Navigator.pop(context),
-                                  child: const Text('Close'))
-                            ],
-                          ),
-                        )
+                        context: context,
+                        builder: (_) => AlertDialog(
+                          title: Text(e.eventType),
+                          content: Text(e.reason!),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('Close'),
+                            ),
+                          ],
+                        ),
+                      )
                     : null,
               );
             },
@@ -107,14 +110,14 @@ class AdminDeliveryScreen extends ConsumerWidget {
   }
 
   (IconData, Color) _iconForEvent(String type) => switch (type) {
-        'delivered' => (Icons.check_circle, Colors.green),
-        'bounced' => (Icons.error, Colors.red),
-        'complained' => (Icons.report, Colors.orange),
-        'opened' => (Icons.open_in_new, Colors.blue),
-        'clicked' => (Icons.touch_app, Colors.blue),
-        'failed' => (Icons.cancel, Colors.red),
-        _ => (Icons.info_outline, Colors.grey),
-      };
+    'delivered' => (Icons.check_circle, Colors.green),
+    'bounced' => (Icons.error, Colors.red),
+    'complained' => (Icons.report, Colors.orange),
+    'opened' => (Icons.open_in_new, Colors.blue),
+    'clicked' => (Icons.touch_app, Colors.blue),
+    'failed' => (Icons.cancel, Colors.red),
+    _ => (Icons.info_outline, Colors.grey),
+  };
 
   String _fmt(DateTime dt) {
     final d = dt.toLocal();
