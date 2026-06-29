@@ -13,9 +13,9 @@ import 'package:hedwig_client/features/labels/presentation/controllers/label_con
 import 'package:hedwig_client/features/mailboxes/presentation/controllers/mailbox_controller.dart';
 import 'package:hedwig_client/features/messages/data/repositories/message_repository.dart';
 import 'package:hedwig_client/features/threads/data/repositories/thread_repository.dart';
+import 'package:hedwig_client/features/settings/presentation/controllers/density_controller.dart';
 import 'package:hedwig_client/features/threads/presentation/controllers/thread_controller.dart';
 import 'package:hedwig_client/shared/models/thread.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class _ComposeIntent extends Intent {
   const _ComposeIntent();
@@ -62,7 +62,6 @@ class _ThreadListScreenState extends ConsumerState<ThreadListScreen> {
   int _page = 1;
   bool _loadingMore = false;
   final Set<String> _selectedThreadIds = {};
-  String _density = 'comfortable';
   final _searchCtrl = TextEditingController();
   final _searchFocusNode = FocusNode();
   final _scrollCtrl = ScrollController();
@@ -72,7 +71,6 @@ class _ThreadListScreenState extends ConsumerState<ThreadListScreen> {
     super.initState();
     _scrollCtrl.addListener(_onScroll);
     _searchFocusNode.addListener(_onSearchFocusChanged);
-    _loadPreferences();
   }
 
   @override
@@ -273,14 +271,6 @@ class _ThreadListScreenState extends ConsumerState<ThreadListScreen> {
     ref.invalidate(threadListProvider);
   }
 
-  Future<void> _loadPreferences() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (!mounted) return;
-    setState(() {
-      _density = prefs.getString('message_density') ?? 'comfortable';
-    });
-  }
-
   Future<void> _submitSearch(String value) async {
     final search = value.trim();
     setState(() {
@@ -310,6 +300,7 @@ class _ThreadListScreenState extends ConsumerState<ThreadListScreen> {
   @override
   Widget build(BuildContext context) {
     final folder = ref.watch(selectedFolderProvider);
+    final density = ref.watch(messageDensityProvider);
     final labels =
         ref.watch(labelListProvider(widget.mailboxId)).valueOrNull ?? [];
     final threadsAsync = ref.watch(
@@ -507,7 +498,7 @@ class _ThreadListScreenState extends ConsumerState<ThreadListScreen> {
                               _selectedThreadIds.remove(threads[i].id);
                             }
                           }),
-                          density: _density,
+                          density: density,
                         );
                       },
                     ),
@@ -603,6 +594,16 @@ class _ThreadTile extends StatelessWidget {
           'relaxed' => VisualDensity.standard,
           _ => VisualDensity.comfortable,
         },
+        // Amplify the density steps so the choice is clearly visible, not just
+        // the few px that visualDensity alone shifts.
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: switch (density) {
+            'compact' => 0,
+            'relaxed' => 12,
+            _ => 6,
+          },
+        ),
         onTap: handleTap,
         onLongPress: () => onSelectionChanged?.call(true),
         selected: selected,

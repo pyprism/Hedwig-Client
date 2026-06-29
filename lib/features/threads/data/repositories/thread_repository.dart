@@ -135,9 +135,31 @@ class ThreadRepository {
       page: page,
       pageSize: 50,
     );
-    final companions = res.results.map((t) => _modelToRow(t, folder)).toList();
+    var companions = res.results.map((t) => _modelToRow(t, folder)).toList();
     final localDraftRows = folder == 'drafts' && replace
         ? await db.threadDao.getLocalDrafts(mailboxId)
+        : const <ThreadRow>[];
+    if (folder == 'drafts' && replace) {
+      // A locally-authored draft (kept via localDraftRows) and the same draft
+      // fetched from the server are one draft — drop the server thread that the
+      // local draft already represents so it doesn't show twice on this device.
+      final localDraftMessages = await db.messageDao.getLocalDraftMessages(
+        mailboxId,
+      );
+      final representedThreadIds = localDraftMessages
+          .map(_serverDraftThreadId)
+          .whereType<String>()
+          .toSet();
+      if (representedThreadIds.isNotEmpty) {
+        companions = companions
+            .where((c) => !representedThreadIds.contains(c.id.value))
+            .toList();
+      }
+    }
+    // Preserve optimistic just-sent rows so a new composition stays visible in
+    // Sent until the outbox flush reconciles it with the server message.
+    final localSentRows = folder == 'sent' && replace
+        ? await db.threadDao.getLocalSent(mailboxId)
         : const <ThreadRow>[];
 
     await db.transaction(() async {
@@ -149,11 +171,22 @@ class ThreadRepository {
       final rows = [
         ...companions,
         ...localDraftRows.map(_threadRowToCompanion),
+        ...localSentRows.map(_threadRowToCompanion),
       ];
       if (rows.isNotEmpty) {
         await db.threadDao.upsertAll(rows);
       }
     });
+  }
+
+  String? _serverDraftThreadId(MessageRow row) {
+    try {
+      final metadata = jsonDecode(row.metadataJson) as Map<String, dynamic>;
+      final id = metadata['server_draft_thread_id'] as String?;
+      return (id != null && id.isNotEmpty) ? id : null;
+    } catch (_) {
+      return null;
+    }
   }
 
   MailThread _rowToModel(ThreadRow r) => MailThread(

@@ -12,11 +12,9 @@ Stream<List<MailThread>> threadList(
   String folder = 'inbox',
   String? search,
 }) {
-  return ref.watch(threadRepositoryProvider).watchThreads(
-        mailboxId: mailboxId,
-        folder: folder,
-        search: search,
-      );
+  return ref
+      .watch(threadRepositoryProvider)
+      .watchThreads(mailboxId: mailboxId, folder: folder, search: search);
 }
 
 /// Selected thread for two-pane layout on expanded screens.
