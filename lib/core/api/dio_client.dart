@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hedwig_client/core/api/auth_interceptor.dart';
 import 'package:hedwig_client/core/api/error_interceptor.dart';
 import 'package:hedwig_client/core/config/app_config.dart';
