@@ -2,11 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hedwig_client/core/error/failure.dart';
 
 class ErrorDisplay extends StatelessWidget {
-  const ErrorDisplay({
-    super.key,
-    required this.failure,
-    this.onRetry,
-  });
+  const ErrorDisplay({super.key, required this.failure, this.onRetry});
 
   final Failure failure;
   final VoidCallback? onRetry;
