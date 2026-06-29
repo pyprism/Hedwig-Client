@@ -8,10 +8,13 @@ part 'outbox_dao.g.dart';
 class OutboxDao extends DatabaseAccessor<AppDatabase> with _$OutboxDaoMixin {
   OutboxDao(super.db);
 
-  Stream<int> watchPendingCount() => customSelect(
-    "SELECT COUNT(*) AS c FROM outbox_entries WHERE status IN ('pending','failed')",
-    readsFrom: {outboxEntries},
-  ).watchSingle().map((row) => row.read<int>('c'));
+  Stream<int> watchPendingCount() {
+    final count = outboxEntries.id.count();
+    final query = selectOnly(outboxEntries)
+      ..addColumns([count])
+      ..where(outboxEntries.status.isIn(['pending', 'failed']));
+    return query.map((row) => row.read(count) ?? 0).watchSingle();
+  }
 
   Stream<List<OutboxEntry>> watchPending() =>
       (select(outboxEntries)
@@ -83,10 +86,13 @@ class OutboxDao extends DatabaseAccessor<AppDatabase> with _$OutboxDaoMixin {
         ),
       );
 
-  Stream<int> watchDeadLetterCount() => customSelect(
-    "SELECT COUNT(*) AS c FROM outbox_entries WHERE status = 'dead_letter'",
-    readsFrom: {outboxEntries},
-  ).watchSingle().map((row) => row.read<int>('c'));
+  Stream<int> watchDeadLetterCount() {
+    final count = outboxEntries.id.count();
+    final query = selectOnly(outboxEntries)
+      ..addColumns([count])
+      ..where(outboxEntries.status.equals('dead_letter'));
+    return query.map((row) => row.read(count) ?? 0).watchSingle();
+  }
 
   Stream<List<OutboxEntry>> watchDeadLetter() =>
       (select(outboxEntries)
