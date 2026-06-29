@@ -4,7 +4,7 @@ part 'label.freezed.dart';
 part 'label.g.dart';
 
 @freezed
-class Label with _$Label {
+abstract class Label with _$Label {
   const factory Label({
     required String id,
     @JsonKey(name: 'mailbox') required String mailboxId,
