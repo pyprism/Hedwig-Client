@@ -15,7 +15,11 @@ void main() {
       final label = Label.fromJson(json);
 
       expect(label.id, 'l1');
-      expect(label.mailboxId, 'mb1', reason: 'API field is bare "mailbox", model maps to mailboxId');
+      expect(
+        label.mailboxId,
+        'mb1',
+        reason: 'API field is bare "mailbox", model maps to mailboxId',
+      );
       expect(label.name, 'Finance');
       expect(label.color, '#ff0000');
       expect(label.createdAt, DateTime.parse('2026-06-16T09:00:00Z'));

@@ -28,7 +28,11 @@ void main() {
       final mailbox = Mailbox.fromJson(json);
 
       expect(mailbox.id, 'mb1');
-      expect(mailbox.domainId, 'dom1', reason: 'API field is bare "domain", model maps to domainId');
+      expect(
+        mailbox.domainId,
+        'dom1',
+        reason: 'API field is bare "domain", model maps to domainId',
+      );
       expect(mailbox.localPart, 'support');
       expect(mailbox.emailAddress, 'support@acme.com');
       expect(mailbox.displayName, 'Support');
@@ -40,15 +44,18 @@ void main() {
       expect(mailbox.updatedAt, DateTime.parse('2026-06-16T10:00:00Z'));
     });
 
-    test('required non-null fields throw if missing rather than silently null', () {
-      final json = {
-        'id': 'mb1',
-        'domain': 'dom1',
-        'local_part': 'support',
-        // email_address intentionally omitted
-      };
+    test(
+      'required non-null fields throw if missing rather than silently null',
+      () {
+        final json = {
+          'id': 'mb1',
+          'domain': 'dom1',
+          'local_part': 'support',
+          // email_address intentionally omitted
+        };
 
-      expect(() => Mailbox.fromJson(json), throwsA(isA<TypeError>()));
-    });
+        expect(() => Mailbox.fromJson(json), throwsA(isA<TypeError>()));
+      },
+    );
   });
 }

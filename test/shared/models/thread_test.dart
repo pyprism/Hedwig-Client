@@ -20,7 +20,11 @@ void main() {
       final thread = MailThread.fromJson(json);
 
       expect(thread.id, 'th1');
-      expect(thread.mailboxId, 'mb1', reason: 'API field is bare "mailbox", model maps to mailboxId');
+      expect(
+        thread.mailboxId,
+        'mb1',
+        reason: 'API field is bare "mailbox", model maps to mailboxId',
+      );
       expect(thread.subject, 'Need help');
       expect(thread.participants, ['bob@example.com', 'support@acme.com']);
       expect(thread.messageCount, 3);

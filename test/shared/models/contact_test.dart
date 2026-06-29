@@ -18,7 +18,11 @@ void main() {
       final contact = Contact.fromJson(json);
 
       expect(contact.id, 'c1');
-      expect(contact.mailboxId, 'mb1', reason: 'API field is bare "mailbox", model maps to mailboxId');
+      expect(
+        contact.mailboxId,
+        'mb1',
+        reason: 'API field is bare "mailbox", model maps to mailboxId',
+      );
       expect(contact.email, 'client@example.com');
       expect(contact.name, 'Client');
       expect(contact.isFavorite, isTrue);

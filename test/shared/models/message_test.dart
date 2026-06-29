@@ -40,14 +40,24 @@ void main() {
       final message = MailMessage.fromJson(json);
 
       expect(message.id, 'm1');
-      expect(message.mailboxId, 'mb1', reason: 'API field is bare "mailbox", model maps to mailboxId');
-      expect(message.threadId, 'th1', reason: 'API field is bare "thread", model maps to threadId');
+      expect(
+        message.mailboxId,
+        'mb1',
+        reason: 'API field is bare "mailbox", model maps to mailboxId',
+      );
+      expect(
+        message.threadId,
+        'th1',
+        reason: 'API field is bare "thread", model maps to threadId',
+      );
       expect(message.direction, 'inbound');
       expect(message.status, 'received');
       expect(message.folder, 'inbox');
       expect(message.fromAddress, 'bob@example.com');
       expect(message.fromName, 'Bob');
-      expect(message.toAddresses, [const EmailAddress(email: 'support@acme.com')]);
+      expect(message.toAddresses, [
+        const EmailAddress(email: 'support@acme.com'),
+      ]);
       expect(message.subject, 'Need help');
       expect(message.snippet, 'Hi, I ...');
       expect(message.isRead, isFalse);
@@ -61,25 +71,28 @@ void main() {
       expect(message.attachments.single.isInline, isFalse);
     });
 
-    test('is_staff-style boolean fields are not silently dropped when true', () {
-      final json = {
-        'id': 'm1',
-        'mailbox': 'mb1',
-        'direction': 'outbound',
-        'status': 'queued',
-        'from_address': 'support@acme.com',
-        'subject': 'Re: Need help',
-        'is_read': true,
-        'is_starred': true,
-        'has_attachments': true,
-      };
+    test(
+      'is_staff-style boolean fields are not silently dropped when true',
+      () {
+        final json = {
+          'id': 'm1',
+          'mailbox': 'mb1',
+          'direction': 'outbound',
+          'status': 'queued',
+          'from_address': 'support@acme.com',
+          'subject': 'Re: Need help',
+          'is_read': true,
+          'is_starred': true,
+          'has_attachments': true,
+        };
 
-      final message = MailMessage.fromJson(json);
+        final message = MailMessage.fromJson(json);
 
-      expect(message.isRead, isTrue);
-      expect(message.isStarred, isTrue);
-      expect(message.hasAttachments, isTrue);
-    });
+        expect(message.isRead, isTrue);
+        expect(message.isStarred, isTrue);
+        expect(message.hasAttachments, isTrue);
+      },
+    );
 
     test('Attachment.fromJson parses content_id for inline images', () {
       final json = {

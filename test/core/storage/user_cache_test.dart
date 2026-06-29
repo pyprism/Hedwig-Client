@@ -34,8 +34,7 @@ void main() {
     });
 
     test('clear removes stored user', () async {
-      const user =
-          HedwigUser(id: 'u2', username: 'bob', email: 'bob@test.com');
+      const user = HedwigUser(id: 'u2', username: 'bob', email: 'bob@test.com');
       await cache.save(user);
       await cache.clear();
       expect(cache.load(), isNull);
