@@ -79,9 +79,26 @@ class RulesScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final mailboxId = ref.watch(selectedMailboxProvider);
+    // The /rules route carries no mailbox, so on a web refresh or deep link
+    // selectedMailboxProvider can be null — fall back to the first available
+    // mailbox instead of getting stuck on a spinner forever.
+    final selectedMailboxId = ref.watch(selectedMailboxProvider);
+    final mailboxesAsync = ref.watch(mailboxListProvider);
+    final mailboxId =
+        selectedMailboxId ?? mailboxesAsync.valueOrNull?.firstOrNull?.id;
     if (mailboxId == null) {
-      return const Scaffold(body: LoadingWidget());
+      return Scaffold(
+        appBar: AppBar(title: const Text('Mail rules')),
+        body: mailboxesAsync.when(
+          loading: () => const LoadingWidget(),
+          error: (e, _) => ErrorDisplay(failure: failureFromError(e)),
+          data: (_) => const EmptyState(
+            icon: Icons.inbox_outlined,
+            title: 'No mailboxes',
+            subtitle: 'Your account has no mailboxes yet.',
+          ),
+        ),
+      );
     }
 
     final rulesAsync = ref.watch(mailboxRulesProvider(mailboxId));

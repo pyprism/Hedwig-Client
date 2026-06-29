@@ -4,10 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:hedwig_client/app/theme/theme_controller.dart';
 import 'package:hedwig_client/features/auth/domain/entities/auth_state.dart';
 import 'package:hedwig_client/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:hedwig_client/features/settings/presentation/controllers/density_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const _externalImagesPreferenceKey = 'always_show_external_images';
-const _densityPreferenceKey = 'message_density';
 
 const _timezones = [
   'UTC',
@@ -36,7 +36,6 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _alwaysShowExternalImages = false;
-  String _density = 'comfortable';
 
   @override
   void initState() {
@@ -50,7 +49,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     setState(() {
       _alwaysShowExternalImages =
           prefs.getBool(_externalImagesPreferenceKey) ?? false;
-      _density = prefs.getString(_densityPreferenceKey) ?? 'comfortable';
     });
   }
 
@@ -61,16 +59,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     setState(() => _alwaysShowExternalImages = value);
   }
 
-  Future<void> _setDensity(String value) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_densityPreferenceKey, value);
-    if (!mounted) return;
-    setState(() => _density = value);
-  }
-
   @override
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeControllerProvider);
+    final density = ref.watch(messageDensityProvider);
     final authState = ref.watch(authControllerProvider).valueOrNull;
     final user = switch (authState) {
       Authenticated(:final user) => user,
@@ -183,8 +175,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   label: Text('Relaxed'),
                 ),
               ],
-              selected: {_density},
-              onSelectionChanged: (values) => _setDensity(values.first),
+              selected: {density},
+              onSelectionChanged: (values) => ref
+                  .read(messageDensityProvider.notifier)
+                  .setDensity(values.first),
             ),
           ),
           SwitchListTile(
