@@ -37,12 +37,17 @@ class MailboxRepository {
       StreamSubscription<List<Mailbox>>? subscription;
       var cancelled = false;
       var refreshing = false;
+      // True once a refresh has actually returned a result. Until then an empty
+      // drift table means "not loaded yet", not "no mailboxes" — suppress it so
+      // a slow/failed first fetch doesn't surface as the "No mailboxes" state.
+      var loadedFromRemote = false;
 
       Future<void> refresh({required bool surfaceError}) async {
         if (refreshing) return;
         refreshing = true;
         try {
           await _refresh();
+          loadedFromRemote = true;
         } catch (e) {
           debugPrint('[MailboxRepository] refresh error: $e');
           if (surfaceError && !cancelled) {
@@ -65,7 +70,11 @@ class MailboxRepository {
         if (cancelled) return;
 
         subscription = cached.listen(
-          controller.add,
+          (mailboxes) {
+            // Don't let a pre-load empty table render as "No mailboxes".
+            if (mailboxes.isEmpty && !loadedFromRemote) return;
+            controller.add(mailboxes);
+          },
           onError: controller.addError,
           onDone: controller.close,
         );
