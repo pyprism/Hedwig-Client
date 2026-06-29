@@ -1,4 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Required for all builds: the app talks to the Hedwig backend over HTTP.
+         debug/profile manifests also declare it, but release merges only this. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="hedwig_client"
         android:name="${applicationName}"
