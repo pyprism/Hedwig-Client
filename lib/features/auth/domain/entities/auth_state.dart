@@ -7,6 +7,8 @@ part 'auth_state.freezed.dart';
 class AuthState with _$AuthState {
   const factory AuthState.loading() = AuthLoading;
   const factory AuthState.unauthenticated() = Unauthenticated;
-  const factory AuthState.authenticated({required HedwigUser user}) = Authenticated;
-  const factory AuthState.mustChangePassword({required HedwigUser user}) = MustChangePassword;
+  const factory AuthState.authenticated({required HedwigUser user}) =
+      Authenticated;
+  const factory AuthState.mustChangePassword({required HedwigUser user}) =
+      MustChangePassword;
 }

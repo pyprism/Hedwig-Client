@@ -8,7 +8,8 @@ class ChangePasswordScreen extends ConsumerStatefulWidget {
   const ChangePasswordScreen({super.key});
 
   @override
-  ConsumerState<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
+  ConsumerState<ChangePasswordScreen> createState() =>
+      _ChangePasswordScreenState();
 }
 
 class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
@@ -30,7 +31,9 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _error = null);
 
-    await ref.read(authControllerProvider.notifier).changePassword(
+    await ref
+        .read(authControllerProvider.notifier)
+        .changePassword(
           currentPassword: _currentCtrl.text,
           newPassword: _newCtrl.text,
         );
@@ -72,8 +75,8 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                   Text(
                     'You must set a new password before continuing.',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.outline,
-                        ),
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 32),
@@ -84,14 +87,17 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                       prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscureCurrent ? Icons.visibility_off : Icons.visibility,
+                          _obscureCurrent
+                              ? Icons.visibility_off
+                              : Icons.visibility,
                         ),
                         onPressed: () =>
                             setState(() => _obscureCurrent = !_obscureCurrent),
                       ),
                     ),
                     obscureText: _obscureCurrent,
-                    validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+                    validator: (v) =>
+                        (v == null || v.isEmpty) ? 'Required' : null,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
@@ -103,7 +109,8 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                         icon: Icon(
                           _obscureNew ? Icons.visibility_off : Icons.visibility,
                         ),
-                        onPressed: () => setState(() => _obscureNew = !_obscureNew),
+                        onPressed: () =>
+                            setState(() => _obscureNew = !_obscureNew),
                       ),
                     ),
                     obscureText: _obscureNew,
@@ -114,7 +121,9 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                     const SizedBox(height: 16),
                     Text(
                       _error!,
-                      style: TextStyle(color: Theme.of(context).colorScheme.error),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   ],

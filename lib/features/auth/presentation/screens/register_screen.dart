@@ -36,7 +36,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _error = null);
 
-    await ref.read(authControllerProvider.notifier).register(
+    await ref
+        .read(authControllerProvider.notifier)
+        .register(
           baseUrl: _serverCtrl.text.trim(),
           username: _usernameCtrl.text.trim(),
           email: _emailCtrl.text.trim(),
@@ -89,8 +91,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ),
                     keyboardType: TextInputType.url,
                     autocorrect: false,
-                    validator: (v) =>
-                        (v == null || v.trim().isEmpty) ? 'Enter server URL' : null,
+                    validator: (v) => (v == null || v.trim().isEmpty)
+                        ? 'Enter server URL'
+                        : null,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
@@ -100,8 +103,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       prefixIcon: Icon(Icons.person_outline),
                     ),
                     autocorrect: false,
-                    validator: (v) =>
-                        (v == null || v.trim().isEmpty) ? 'Enter username' : null,
+                    validator: (v) => (v == null || v.trim().isEmpty)
+                        ? 'Enter username'
+                        : null,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
@@ -130,7 +134,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       labelText: 'Password',
                       prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
-                        icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
+                        icon: Icon(
+                          _obscure ? Icons.visibility_off : Icons.visibility,
+                        ),
                         onPressed: () => setState(() => _obscure = !_obscure),
                       ),
                     ),
@@ -142,7 +148,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     const SizedBox(height: 16),
                     Text(
                       _error!,
-                      style: TextStyle(color: Theme.of(context).colorScheme.error),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   ],

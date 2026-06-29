@@ -17,10 +17,7 @@ AuthRepository authRepository(Ref ref) {
 }
 
 class AuthRepository {
-  const AuthRepository({
-    required this.ref,
-    required this.tokenStorage,
-  });
+  const AuthRepository({required this.ref, required this.tokenStorage});
 
   final Ref ref;
   final TokenStorage tokenStorage;

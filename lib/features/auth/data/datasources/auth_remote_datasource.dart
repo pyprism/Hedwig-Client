@@ -9,10 +9,10 @@ class AuthRemoteDatasource {
   final Dio _dio;
 
   Future<TokenPair> login(String username, String password) async {
-    final res = await _dio.post('token/', data: {
-      'username': username,
-      'password': password,
-    });
+    final res = await _dio.post(
+      'token/',
+      data: {'username': username, 'password': password},
+    );
     return TokenPair.fromJson(res.data as Map<String, dynamic>);
   }
 
@@ -24,14 +24,17 @@ class AuthRemoteDatasource {
     String? timezone,
     String? locale,
   }) async {
-    final res = await _dio.post('accounts/users/register/', data: {
-      'username': username,
-      'email': email,
-      'password': password,
-      if (displayName != null) 'display_name': displayName,
-      if (timezone != null) 'timezone': timezone,
-      if (locale != null) 'locale': locale,
-    });
+    final res = await _dio.post(
+      'accounts/users/register/',
+      data: {
+        'username': username,
+        'email': email,
+        'password': password,
+        if (displayName != null) 'display_name': displayName,
+        if (timezone != null) 'timezone': timezone,
+        if (locale != null) 'locale': locale,
+      },
+    );
     return HedwigUser.fromJson(res.data as Map<String, dynamic>);
   }
 
@@ -44,10 +47,10 @@ class AuthRemoteDatasource {
     required String currentPassword,
     required String newPassword,
   }) async {
-    final res = await _dio.post('accounts/users/change-password/', data: {
-      'current_password': currentPassword,
-      'new_password': newPassword,
-    });
+    final res = await _dio.post(
+      'accounts/users/change-password/',
+      data: {'current_password': currentPassword, 'new_password': newPassword},
+    );
     return HedwigUser.fromJson(res.data as Map<String, dynamic>);
   }
 
@@ -58,13 +61,16 @@ class AuthRemoteDatasource {
     String? timezone,
     String? locale,
   }) async {
-    final res = await _dio.patch('accounts/users/me/', data: {
-      if (displayName != null) 'display_name': displayName,
-      if (firstName != null) 'first_name': firstName,
-      if (lastName != null) 'last_name': lastName,
-      if (timezone != null) 'timezone': timezone,
-      if (locale != null) 'locale': locale,
-    });
+    final res = await _dio.patch(
+      'accounts/users/me/',
+      data: {
+        if (displayName != null) 'display_name': displayName,
+        if (firstName != null) 'first_name': firstName,
+        if (lastName != null) 'last_name': lastName,
+        if (timezone != null) 'timezone': timezone,
+        if (locale != null) 'locale': locale,
+      },
+    );
     return HedwigUser.fromJson(res.data as Map<String, dynamic>);
   }
 
