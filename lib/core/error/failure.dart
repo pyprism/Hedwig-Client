@@ -17,10 +17,10 @@ class Failure with _$Failure {
 
 extension FailureMessage on Failure {
   String get userMessage => when(
-        network: (msg) => 'No connection. $msg',
-        server: (code, msg, _) => msg,
-        auth: (msg) => msg ?? 'Session expired. Please log in again.',
-        notFound: (msg) => msg ?? 'Not found.',
-        unknown: (msg) => msg,
-      );
+    network: (msg) => 'No connection. $msg',
+    server: (code, msg, _) => msg,
+    auth: (msg) => msg ?? 'Session expired. Please log in again.',
+    notFound: (msg) => msg ?? 'Not found.',
+    unknown: (msg) => msg,
+  );
 }
