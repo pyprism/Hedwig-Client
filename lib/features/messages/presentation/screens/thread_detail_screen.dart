@@ -505,7 +505,8 @@ class _InlineImageWidgetFactory extends WidgetFactory {
   @override
   Widget? buildImageWidget(BuildTree tree, ImageSource src) {
     final url = src.url;
-    if (!url.startsWith('cid:')) {
+    // The cid: scheme is case-insensitive (RFC 2392), so match case-folded.
+    if (!url.toLowerCase().startsWith('cid:')) {
       final uri = Uri.tryParse(url);
       final isExternal =
           uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
