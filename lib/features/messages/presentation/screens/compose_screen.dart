@@ -161,7 +161,7 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
       // Compose can be reached via a deep link or web refresh before any
       // mailbox has been selected (the /compose route carries no mailbox), so
       // fall back to the first available mailbox like the shell does.
-      ref.read(mailboxListProvider).valueOrNull?.firstOrNull?.id;
+      ref.read(mailboxListProvider).value?.firstOrNull?.id;
 
   Future<void> _saveDraft() async {
     if (!_draftLoaded) return;
@@ -345,7 +345,7 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
     }
 
     final remainingSlots = _maxAttachments - _attachments.length;
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       allowMultiple: true,
       withData: true,
       type: FileType.any,
@@ -695,7 +695,7 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
     final isLoading = ref.watch(composeControllerProvider).isLoading;
     final selectedMailboxId = ref.watch(selectedMailboxProvider);
     final mailboxId = _composeMailboxId ?? selectedMailboxId;
-    final mailboxes = ref.watch(mailboxListProvider).valueOrNull ?? [];
+    final mailboxes = ref.watch(mailboxListProvider).value ?? [];
     final selectedMailbox = mailboxes
         .where((mailbox) => mailbox.id == mailboxId)
         .firstOrNull;
