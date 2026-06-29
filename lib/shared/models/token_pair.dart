@@ -5,10 +5,9 @@ part 'token_pair.g.dart';
 
 @freezed
 class TokenPair with _$TokenPair {
-  const factory TokenPair({
-    required String access,
-    required String refresh,
-  }) = _TokenPair;
+  const factory TokenPair({required String access, required String refresh}) =
+      _TokenPair;
 
-  factory TokenPair.fromJson(Map<String, dynamic> json) => _$TokenPairFromJson(json);
+  factory TokenPair.fromJson(Map<String, dynamic> json) =>
+      _$TokenPairFromJson(json);
 }

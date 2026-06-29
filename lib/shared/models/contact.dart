@@ -16,5 +16,6 @@ class Contact with _$Contact {
     DateTime? updatedAt,
   }) = _Contact;
 
-  factory Contact.fromJson(Map<String, dynamic> json) => _$ContactFromJson(json);
+  factory Contact.fromJson(Map<String, dynamic> json) =>
+      _$ContactFromJson(json);
 }

@@ -22,5 +22,6 @@ class HedwigUser with _$HedwigUser {
     DateTime? createdAt,
   }) = _HedwigUser;
 
-  factory HedwigUser.fromJson(Map<String, dynamic> json) => _$HedwigUserFromJson(json);
+  factory HedwigUser.fromJson(Map<String, dynamic> json) =>
+      _$HedwigUserFromJson(json);
 }

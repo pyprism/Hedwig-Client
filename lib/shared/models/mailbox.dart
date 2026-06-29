@@ -21,5 +21,6 @@ class Mailbox with _$Mailbox {
     DateTime? updatedAt,
   }) = _Mailbox;
 
-  factory Mailbox.fromJson(Map<String, dynamic> json) => _$MailboxFromJson(json);
+  factory Mailbox.fromJson(Map<String, dynamic> json) =>
+      _$MailboxFromJson(json);
 }
