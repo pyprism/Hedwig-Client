@@ -6,21 +6,57 @@ part of 'compose_controller.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$composeControllerHash() => r'eb3dc51c7ce12fe9964985593555d1fd0ad78d01';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [ComposeController].
 @ProviderFor(ComposeController)
-final composeControllerProvider =
-    AutoDisposeNotifierProvider<ComposeController, AsyncValue<void>>.internal(
-      ComposeController.new,
-      name: r'composeControllerProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$composeControllerHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+final composeControllerProvider = ComposeControllerProvider._();
 
-typedef _$ComposeController = AutoDisposeNotifier<AsyncValue<void>>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class ComposeControllerProvider
+    extends $NotifierProvider<ComposeController, AsyncValue<void>> {
+  ComposeControllerProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'composeControllerProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$composeControllerHash();
+
+  @$internal
+  @override
+  ComposeController create() => ComposeController();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AsyncValue<void> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AsyncValue<void>>(value),
+    );
+  }
+}
+
+String _$composeControllerHash() => r'57eecaa3a24d676872b9dba4e19dd77a555691c1';
+
+abstract class _$ComposeController extends $Notifier<AsyncValue<void>> {
+  AsyncValue<void> build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<AsyncValue<void>, AsyncValue<void>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<void>, AsyncValue<void>>,
+              AsyncValue<void>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}

@@ -6,42 +6,41 @@ part of 'thread.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$MailThreadImpl _$$MailThreadImplFromJson(Map<String, dynamic> json) =>
-    _$MailThreadImpl(
-      id: json['id'] as String,
-      mailboxId: json['mailbox'] as String,
-      subject: json['subject'] as String,
-      participants:
-          (json['participants'] as List<dynamic>?)
-              ?.map((e) => e as String)
-              .toList() ??
-          const [],
-      messageCount: (json['message_count'] as num?)?.toInt() ?? 0,
-      hasUnread: json['has_unread'] as bool? ?? false,
-      unreadCount: (json['unread_count'] as num?)?.toInt() ?? 0,
-      snippet: json['snippet'] as String?,
-      latestDirection: json['latest_direction'] as String?,
-      hasAttachments: json['has_attachments'] as bool? ?? false,
-      attachmentFilenames:
-          (json['attachment_filenames'] as List<dynamic>?)
-              ?.map((e) => e as String)
-              .toList() ??
-          const [],
-      labels:
-          (json['labels'] as List<dynamic>?)
-              ?.map((e) => ThreadLabel.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
-      searchHighlight: json['search_highlight'] as String?,
-      lastMessageAt: json['last_message_at'] == null
-          ? null
-          : DateTime.parse(json['last_message_at'] as String),
-      createdAt: json['created_at'] == null
-          ? null
-          : DateTime.parse(json['created_at'] as String),
-    );
+_MailThread _$MailThreadFromJson(Map<String, dynamic> json) => _MailThread(
+  id: json['id'] as String,
+  mailboxId: json['mailbox'] as String,
+  subject: json['subject'] as String,
+  participants:
+      (json['participants'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const [],
+  messageCount: (json['message_count'] as num?)?.toInt() ?? 0,
+  hasUnread: json['has_unread'] as bool? ?? false,
+  unreadCount: (json['unread_count'] as num?)?.toInt() ?? 0,
+  snippet: json['snippet'] as String?,
+  latestDirection: json['latest_direction'] as String?,
+  hasAttachments: json['has_attachments'] as bool? ?? false,
+  attachmentFilenames:
+      (json['attachment_filenames'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const [],
+  labels:
+      (json['labels'] as List<dynamic>?)
+          ?.map((e) => ThreadLabel.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  searchHighlight: json['search_highlight'] as String?,
+  lastMessageAt: json['last_message_at'] == null
+      ? null
+      : DateTime.parse(json['last_message_at'] as String),
+  createdAt: json['created_at'] == null
+      ? null
+      : DateTime.parse(json['created_at'] as String),
+);
 
-Map<String, dynamic> _$$MailThreadImplToJson(_$MailThreadImpl instance) =>
+Map<String, dynamic> _$MailThreadToJson(_MailThread instance) =>
     <String, dynamic>{
       'id': instance.id,
       'mailbox': instance.mailboxId,
@@ -60,14 +59,13 @@ Map<String, dynamic> _$$MailThreadImplToJson(_$MailThreadImpl instance) =>
       'created_at': instance.createdAt?.toIso8601String(),
     };
 
-_$ThreadLabelImpl _$$ThreadLabelImplFromJson(Map<String, dynamic> json) =>
-    _$ThreadLabelImpl(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      color: json['color'] as String?,
-    );
+_ThreadLabel _$ThreadLabelFromJson(Map<String, dynamic> json) => _ThreadLabel(
+  id: json['id'] as String,
+  name: json['name'] as String,
+  color: json['color'] as String?,
+);
 
-Map<String, dynamic> _$$ThreadLabelImplToJson(_$ThreadLabelImpl instance) =>
+Map<String, dynamic> _$ThreadLabelToJson(_ThreadLabel instance) =>
     <String, dynamic>{
       'id': instance.id,
       'name': instance.name,

@@ -6,22 +6,47 @@ part of 'label_repository.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$labelRepositoryHash() => r'f7722a014237f3f13da3d4c5c61e231ff075bea5';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [labelRepository].
 @ProviderFor(labelRepository)
-final labelRepositoryProvider = Provider<LabelRepository>.internal(
-  labelRepository,
-  name: r'labelRepositoryProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$labelRepositoryHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+final labelRepositoryProvider = LabelRepositoryProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef LabelRepositoryRef = ProviderRef<LabelRepository>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class LabelRepositoryProvider
+    extends
+        $FunctionalProvider<LabelRepository, LabelRepository, LabelRepository>
+    with $Provider<LabelRepository> {
+  LabelRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'labelRepositoryProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$labelRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<LabelRepository> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  LabelRepository create(Ref ref) {
+    return labelRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(LabelRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<LabelRepository>(value),
+    );
+  }
+}
+
+String _$labelRepositoryHash() => r'f7722a014237f3f13da3d4c5c61e231ff075bea5';

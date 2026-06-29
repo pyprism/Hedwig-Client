@@ -6,163 +6,126 @@ part of 'thread_repository.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$threadRepositoryHash() => r'142436c92221e6cf7e81bbdaf06ef8d0b1d06dfe';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [threadRepository].
 @ProviderFor(threadRepository)
-final threadRepositoryProvider = Provider<ThreadRepository>.internal(
-  threadRepository,
-  name: r'threadRepositoryProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$threadRepositoryHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+final threadRepositoryProvider = ThreadRepositoryProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef ThreadRepositoryRef = ProviderRef<ThreadRepository>;
-String _$threadCountsHash() => r'b28533510caeaec0ddc3a211b819492a21116b82';
-
-/// Copied from Dart SDK
-class _SystemHash {
-  _SystemHash._();
-
-  static int combine(int hash, int value) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + value);
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x0007ffff & hash) << 10));
-    return hash ^ (hash >> 6);
-  }
-
-  static int finish(int hash) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x03ffffff & hash) << 3));
-    // ignore: parameter_assignments
-    hash = hash ^ (hash >> 11);
-    return 0x1fffffff & (hash + ((0x00003fff & hash) << 15));
-  }
-}
-
-/// See also [threadCounts].
-@ProviderFor(threadCounts)
-const threadCountsProvider = ThreadCountsFamily();
-
-/// See also [threadCounts].
-class ThreadCountsFamily extends Family<AsyncValue<ThreadCounts>> {
-  /// See also [threadCounts].
-  const ThreadCountsFamily();
-
-  /// See also [threadCounts].
-  ThreadCountsProvider call(String mailboxId) {
-    return ThreadCountsProvider(mailboxId);
-  }
-
-  @override
-  ThreadCountsProvider getProviderOverride(
-    covariant ThreadCountsProvider provider,
-  ) {
-    return call(provider.mailboxId);
-  }
-
-  static const Iterable<ProviderOrFamily>? _dependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
-
-  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
-      _allTransitiveDependencies;
-
-  @override
-  String? get name => r'threadCountsProvider';
-}
-
-/// See also [threadCounts].
-class ThreadCountsProvider extends AutoDisposeFutureProvider<ThreadCounts> {
-  /// See also [threadCounts].
-  ThreadCountsProvider(String mailboxId)
-    : this._internal(
-        (ref) => threadCounts(ref as ThreadCountsRef, mailboxId),
-        from: threadCountsProvider,
-        name: r'threadCountsProvider',
-        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-            ? null
-            : _$threadCountsHash,
-        dependencies: ThreadCountsFamily._dependencies,
-        allTransitiveDependencies:
-            ThreadCountsFamily._allTransitiveDependencies,
-        mailboxId: mailboxId,
+final class ThreadRepositoryProvider
+    extends
+        $FunctionalProvider<
+          ThreadRepository,
+          ThreadRepository,
+          ThreadRepository
+        >
+    with $Provider<ThreadRepository> {
+  ThreadRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'threadRepositoryProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
 
-  ThreadCountsProvider._internal(
-    super._createNotifier, {
-    required super.name,
-    required super.dependencies,
-    required super.allTransitiveDependencies,
-    required super.debugGetCreateSourceHash,
-    required super.from,
-    required this.mailboxId,
-  }) : super.internal();
+  @override
+  String debugGetCreateSourceHash() => _$threadRepositoryHash();
 
-  final String mailboxId;
+  @$internal
+  @override
+  $ProviderElement<ThreadRepository> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
 
   @override
-  Override overrideWith(
-    FutureOr<ThreadCounts> Function(ThreadCountsRef provider) create,
-  ) {
-    return ProviderOverride(
-      origin: this,
-      override: ThreadCountsProvider._internal(
-        (ref) => create(ref as ThreadCountsRef),
-        from: from,
-        name: null,
-        dependencies: null,
-        allTransitiveDependencies: null,
-        debugGetCreateSourceHash: null,
-        mailboxId: mailboxId,
-      ),
-    );
+  ThreadRepository create(Ref ref) {
+    return threadRepository(ref);
   }
 
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ThreadRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ThreadRepository>(value),
+    );
+  }
+}
+
+String _$threadRepositoryHash() => r'142436c92221e6cf7e81bbdaf06ef8d0b1d06dfe';
+
+@ProviderFor(threadCounts)
+final threadCountsProvider = ThreadCountsFamily._();
+
+final class ThreadCountsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<ThreadCounts>,
+          ThreadCounts,
+          FutureOr<ThreadCounts>
+        >
+    with $FutureModifier<ThreadCounts>, $FutureProvider<ThreadCounts> {
+  ThreadCountsProvider._({
+    required ThreadCountsFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'threadCountsProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
   @override
-  AutoDisposeFutureProviderElement<ThreadCounts> createElement() {
-    return _ThreadCountsProviderElement(this);
+  String debugGetCreateSourceHash() => _$threadCountsHash();
+
+  @override
+  String toString() {
+    return r'threadCountsProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<ThreadCounts> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<ThreadCounts> create(Ref ref) {
+    final argument = this.argument as String;
+    return threadCounts(ref, argument);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is ThreadCountsProvider && other.mailboxId == mailboxId;
+    return other is ThreadCountsProvider && other.argument == argument;
   }
 
   @override
   int get hashCode {
-    var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, mailboxId.hashCode);
-
-    return _SystemHash.finish(hash);
+    return argument.hashCode;
   }
 }
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-mixin ThreadCountsRef on AutoDisposeFutureProviderRef<ThreadCounts> {
-  /// The parameter `mailboxId` of this provider.
-  String get mailboxId;
-}
+String _$threadCountsHash() => r'b28533510caeaec0ddc3a211b819492a21116b82';
 
-class _ThreadCountsProviderElement
-    extends AutoDisposeFutureProviderElement<ThreadCounts>
-    with ThreadCountsRef {
-  _ThreadCountsProviderElement(super.provider);
+final class ThreadCountsFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<ThreadCounts>, String> {
+  ThreadCountsFamily._()
+    : super(
+        retry: null,
+        name: r'threadCountsProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  ThreadCountsProvider call(String mailboxId) =>
+      ThreadCountsProvider._(argument: mailboxId, from: this);
 
   @override
-  String get mailboxId => (origin as ThreadCountsProvider).mailboxId;
+  String toString() => r'threadCountsProvider';
 }
-
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

@@ -116,7 +116,7 @@ class AuthController extends _$AuthController {
     String? timezone,
     String? locale,
   }) async {
-    final current = state.valueOrNull;
+    final current = state.value;
     final currentUser = switch (current) {
       Authenticated(:final user) => user,
       MustChangePassword(:final user) => user,

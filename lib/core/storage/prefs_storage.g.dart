@@ -6,22 +6,52 @@ part of 'prefs_storage.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$prefsStorageHash() => r'e5c4f417e15d83b0814e700f663ab8e7418623e2';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [prefsStorage].
 @ProviderFor(prefsStorage)
-final prefsStorageProvider = Provider<SharedPreferences>.internal(
-  prefsStorage,
-  name: r'prefsStorageProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$prefsStorageHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+final prefsStorageProvider = PrefsStorageProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef PrefsStorageRef = ProviderRef<SharedPreferences>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class PrefsStorageProvider
+    extends
+        $FunctionalProvider<
+          SharedPreferences,
+          SharedPreferences,
+          SharedPreferences
+        >
+    with $Provider<SharedPreferences> {
+  PrefsStorageProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'prefsStorageProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$prefsStorageHash();
+
+  @$internal
+  @override
+  $ProviderElement<SharedPreferences> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  SharedPreferences create(Ref ref) {
+    return prefsStorage(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(SharedPreferences value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<SharedPreferences>(value),
+    );
+  }
+}
+
+String _$prefsStorageHash() => r'e5c4f417e15d83b0814e700f663ab8e7418623e2';

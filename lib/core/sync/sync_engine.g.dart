@@ -6,22 +6,46 @@ part of 'sync_engine.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$syncEngineHash() => r'bfdeee53ef2ab747d35e0e1ed570bba14516b6b2';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [syncEngine].
 @ProviderFor(syncEngine)
-final syncEngineProvider = Provider<SyncEngine>.internal(
-  syncEngine,
-  name: r'syncEngineProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$syncEngineHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+final syncEngineProvider = SyncEngineProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef SyncEngineRef = ProviderRef<SyncEngine>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class SyncEngineProvider
+    extends $FunctionalProvider<SyncEngine, SyncEngine, SyncEngine>
+    with $Provider<SyncEngine> {
+  SyncEngineProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'syncEngineProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$syncEngineHash();
+
+  @$internal
+  @override
+  $ProviderElement<SyncEngine> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  SyncEngine create(Ref ref) {
+    return syncEngine(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(SyncEngine value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<SyncEngine>(value),
+    );
+  }
+}
+
+String _$syncEngineHash() => r'bfdeee53ef2ab747d35e0e1ed570bba14516b6b2';

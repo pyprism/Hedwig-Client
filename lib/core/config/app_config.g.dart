@@ -6,20 +6,56 @@ part of 'app_config.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
+@ProviderFor(AppConfig)
+final appConfigProvider = AppConfigProvider._();
+
+final class AppConfigProvider extends $NotifierProvider<AppConfig, String?> {
+  AppConfigProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'appConfigProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$appConfigHash();
+
+  @$internal
+  @override
+  AppConfig create() => AppConfig();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String? value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String?>(value),
+    );
+  }
+}
+
 String _$appConfigHash() => r'585c7079817784ab775ad4f32abf5777e2c181ad';
 
-/// See also [AppConfig].
-@ProviderFor(AppConfig)
-final appConfigProvider = NotifierProvider<AppConfig, String?>.internal(
-  AppConfig.new,
-  name: r'appConfigProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$appConfigHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-typedef _$AppConfig = Notifier<String?>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+abstract class _$AppConfig extends $Notifier<String?> {
+  String? build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<String?, String?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String?, String?>,
+              String?,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}

@@ -1,6 +1,5 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hedwig_client/core/db/daos/contact_dao.dart';
 import 'package:hedwig_client/core/db/daos/label_dao.dart';
 import 'package:hedwig_client/core/db/daos/mailbox_dao.dart';

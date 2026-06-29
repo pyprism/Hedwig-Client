@@ -6,7 +6,7 @@ part of 'label.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$LabelImpl _$$LabelImplFromJson(Map<String, dynamic> json) => _$LabelImpl(
+_Label _$LabelFromJson(Map<String, dynamic> json) => _Label(
   id: json['id'] as String,
   mailboxId: json['mailbox'] as String,
   name: json['name'] as String,
@@ -16,11 +16,10 @@ _$LabelImpl _$$LabelImplFromJson(Map<String, dynamic> json) => _$LabelImpl(
       : DateTime.parse(json['created_at'] as String),
 );
 
-Map<String, dynamic> _$$LabelImplToJson(_$LabelImpl instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'mailbox': instance.mailboxId,
-      'name': instance.name,
-      'color': instance.color,
-      'created_at': instance.createdAt?.toIso8601String(),
-    };
+Map<String, dynamic> _$LabelToJson(_Label instance) => <String, dynamic>{
+  'id': instance.id,
+  'mailbox': instance.mailboxId,
+  'name': instance.name,
+  'color': instance.color,
+  'created_at': instance.createdAt?.toIso8601String(),
+};

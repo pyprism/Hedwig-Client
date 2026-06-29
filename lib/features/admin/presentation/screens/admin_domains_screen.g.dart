@@ -6,23 +6,46 @@ part of 'admin_domains_screen.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$adminDomainsHash() => r'308ced6efe5f37f5a7b0a79ae5a9cb151a7df708';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [adminDomains].
 @ProviderFor(adminDomains)
-final adminDomainsProvider =
-    AutoDisposeFutureProvider<List<AdminDomain>>.internal(
-      adminDomains,
-      name: r'adminDomainsProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$adminDomainsHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+final adminDomainsProvider = AdminDomainsProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef AdminDomainsRef = AutoDisposeFutureProviderRef<List<AdminDomain>>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class AdminDomainsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<AdminDomain>>,
+          List<AdminDomain>,
+          FutureOr<List<AdminDomain>>
+        >
+    with
+        $FutureModifier<List<AdminDomain>>,
+        $FutureProvider<List<AdminDomain>> {
+  AdminDomainsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'adminDomainsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$adminDomainsHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<AdminDomain>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<AdminDomain>> create(Ref ref) {
+    return adminDomains(ref);
+  }
+}
+
+String _$adminDomainsHash() => r'308ced6efe5f37f5a7b0a79ae5a9cb151a7df708';

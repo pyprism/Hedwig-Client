@@ -6,23 +6,46 @@ part of 'admin_access_screen.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$adminAccessGrantsHash() => r'400e5d52102be1283224b1d2d28c3e92e8b81f36';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [adminAccessGrants].
 @ProviderFor(adminAccessGrants)
-final adminAccessGrantsProvider =
-    AutoDisposeFutureProvider<List<AccessGrant>>.internal(
-      adminAccessGrants,
-      name: r'adminAccessGrantsProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$adminAccessGrantsHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+final adminAccessGrantsProvider = AdminAccessGrantsProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef AdminAccessGrantsRef = AutoDisposeFutureProviderRef<List<AccessGrant>>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class AdminAccessGrantsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<AccessGrant>>,
+          List<AccessGrant>,
+          FutureOr<List<AccessGrant>>
+        >
+    with
+        $FutureModifier<List<AccessGrant>>,
+        $FutureProvider<List<AccessGrant>> {
+  AdminAccessGrantsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'adminAccessGrantsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$adminAccessGrantsHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<AccessGrant>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<AccessGrant>> create(Ref ref) {
+    return adminAccessGrants(ref);
+  }
+}
+
+String _$adminAccessGrantsHash() => r'400e5d52102be1283224b1d2d28c3e92e8b81f36';

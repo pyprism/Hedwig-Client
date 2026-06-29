@@ -6,22 +6,46 @@ part of 'user_cache.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$userCacheHash() => r'1dbc5f083090deac062600daa2f7c32ce6b5799b';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [userCache].
 @ProviderFor(userCache)
-final userCacheProvider = Provider<UserCache>.internal(
-  userCache,
-  name: r'userCacheProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$userCacheHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+final userCacheProvider = UserCacheProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef UserCacheRef = ProviderRef<UserCache>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class UserCacheProvider
+    extends $FunctionalProvider<UserCache, UserCache, UserCache>
+    with $Provider<UserCache> {
+  UserCacheProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'userCacheProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$userCacheHash();
+
+  @$internal
+  @override
+  $ProviderElement<UserCache> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  UserCache create(Ref ref) {
+    return userCache(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(UserCache value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<UserCache>(value),
+    );
+  }
+}
+
+String _$userCacheHash() => r'1dbc5f083090deac062600daa2f7c32ce6b5799b';

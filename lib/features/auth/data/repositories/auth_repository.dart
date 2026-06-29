@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hedwig_client/core/api/dio_client.dart';
 import 'package:hedwig_client/core/config/app_config.dart';
 import 'package:hedwig_client/core/storage/secure_storage.dart';

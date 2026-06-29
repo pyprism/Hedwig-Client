@@ -6,167 +6,135 @@ part of 'message_controller.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$threadMessagesHash() => r'aa5276ccc68de2a209a68b6fe77409fadb560dbc';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// Copied from Dart SDK
-class _SystemHash {
-  _SystemHash._();
-
-  static int combine(int hash, int value) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + value);
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x0007ffff & hash) << 10));
-    return hash ^ (hash >> 6);
-  }
-
-  static int finish(int hash) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x03ffffff & hash) << 3));
-    // ignore: parameter_assignments
-    hash = hash ^ (hash >> 11);
-    return 0x1fffffff & (hash + ((0x00003fff & hash) << 15));
-  }
-}
-
-/// See also [threadMessages].
 @ProviderFor(threadMessages)
-const threadMessagesProvider = ThreadMessagesFamily();
+final threadMessagesProvider = ThreadMessagesFamily._();
 
-/// See also [threadMessages].
-class ThreadMessagesFamily extends Family<AsyncValue<List<MailMessage>>> {
-  /// See also [threadMessages].
-  const ThreadMessagesFamily();
+final class ThreadMessagesProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<MailMessage>>,
+          List<MailMessage>,
+          Stream<List<MailMessage>>
+        >
+    with
+        $FutureModifier<List<MailMessage>>,
+        $StreamProvider<List<MailMessage>> {
+  ThreadMessagesProvider._({
+    required ThreadMessagesFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'threadMessagesProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
-  /// See also [threadMessages].
-  ThreadMessagesProvider call(String threadId) {
-    return ThreadMessagesProvider(threadId);
+  @override
+  String debugGetCreateSourceHash() => _$threadMessagesHash();
+
+  @override
+  String toString() {
+    return r'threadMessagesProvider'
+        ''
+        '($argument)';
   }
 
+  @$internal
   @override
-  ThreadMessagesProvider getProviderOverride(
-    covariant ThreadMessagesProvider provider,
-  ) {
-    return call(provider.threadId);
-  }
-
-  static const Iterable<ProviderOrFamily>? _dependencies = null;
+  $StreamProviderElement<List<MailMessage>> $createElement(
+    $ProviderPointer pointer,
+  ) => $StreamProviderElement(pointer);
 
   @override
-  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
-
-  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
-      _allTransitiveDependencies;
-
-  @override
-  String? get name => r'threadMessagesProvider';
-}
-
-/// See also [threadMessages].
-class ThreadMessagesProvider
-    extends AutoDisposeStreamProvider<List<MailMessage>> {
-  /// See also [threadMessages].
-  ThreadMessagesProvider(String threadId)
-    : this._internal(
-        (ref) => threadMessages(ref as ThreadMessagesRef, threadId),
-        from: threadMessagesProvider,
-        name: r'threadMessagesProvider',
-        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-            ? null
-            : _$threadMessagesHash,
-        dependencies: ThreadMessagesFamily._dependencies,
-        allTransitiveDependencies:
-            ThreadMessagesFamily._allTransitiveDependencies,
-        threadId: threadId,
-      );
-
-  ThreadMessagesProvider._internal(
-    super._createNotifier, {
-    required super.name,
-    required super.dependencies,
-    required super.allTransitiveDependencies,
-    required super.debugGetCreateSourceHash,
-    required super.from,
-    required this.threadId,
-  }) : super.internal();
-
-  final String threadId;
-
-  @override
-  Override overrideWith(
-    Stream<List<MailMessage>> Function(ThreadMessagesRef provider) create,
-  ) {
-    return ProviderOverride(
-      origin: this,
-      override: ThreadMessagesProvider._internal(
-        (ref) => create(ref as ThreadMessagesRef),
-        from: from,
-        name: null,
-        dependencies: null,
-        allTransitiveDependencies: null,
-        debugGetCreateSourceHash: null,
-        threadId: threadId,
-      ),
-    );
-  }
-
-  @override
-  AutoDisposeStreamProviderElement<List<MailMessage>> createElement() {
-    return _ThreadMessagesProviderElement(this);
+  Stream<List<MailMessage>> create(Ref ref) {
+    final argument = this.argument as String;
+    return threadMessages(ref, argument);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is ThreadMessagesProvider && other.threadId == threadId;
+    return other is ThreadMessagesProvider && other.argument == argument;
   }
 
   @override
   int get hashCode {
-    var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, threadId.hashCode);
-
-    return _SystemHash.finish(hash);
+    return argument.hashCode;
   }
 }
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-mixin ThreadMessagesRef on AutoDisposeStreamProviderRef<List<MailMessage>> {
-  /// The parameter `threadId` of this provider.
-  String get threadId;
-}
+String _$threadMessagesHash() => r'aa5276ccc68de2a209a68b6fe77409fadb560dbc';
 
-class _ThreadMessagesProviderElement
-    extends AutoDisposeStreamProviderElement<List<MailMessage>>
-    with ThreadMessagesRef {
-  _ThreadMessagesProviderElement(super.provider);
+final class ThreadMessagesFamily extends $Family
+    with $FunctionalFamilyOverride<Stream<List<MailMessage>>, String> {
+  ThreadMessagesFamily._()
+    : super(
+        retry: null,
+        name: r'threadMessagesProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  ThreadMessagesProvider call(String threadId) =>
+      ThreadMessagesProvider._(argument: threadId, from: this);
 
   @override
-  String get threadId => (origin as ThreadMessagesProvider).threadId;
+  String toString() => r'threadMessagesProvider';
+}
+
+@ProviderFor(MessageStateController)
+final messageStateControllerProvider = MessageStateControllerProvider._();
+
+final class MessageStateControllerProvider
+    extends $NotifierProvider<MessageStateController, AsyncValue<void>> {
+  MessageStateControllerProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'messageStateControllerProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$messageStateControllerHash();
+
+  @$internal
+  @override
+  MessageStateController create() => MessageStateController();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AsyncValue<void> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AsyncValue<void>>(value),
+    );
+  }
 }
 
 String _$messageStateControllerHash() =>
     r'b8e5354564e7465609ff57c9a8d9451805f9d9b1';
 
-/// See also [MessageStateController].
-@ProviderFor(MessageStateController)
-final messageStateControllerProvider =
-    AutoDisposeNotifierProvider<
-      MessageStateController,
-      AsyncValue<void>
-    >.internal(
-      MessageStateController.new,
-      name: r'messageStateControllerProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$messageStateControllerHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-typedef _$MessageStateController = AutoDisposeNotifier<AsyncValue<void>>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+abstract class _$MessageStateController extends $Notifier<AsyncValue<void>> {
+  AsyncValue<void> build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<AsyncValue<void>, AsyncValue<void>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<void>, AsyncValue<void>>,
+              AsyncValue<void>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}

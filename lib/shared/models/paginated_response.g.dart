@@ -6,18 +6,18 @@ part of 'paginated_response.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$PaginatedResponseImpl<T> _$$PaginatedResponseImplFromJson<T>(
+_PaginatedResponse<T> _$PaginatedResponseFromJson<T>(
   Map<String, dynamic> json,
   T Function(Object? json) fromJsonT,
-) => _$PaginatedResponseImpl<T>(
+) => _PaginatedResponse<T>(
   count: (json['count'] as num).toInt(),
   next: json['next'] as String?,
   previous: json['previous'] as String?,
   results: (json['results'] as List<dynamic>).map(fromJsonT).toList(),
 );
 
-Map<String, dynamic> _$$PaginatedResponseImplToJson<T>(
-  _$PaginatedResponseImpl<T> instance,
+Map<String, dynamic> _$PaginatedResponseToJson<T>(
+  _PaginatedResponse<T> instance,
   Object? Function(T value) toJsonT,
 ) => <String, dynamic>{
   'count': instance.count,

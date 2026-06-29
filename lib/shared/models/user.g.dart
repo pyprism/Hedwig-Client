@@ -6,29 +6,28 @@ part of 'user.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$HedwigUserImpl _$$HedwigUserImplFromJson(Map<String, dynamic> json) =>
-    _$HedwigUserImpl(
-      id: json['id'] as String,
-      username: json['username'] as String,
-      email: json['email'] as String,
-      displayName: json['display_name'] as String?,
-      firstName: json['first_name'] as String?,
-      lastName: json['last_name'] as String?,
-      avatarUrl: json['avatar_url'] as String?,
-      timezone: json['timezone'] as String?,
-      locale: json['locale'] as String?,
-      mustChangePassword: json['must_change_password'] as bool? ?? false,
-      isStaff: json['is_staff'] as bool? ?? false,
-      isSuperuser: json['is_superuser'] as bool? ?? false,
-      lastSeenAt: json['last_seen_at'] == null
-          ? null
-          : DateTime.parse(json['last_seen_at'] as String),
-      createdAt: json['created_at'] == null
-          ? null
-          : DateTime.parse(json['created_at'] as String),
-    );
+_HedwigUser _$HedwigUserFromJson(Map<String, dynamic> json) => _HedwigUser(
+  id: json['id'] as String,
+  username: json['username'] as String,
+  email: json['email'] as String,
+  displayName: json['display_name'] as String?,
+  firstName: json['first_name'] as String?,
+  lastName: json['last_name'] as String?,
+  avatarUrl: json['avatar_url'] as String?,
+  timezone: json['timezone'] as String?,
+  locale: json['locale'] as String?,
+  mustChangePassword: json['must_change_password'] as bool? ?? false,
+  isStaff: json['is_staff'] as bool? ?? false,
+  isSuperuser: json['is_superuser'] as bool? ?? false,
+  lastSeenAt: json['last_seen_at'] == null
+      ? null
+      : DateTime.parse(json['last_seen_at'] as String),
+  createdAt: json['created_at'] == null
+      ? null
+      : DateTime.parse(json['created_at'] as String),
+);
 
-Map<String, dynamic> _$$HedwigUserImplToJson(_$HedwigUserImpl instance) =>
+Map<String, dynamic> _$HedwigUserToJson(_HedwigUser instance) =>
     <String, dynamic>{
       'id': instance.id,
       'username': instance.username,
