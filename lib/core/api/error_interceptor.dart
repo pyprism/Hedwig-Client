@@ -34,7 +34,9 @@ class ErrorInterceptor extends Interceptor {
     if (err.type == DioExceptionType.connectionError ||
         err.type == DioExceptionType.receiveTimeout ||
         err.type == DioExceptionType.sendTimeout) {
-      return const Failure.network(message: 'Check your connection and try again.');
+      return const Failure.network(
+        message: 'Check your connection and try again.',
+      );
     }
 
     final status = err.response?.statusCode;
@@ -47,17 +49,20 @@ class ErrorInterceptor extends Interceptor {
 
     return switch (status) {
       401 => const Failure.auth(),
-      403 => Failure.server(statusCode: status, message: detail ?? 'Access denied.'),
+      403 => Failure.server(
+        statusCode: status,
+        message: detail ?? 'Access denied.',
+      ),
       404 => Failure.notFound(message: detail),
       429 => const Failure.server(
-          statusCode: 429,
-          message: 'Too many requests. Please wait and try again.',
-        ),
+        statusCode: 429,
+        message: 'Too many requests. Please wait and try again.',
+      ),
       _ => Failure.server(
-          statusCode: status,
-          message: detail ?? 'Server error ($status).',
-          fieldErrors: _extractFieldErrors(data),
-        ),
+        statusCode: status,
+        message: detail ?? 'Server error ($status).',
+        fieldErrors: _extractFieldErrors(data),
+      ),
     };
   }
 
