@@ -50,7 +50,7 @@ dependencies:
   # HTML rendering for email bodies
   flutter_quill: ^11.5.0
   flutter_quill_delta_from_html: ^1.5.3
-  flutter_widget_from_html_core: ^0.15.1
+  flutter_widget_from_html_core: ^0.17.2
 
   # Open attachment URLs
   url_launcher: ^6.3.1
