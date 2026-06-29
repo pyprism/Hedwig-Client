@@ -85,7 +85,7 @@ class RulesScreen extends ConsumerWidget {
     final selectedMailboxId = ref.watch(selectedMailboxProvider);
     final mailboxesAsync = ref.watch(mailboxListProvider);
     final mailboxId =
-        selectedMailboxId ?? mailboxesAsync.valueOrNull?.firstOrNull?.id;
+        selectedMailboxId ?? mailboxesAsync.value?.firstOrNull?.id;
     if (mailboxId == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Mail rules')),

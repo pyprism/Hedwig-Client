@@ -75,7 +75,7 @@ GoRouter router(Ref ref) {
   return GoRouter(
     initialLocation: '/inbox',
     redirect: (context, state) {
-      final auth = authState.valueOrNull;
+      final auth = authState.value;
       final loading = authState.isLoading;
       final loc = state.matchedLocation;
 
