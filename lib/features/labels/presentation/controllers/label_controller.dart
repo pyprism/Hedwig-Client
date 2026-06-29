@@ -41,10 +41,9 @@ class LabelActions extends _$LabelActions {
   }) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(
-      () => ref.read(labelRepositoryProvider).applyToMessage(
-            messageId: messageId,
-            labelId: labelId,
-          ),
+      () => ref
+          .read(labelRepositoryProvider)
+          .applyToMessage(messageId: messageId, labelId: labelId),
     );
   }
 
@@ -54,10 +53,9 @@ class LabelActions extends _$LabelActions {
   }) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(
-      () => ref.read(labelRepositoryProvider).removeFromMessage(
-            messageId: messageId,
-            labelId: labelId,
-          ),
+      () => ref
+          .read(labelRepositoryProvider)
+          .removeFromMessage(messageId: messageId, labelId: labelId),
     );
   }
 }

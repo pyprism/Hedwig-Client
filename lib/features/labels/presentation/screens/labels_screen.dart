@@ -21,9 +21,23 @@ class LabelsScreen extends ConsumerWidget {
       );
     });
 
-    final mailboxId = ref.watch(selectedMailboxProvider);
+    final selectedMailboxId = ref.watch(selectedMailboxProvider);
+    final mailboxesAsync = ref.watch(mailboxListProvider);
+    final mailboxId =
+        selectedMailboxId ?? mailboxesAsync.valueOrNull?.firstOrNull?.id;
     if (mailboxId == null) {
-      return const Scaffold(body: LoadingWidget());
+      return Scaffold(
+        appBar: AppBar(title: const Text('Labels')),
+        body: mailboxesAsync.when(
+          loading: () => const LoadingWidget(),
+          error: (e, _) => ErrorDisplay(failure: failureFromError(e)),
+          data: (_) => const EmptyState(
+            icon: Icons.inbox_outlined,
+            title: 'No mailboxes',
+            subtitle: 'Your account has no mailboxes yet.',
+          ),
+        ),
+      );
     }
 
     final labelsAsync = ref.watch(labelListProvider(mailboxId));
