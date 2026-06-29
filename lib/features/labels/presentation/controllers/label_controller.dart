@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hedwig_client/features/labels/data/repositories/label_repository.dart';
 import 'package:hedwig_client/shared/models/label.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
