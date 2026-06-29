@@ -4,7 +4,7 @@ part 'message.freezed.dart';
 part 'message.g.dart';
 
 @freezed
-class EmailAddress with _$EmailAddress {
+abstract class EmailAddress with _$EmailAddress {
   const factory EmailAddress({
     required String email,
     @Default('') String name,
@@ -15,7 +15,7 @@ class EmailAddress with _$EmailAddress {
 }
 
 @freezed
-class Attachment with _$Attachment {
+abstract class Attachment with _$Attachment {
   const factory Attachment({
     required String id,
     required String filename,
@@ -31,7 +31,7 @@ class Attachment with _$Attachment {
 }
 
 @freezed
-class MailMessage with _$MailMessage {
+abstract class MailMessage with _$MailMessage {
   const factory MailMessage({
     required String id,
     @JsonKey(name: 'mailbox') required String mailboxId,
@@ -69,7 +69,7 @@ class MailMessage with _$MailMessage {
 }
 
 @freezed
-class SendMessageRequest with _$SendMessageRequest {
+abstract class SendMessageRequest with _$SendMessageRequest {
   const factory SendMessageRequest({
     required String mailboxId,
     String? senderIdentityId,

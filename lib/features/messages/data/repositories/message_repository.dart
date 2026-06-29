@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hedwig_client/core/api/dio_client.dart';
 import 'package:hedwig_client/core/api/error_interceptor.dart';
 import 'package:hedwig_client/core/db/app_database.dart';
