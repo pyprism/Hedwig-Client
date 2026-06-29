@@ -301,8 +301,7 @@ class _ThreadListScreenState extends ConsumerState<ThreadListScreen> {
   Widget build(BuildContext context) {
     final folder = ref.watch(selectedFolderProvider);
     final density = ref.watch(messageDensityProvider);
-    final labels =
-        ref.watch(labelListProvider(widget.mailboxId)).valueOrNull ?? [];
+    final labels = ref.watch(labelListProvider(widget.mailboxId)).value ?? [];
     final threadsAsync = ref.watch(
       threadListProvider(
         mailboxId: widget.mailboxId,

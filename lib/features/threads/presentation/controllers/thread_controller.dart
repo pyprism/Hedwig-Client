@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hedwig_client/features/threads/data/repositories/thread_repository.dart';
 import 'package:hedwig_client/shared/models/thread.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';

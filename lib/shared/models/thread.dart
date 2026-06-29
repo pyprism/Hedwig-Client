@@ -4,7 +4,7 @@ part 'thread.freezed.dart';
 part 'thread.g.dart';
 
 @freezed
-class MailThread with _$MailThread {
+abstract class MailThread with _$MailThread {
   const factory MailThread({
     required String id,
     @JsonKey(name: 'mailbox') required String mailboxId,
@@ -28,7 +28,7 @@ class MailThread with _$MailThread {
 }
 
 @freezed
-class ThreadLabel with _$ThreadLabel {
+abstract class ThreadLabel with _$ThreadLabel {
   const factory ThreadLabel({
     required String id,
     required String name,

@@ -3,8 +3,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hedwig_client/core/api/error_interceptor.dart';
 import 'package:hedwig_client/core/error/failure.dart';
@@ -80,7 +80,7 @@ class _ThreadDetailScreenState extends ConsumerState<ThreadDetailScreen> {
             icon: const Icon(Icons.archive_outlined),
             tooltip: 'Archive thread',
             onPressed: () {
-              final ids = messagesAsync.valueOrNull?.map((m) => m.id).toList();
+              final ids = messagesAsync.value?.map((m) => m.id).toList();
               if (ids == null || ids.isEmpty) return;
               ref
                   .read(messageRepositoryProvider)
@@ -91,7 +91,7 @@ class _ThreadDetailScreenState extends ConsumerState<ThreadDetailScreen> {
             icon: const Icon(Icons.edit_outlined),
             tooltip: 'Reply',
             onPressed: () => context.push(
-              '/compose?reply=${messagesAsync.valueOrNull?.lastOrNull?.id ?? ''}',
+              '/compose?reply=${messagesAsync.value?.lastOrNull?.id ?? ''}',
             ),
           ),
         ],
@@ -872,7 +872,7 @@ class _ActionBar extends ConsumerWidget {
   }
 
   List<PopupMenuEntry<String>> _labelMenuItems(WidgetRef ref) {
-    final labels = ref.watch(labelListProvider(message.mailboxId)).valueOrNull;
+    final labels = ref.watch(labelListProvider(message.mailboxId)).value;
     if (labels == null || labels.isEmpty) {
       return [const PopupMenuItem(enabled: false, child: Text('No labels'))];
     }
