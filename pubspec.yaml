@@ -42,7 +42,7 @@ dependencies:
   connectivity_plus: ^6.1.4
 
   # File selection
-  file_picker: ^10.3.8
+  file_picker: ^11.0.2
 
   # Icons
   cupertino_icons: ^1.0.8
