@@ -23,7 +23,7 @@ dependencies:
   go_router: ^17.3.0
 
   # HTTP
-  dio: ^5.8.0+1
+  dio: ^5.10.0
 
   # Models / codegen
   freezed_annotation: ^3.1.0
