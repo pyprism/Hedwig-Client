@@ -1,5 +1,8 @@
 # Hedwig Client [![Tests](https://github.com/pyprism/Hedwig-Client/actions/workflows/ci.yml/badge.svg)](https://github.com/pyprism/Hedwig-Client/actions/workflows/ci.yml) [![codecov](https://codecov.io/gh/pyprism/Hedwig-Client/graph/badge.svg?token=0Ygz7pQoX9)](https://codecov.io/gh/pyprism/Hedwig-Client)
 
+<div align="center"><img src="assets/icons/potter.png" alt="Hedwig logo" width="200" style="max-width:200px; height:auto;"></div>
+
+
 A Flutter based email client for the [Hedwig](https://github.com/pyprism/Hedwig). One codebase across Android, macOS/iOS (unsigned), web, Windows and Linux.
 
 The API base URL is entered at login/registration and persisted — it is not
