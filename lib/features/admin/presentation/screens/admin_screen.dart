@@ -7,7 +7,14 @@ class AdminScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Admin panel')),
+      appBar: AppBar(
+        title: const Text('Admin panel'),
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          tooltip: 'Back to mail',
+          onPressed: () => context.go('/inbox'),
+        ),
+      ),
       body: ListView(
         children: const [
           _AdminTile(
