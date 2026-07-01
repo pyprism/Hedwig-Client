@@ -122,7 +122,7 @@ class AdminMailboxesScreen extends ConsumerWidget {
           .read(dioClientProvider)
           .get(
             'providers/domains/',
-            queryParameters: {'page_size': 100, 'status': 'verified'},
+            queryParameters: {'page_size': 100},
           );
       domains = (res.data['results'] as List? ?? [])
           .cast<Map<String, dynamic>>();
@@ -147,14 +147,17 @@ class AdminMailboxesScreen extends ConsumerWidget {
                       .map(
                         (d) => DropdownMenuItem(
                           value: d['id'] as String,
-                          child: Text(d['name'] as String? ?? ''),
+                          child: Text(
+                            '${d['name'] ?? ''}'
+                            '${d['status'] != null && d['status'] != 'verified' ? ' (${d['status']})' : ''}',
+                          ),
                         ),
                       )
                       .toList(),
                   onChanged: (v) => setState(() => selectedDomainId = v),
                 )
               else
-                const Text('No verified domains found.'),
+                const Text('No domains found. Add one under Admin → Domains.'),
               const SizedBox(height: 8),
               TextField(
                 controller: localPartCtrl,
