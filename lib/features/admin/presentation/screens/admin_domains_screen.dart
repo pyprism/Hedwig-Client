@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hedwig_client/core/api/dio_client.dart';
@@ -55,6 +56,10 @@ class AdminDomainsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Domains')),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showAddDialog(context, ref),
+        child: const Icon(Icons.add),
+      ),
       body: async.when(
         loading: () => const LoadingWidget(),
         error: (e, _) => Center(child: Text('Error: $e')),
@@ -63,7 +68,7 @@ class AdminDomainsScreen extends ConsumerWidget {
             return const EmptyState(
               icon: Icons.language,
               title: 'No domains',
-              subtitle: 'Add a domain via your email provider first.',
+              subtitle: 'Tap + to add a domain, then verify its DNS records.',
             );
           }
           return ListView.builder(
@@ -95,6 +100,103 @@ class AdminDomainsScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+Future<void> _showAddDialog(BuildContext context, WidgetRef ref) async {
+  final nameCtrl = TextEditingController();
+
+  // Fetch providers for the picker — a domain must belong to one.
+  List<Map<String, dynamic>> providers = [];
+  String? selectedProviderId;
+  try {
+    final res = await ref
+        .read(dioClientProvider)
+        .get('providers/email-providers/', queryParameters: {'page_size': 100});
+    providers = (res.data['results'] as List? ?? []).cast<Map<String, dynamic>>();
+    if (providers.isNotEmpty) {
+      selectedProviderId = providers.first['id'] as String;
+    }
+  } catch (_) {}
+
+  if (!context.mounted) return;
+
+  await showDialog<void>(
+    context: context,
+    builder: (ctx) => StatefulBuilder(
+      builder: (ctx, setState) => AlertDialog(
+        title: const Text('Add domain'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (providers.isNotEmpty)
+              DropdownButtonFormField<String>(
+                initialValue: selectedProviderId,
+                decoration: const InputDecoration(labelText: 'Provider'),
+                items: providers
+                    .map(
+                      (p) => DropdownMenuItem(
+                        value: p['id'] as String,
+                        child: Text(p['name'] as String? ?? ''),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (v) => setState(() => selectedProviderId = v),
+              )
+            else
+              const Text('No providers found. Add a provider first.'),
+            const SizedBox(height: 8),
+            TextField(
+              controller: nameCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Domain (e.g. example.com)',
+                hintText: 'bare domain, no @ or /',
+              ),
+              autocorrect: false,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: selectedProviderId == null
+                ? null
+                : () async {
+                    Navigator.of(ctx).pop();
+                    try {
+                      await ref
+                          .read(dioClientProvider)
+                          .post(
+                            'providers/domains/',
+                            data: {
+                              'name': nameCtrl.text.trim().toLowerCase(),
+                              'provider': selectedProviderId,
+                              'outbound_enabled': true,
+                              'inbound_enabled': true,
+                            },
+                          );
+                      ref.invalidate(adminDomainsProvider);
+                    } on DioException catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Error: ${e.response?.data ?? e.message}',
+                            ),
+                          ),
+                        );
+                      }
+                    }
+                  },
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    ),
+  );
+  nameCtrl.dispose();
 }
 
 class _DnsRecordTile extends StatelessWidget {
