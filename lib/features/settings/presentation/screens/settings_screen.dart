@@ -216,7 +216,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           const Divider(),
 
           // ── Admin ─────────────────────────────────────────────────
-          if (user?.isStaff == true) ...[
+          if (user?.isStaff == true || user?.isSuperuser == true) ...[
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
               child: Text(
