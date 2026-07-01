@@ -54,11 +54,22 @@ class _InboxRoute extends ConsumerWidget {
           ),
           data: (mailboxes) {
             if (mailboxes.isEmpty) {
-              return const Scaffold(
+              final auth = ref.watch(authControllerProvider).value;
+              final isStaff = auth is Authenticated && auth.user.isStaff;
+              return Scaffold(
                 body: EmptyState(
                   icon: Icons.inbox_outlined,
                   title: 'No mailboxes',
-                  subtitle: 'Your account has no mailboxes yet.',
+                  subtitle: isStaff
+                      ? 'Set up a domain and mailbox to get started.'
+                      : 'Your account has no mailboxes yet. Contact your administrator.',
+                  action: isStaff
+                      ? FilledButton.icon(
+                          onPressed: () => context.go('/admin'),
+                          icon: const Icon(Icons.settings),
+                          label: const Text('Open admin setup'),
+                        )
+                      : null,
                 ),
               );
             }
