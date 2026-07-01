@@ -120,10 +120,7 @@ class AdminMailboxesScreen extends ConsumerWidget {
     try {
       final res = await ref
           .read(dioClientProvider)
-          .get(
-            'providers/domains/',
-            queryParameters: {'page_size': 100},
-          );
+          .get('providers/domains/', queryParameters: {'page_size': 100});
       domains = (res.data['results'] as List? ?? [])
           .cast<Map<String, dynamic>>();
       if (domains.isNotEmpty) selectedDomainId = domains.first['id'] as String;

@@ -112,7 +112,8 @@ Future<void> _showAddDialog(BuildContext context, WidgetRef ref) async {
     final res = await ref
         .read(dioClientProvider)
         .get('providers/email-providers/', queryParameters: {'page_size': 100});
-    providers = (res.data['results'] as List? ?? []).cast<Map<String, dynamic>>();
+    providers = (res.data['results'] as List? ?? [])
+        .cast<Map<String, dynamic>>();
     if (providers.isNotEmpty) {
       selectedProviderId = providers.first['id'] as String;
     }
