@@ -29,8 +29,7 @@ flutter build web  --release
 echo "Installing Ansible collections from '$COLLECTION_REQUIREMENTS_FILE'..."
 ANSIBLE_CONFIG="$ANSIBLE_CONFIG_FILE" ansible-galaxy collection install \
   -r "$COLLECTION_REQUIREMENTS_FILE" \
-  -p "$COLLECTIONS_PATH" \
-  --force-with-deps
+  -p "$COLLECTIONS_PATH"
 
 echo "Running Ansible deployment playbook..."
 ANSIBLE_CONFIG="$ANSIBLE_CONFIG_FILE" ansible-playbook deploy/ansible/update.yaml -K
