@@ -135,6 +135,7 @@ class AdminProvidersScreen extends ConsumerWidget {
   Future<void> _showAddDialog(BuildContext context, WidgetRef ref) async {
     final nameCtrl = TextEditingController();
     final tokenCtrl = TextEditingController();
+    final accountTokenCtrl = TextEditingController();
     final fromEmailCtrl = TextEditingController();
 
     await showDialog<void>(
@@ -154,6 +155,15 @@ class AdminProvidersScreen extends ConsumerWidget {
                 controller: tokenCtrl,
                 decoration: const InputDecoration(
                   labelText: 'Postmark server token',
+                ),
+                obscureText: true,
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: accountTokenCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Postmark account token',
+                  hintText: 'Required for domain registration/DNS checks',
                 ),
                 obscureText: true,
               ),
@@ -183,7 +193,11 @@ class AdminProvidersScreen extends ConsumerWidget {
                       data: {
                         'name': nameCtrl.text.trim(),
                         'provider_type': 'postmark',
-                        'credentials': {'server_token': tokenCtrl.text.trim()},
+                        'credentials': {
+                          'server_token': tokenCtrl.text.trim(),
+                          if (accountTokenCtrl.text.trim().isNotEmpty)
+                            'account_token': accountTokenCtrl.text.trim(),
+                        },
                         'default_from_email': fromEmailCtrl.text.trim(),
                       },
                     );
@@ -205,6 +219,7 @@ class AdminProvidersScreen extends ConsumerWidget {
     );
     nameCtrl.dispose();
     tokenCtrl.dispose();
+    accountTokenCtrl.dispose();
     fromEmailCtrl.dispose();
   }
 
@@ -215,6 +230,7 @@ class AdminProvidersScreen extends ConsumerWidget {
   ) async {
     final nameCtrl = TextEditingController(text: provider.name);
     final tokenCtrl = TextEditingController();
+    final accountTokenCtrl = TextEditingController();
     final fromEmailCtrl = TextEditingController(
       text: provider.defaultFromEmail ?? '',
     );
@@ -244,6 +260,15 @@ class AdminProvidersScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 TextField(
+                  controller: accountTokenCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Postmark account token',
+                    hintText: 'Leave blank to keep existing',
+                  ),
+                  obscureText: true,
+                ),
+                const SizedBox(height: 8),
+                TextField(
                   controller: fromEmailCtrl,
                   decoration: const InputDecoration(
                     labelText: 'Default from email',
@@ -266,6 +291,12 @@ class AdminProvidersScreen extends ConsumerWidget {
             FilledButton(
               onPressed: () async {
                 Navigator.of(ctx).pop();
+                final credentials = <String, dynamic>{
+                  if (tokenCtrl.text.trim().isNotEmpty)
+                    'server_token': tokenCtrl.text.trim(),
+                  if (accountTokenCtrl.text.trim().isNotEmpty)
+                    'account_token': accountTokenCtrl.text.trim(),
+                };
                 try {
                   await ref
                       .read(dioClientProvider)
@@ -275,10 +306,8 @@ class AdminProvidersScreen extends ConsumerWidget {
                           'name': nameCtrl.text.trim(),
                           'default_from_email': fromEmailCtrl.text.trim(),
                           'is_active': isActive,
-                          if (tokenCtrl.text.trim().isNotEmpty)
-                            'credentials': {
-                              'server_token': tokenCtrl.text.trim(),
-                            },
+                          if (credentials.isNotEmpty)
+                            'credentials': credentials,
                         },
                       );
                   ref.invalidate(adminProvidersProvider);
@@ -302,6 +331,7 @@ class AdminProvidersScreen extends ConsumerWidget {
     );
     nameCtrl.dispose();
     tokenCtrl.dispose();
+    accountTokenCtrl.dispose();
     fromEmailCtrl.dispose();
   }
 
