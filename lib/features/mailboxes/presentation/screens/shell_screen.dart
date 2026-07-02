@@ -8,6 +8,7 @@ import 'package:hedwig_client/core/widgets/loading_widget.dart';
 import 'package:hedwig_client/core/widgets/offline_banner.dart';
 import 'package:hedwig_client/core/widgets/outbox_badge.dart';
 import 'package:hedwig_client/core/api/error_interceptor.dart';
+import 'package:hedwig_client/features/auth/domain/entities/auth_state.dart';
 import 'package:hedwig_client/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:hedwig_client/features/labels/presentation/controllers/label_controller.dart';
 import 'package:hedwig_client/features/mailboxes/presentation/controllers/mailbox_controller.dart';
@@ -52,11 +53,24 @@ class ShellScreen extends ConsumerWidget {
           Scaffold(body: ErrorDisplay(failure: failureFromError(e))),
       data: (mailboxes) {
         if (mailboxes.isEmpty) {
-          return const Scaffold(
+          final auth = ref.watch(authControllerProvider).value;
+          final isAdmin =
+              auth is Authenticated &&
+              (auth.user.isStaff || auth.user.isSuperuser);
+          return Scaffold(
             body: EmptyState(
               icon: Icons.inbox_outlined,
               title: 'No mailboxes',
-              subtitle: 'Contact your administrator to get access.',
+              subtitle: isAdmin
+                  ? 'Set up a domain and mailbox to get started.'
+                  : 'Contact your administrator to get access.',
+              action: isAdmin
+                  ? FilledButton.icon(
+                      onPressed: () => context.go('/admin'),
+                      icon: const Icon(Icons.settings),
+                      label: const Text('Open admin setup'),
+                    )
+                  : null,
             ),
           );
         }

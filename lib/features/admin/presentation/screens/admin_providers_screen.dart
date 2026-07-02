@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hedwig_client/core/api/dio_client.dart';
+import 'package:hedwig_client/core/widgets/confirm_delete_dialog.dart';
 import 'package:hedwig_client/core/widgets/empty_state.dart';
 import 'package:hedwig_client/core/widgets/loading_widget.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -92,18 +93,37 @@ class AdminProvidersScreen extends ConsumerWidget {
                 subtitle: Text(
                   '${p.providerType}${p.defaultFromEmail != null ? ' · ${p.defaultFromEmail}' : ''}',
                 ),
-                trailing: p.lastHealthCheckError != null
-                    ? Tooltip(
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (p.lastHealthCheckError != null)
+                      Tooltip(
                         message: p.lastHealthCheckError!,
                         child: const Icon(
                           Icons.warning_amber,
                           color: Colors.orange,
                         ),
                       )
-                    : const Icon(
+                    else
+                      const Icon(
                         Icons.check_circle_outline,
                         color: Colors.green,
                       ),
+                    PopupMenuButton<String>(
+                      onSelected: (v) {
+                        if (v == 'edit') {
+                          _showEditDialog(context, ref, p);
+                        } else if (v == 'delete') {
+                          _deleteProvider(context, ref, p);
+                        }
+                      },
+                      itemBuilder: (context) => const [
+                        PopupMenuItem(value: 'edit', child: Text('Edit')),
+                        PopupMenuItem(value: 'delete', child: Text('Delete')),
+                      ],
+                    ),
+                  ],
+                ),
               );
             },
           );
@@ -186,5 +206,127 @@ class AdminProvidersScreen extends ConsumerWidget {
     nameCtrl.dispose();
     tokenCtrl.dispose();
     fromEmailCtrl.dispose();
+  }
+
+  Future<void> _showEditDialog(
+    BuildContext context,
+    WidgetRef ref,
+    EmailProvider provider,
+  ) async {
+    final nameCtrl = TextEditingController(text: provider.name);
+    final tokenCtrl = TextEditingController();
+    final fromEmailCtrl = TextEditingController(
+      text: provider.defaultFromEmail ?? '',
+    );
+    bool isActive = provider.isActive;
+
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) => AlertDialog(
+          title: const Text('Edit provider'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameCtrl,
+                  decoration: const InputDecoration(labelText: 'Name'),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: tokenCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Postmark server token',
+                    hintText: 'Leave blank to keep existing',
+                  ),
+                  obscureText: true,
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: fromEmailCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Default from email',
+                  ),
+                ),
+                SwitchListTile(
+                  value: isActive,
+                  onChanged: (v) => setState(() => isActive = v),
+                  title: const Text('Active'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () async {
+                Navigator.of(ctx).pop();
+                try {
+                  await ref
+                      .read(dioClientProvider)
+                      .patch(
+                        'providers/email-providers/${provider.id}/',
+                        data: {
+                          'name': nameCtrl.text.trim(),
+                          'default_from_email': fromEmailCtrl.text.trim(),
+                          'is_active': isActive,
+                          if (tokenCtrl.text.trim().isNotEmpty)
+                            'credentials': {
+                              'server_token': tokenCtrl.text.trim(),
+                            },
+                        },
+                      );
+                  ref.invalidate(adminProvidersProvider);
+                } on DioException catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Error: ${e.response?.data ?? e.message}',
+                        ),
+                      ),
+                    );
+                  }
+                }
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        ),
+      ),
+    );
+    nameCtrl.dispose();
+    tokenCtrl.dispose();
+    fromEmailCtrl.dispose();
+  }
+
+  Future<void> _deleteProvider(
+    BuildContext context,
+    WidgetRef ref,
+    EmailProvider provider,
+  ) async {
+    final ok = await confirmDelete(
+      context,
+      title: 'Delete provider?',
+      message: 'Delete "${provider.name}"? Domains using it will stop sending.',
+    );
+    if (!ok) return;
+    try {
+      await ref
+          .read(dioClientProvider)
+          .delete('providers/email-providers/${provider.id}/');
+      ref.invalidate(adminProvidersProvider);
+    } on DioException catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${e.response?.data ?? e.message}')),
+        );
+      }
+    }
   }
 }

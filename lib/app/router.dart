@@ -54,11 +54,24 @@ class _InboxRoute extends ConsumerWidget {
           ),
           data: (mailboxes) {
             if (mailboxes.isEmpty) {
-              return const Scaffold(
+              final auth = ref.watch(authControllerProvider).value;
+              final isStaff =
+                  auth is Authenticated &&
+                  (auth.user.isStaff || auth.user.isSuperuser);
+              return Scaffold(
                 body: EmptyState(
                   icon: Icons.inbox_outlined,
                   title: 'No mailboxes',
-                  subtitle: 'Your account has no mailboxes yet.',
+                  subtitle: isStaff
+                      ? 'Set up a domain and mailbox to get started.'
+                      : 'Your account has no mailboxes yet. Contact your administrator.',
+                  action: isStaff
+                      ? FilledButton.icon(
+                          onPressed: () => context.go('/admin'),
+                          icon: const Icon(Icons.settings),
+                          label: const Text('Open admin setup'),
+                        )
+                      : null,
                 ),
               );
             }
@@ -97,8 +110,9 @@ GoRouter router(Ref ref) {
             loc == '/change-password') {
           return '/inbox';
         }
-        // Staff guard: non-staff hitting /admin/* → /
-        if (loc.startsWith('/admin') && !auth.user.isStaff) {
+        // Staff guard: non-staff hitting /admin/* → / (superuser counts as staff)
+        if (loc.startsWith('/admin') &&
+            !(auth.user.isStaff || auth.user.isSuperuser)) {
           return '/inbox';
         }
       }
@@ -156,33 +170,36 @@ GoRouter router(Ref ref) {
             path: '/settings',
             builder: (context, _) => const SettingsScreen(),
           ),
-          // Admin routes (staff only — enforced by redirect guard above)
-          GoRoute(path: '/admin', builder: (context, _) => const AdminScreen()),
-          GoRoute(
-            path: '/admin/providers',
-            builder: (context, _) => const AdminProvidersScreen(),
-          ),
-          GoRoute(
-            path: '/admin/domains',
-            builder: (context, _) => const AdminDomainsScreen(),
-          ),
-          GoRoute(
-            path: '/admin/mailboxes',
-            builder: (context, _) => const AdminMailboxesScreen(),
-          ),
-          GoRoute(
-            path: '/admin/users',
-            builder: (context, _) => const AdminUsersScreen(),
-          ),
-          GoRoute(
-            path: '/admin/access',
-            builder: (context, _) => const AdminAccessScreen(),
-          ),
-          GoRoute(
-            path: '/admin/delivery',
-            builder: (context, _) => const AdminDeliveryScreen(),
-          ),
         ],
+      ),
+      // Admin routes (staff only — enforced by redirect guard above).
+      // Kept OUTSIDE the ShellRoute so they render even when the user has no
+      // mailboxes yet (the shell short-circuits to an empty state otherwise) —
+      // this is the path a fresh super-admin uses to create the first mailbox.
+      GoRoute(path: '/admin', builder: (context, _) => const AdminScreen()),
+      GoRoute(
+        path: '/admin/providers',
+        builder: (context, _) => const AdminProvidersScreen(),
+      ),
+      GoRoute(
+        path: '/admin/domains',
+        builder: (context, _) => const AdminDomainsScreen(),
+      ),
+      GoRoute(
+        path: '/admin/mailboxes',
+        builder: (context, _) => const AdminMailboxesScreen(),
+      ),
+      GoRoute(
+        path: '/admin/users',
+        builder: (context, _) => const AdminUsersScreen(),
+      ),
+      GoRoute(
+        path: '/admin/access',
+        builder: (context, _) => const AdminAccessScreen(),
+      ),
+      GoRoute(
+        path: '/admin/delivery',
+        builder: (context, _) => const AdminDeliveryScreen(),
       ),
     ],
     errorBuilder: (_, state) =>

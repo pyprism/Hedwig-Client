@@ -1,6 +1,8 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hedwig_client/core/api/dio_client.dart';
+import 'package:hedwig_client/core/widgets/confirm_delete_dialog.dart';
 import 'package:hedwig_client/core/widgets/empty_state.dart';
 import 'package:hedwig_client/core/widgets/loading_widget.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -14,6 +16,9 @@ class AdminDomain {
     required this.status,
     required this.outboundEnabled,
     required this.inboundEnabled,
+    required this.isActive,
+    this.providerId,
+    this.lastError,
     this.dnsRecordSet = const [],
   });
 
@@ -22,6 +27,9 @@ class AdminDomain {
   final String status;
   final bool outboundEnabled;
   final bool inboundEnabled;
+  final bool isActive;
+  final String? providerId;
+  final String? lastError;
   final List<Map<String, dynamic>> dnsRecordSet;
 
   factory AdminDomain.fromJson(Map<String, dynamic> j) => AdminDomain(
@@ -30,6 +38,9 @@ class AdminDomain {
     status: j['status'] as String? ?? 'pending',
     outboundEnabled: j['outbound_enabled'] as bool? ?? true,
     inboundEnabled: j['inbound_enabled'] as bool? ?? true,
+    isActive: j['is_active'] as bool? ?? true,
+    providerId: j['provider'] as String?,
+    lastError: j['last_error'] as String?,
     dnsRecordSet: (j['dns_record_set'] as List? ?? [])
         .cast<Map<String, dynamic>>(),
   );
@@ -55,6 +66,10 @@ class AdminDomainsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Domains')),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showAddDialog(context, ref),
+        child: const Icon(Icons.add),
+      ),
       body: async.when(
         loading: () => const LoadingWidget(),
         error: (e, _) => Center(child: Text('Error: $e')),
@@ -63,7 +78,7 @@ class AdminDomainsScreen extends ConsumerWidget {
             return const EmptyState(
               icon: Icons.language,
               title: 'No domains',
-              subtitle: 'Add a domain via your email provider first.',
+              subtitle: 'Tap + to add a domain, then verify its DNS records.',
             );
           }
           return ListView.builder(
@@ -78,7 +93,30 @@ class AdminDomainsScreen extends ConsumerWidget {
               return ExpansionTile(
                 leading: Icon(Icons.language, color: color),
                 title: Text(d.name),
-                subtitle: Text(d.status.toUpperCase()),
+                subtitle: Text(
+                  d.status == 'failed' && d.lastError != null
+                      ? '${d.status.toUpperCase()} · ${d.lastError}'
+                      : d.status.toUpperCase(),
+                ),
+                trailing: PopupMenuButton<String>(
+                  onSelected: (v) {
+                    if (v == 'check_dns') {
+                      _checkDns(context, ref, d);
+                    } else if (v == 'edit') {
+                      _showEditDialog(context, ref, d);
+                    } else if (v == 'delete') {
+                      _deleteDomain(context, ref, d);
+                    }
+                  },
+                  itemBuilder: (context) => const [
+                    PopupMenuItem(
+                      value: 'check_dns',
+                      child: Text('Check DNS now'),
+                    ),
+                    PopupMenuItem(value: 'edit', child: Text('Edit')),
+                    PopupMenuItem(value: 'delete', child: Text('Delete')),
+                  ],
+                ),
                 children: [
                   if (d.dnsRecordSet.isEmpty)
                     const Padding(
@@ -94,6 +132,262 @@ class AdminDomainsScreen extends ConsumerWidget {
         },
       ),
     );
+  }
+}
+
+Future<void> _showAddDialog(BuildContext context, WidgetRef ref) async {
+  final nameCtrl = TextEditingController();
+
+  // Fetch providers for the picker — a domain must belong to one.
+  List<Map<String, dynamic>> providers = [];
+  String? selectedProviderId;
+  try {
+    final res = await ref
+        .read(dioClientProvider)
+        .get('providers/email-providers/', queryParameters: {'page_size': 100});
+    providers = (res.data['results'] as List? ?? [])
+        .cast<Map<String, dynamic>>();
+    if (providers.isNotEmpty) {
+      selectedProviderId = providers.first['id'] as String;
+    }
+  } catch (_) {}
+
+  if (!context.mounted) {
+    nameCtrl.dispose();
+    return;
+  }
+
+  await showDialog<void>(
+    context: context,
+    builder: (ctx) => StatefulBuilder(
+      builder: (ctx, setState) => AlertDialog(
+        title: const Text('Add domain'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (providers.isNotEmpty)
+              DropdownButtonFormField<String>(
+                initialValue: selectedProviderId,
+                decoration: const InputDecoration(labelText: 'Provider'),
+                items: providers
+                    .map(
+                      (p) => DropdownMenuItem(
+                        value: p['id'] as String,
+                        child: Text(p['name'] as String? ?? ''),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (v) => setState(() => selectedProviderId = v),
+              )
+            else
+              const Text('No providers found. Add a provider first.'),
+            const SizedBox(height: 8),
+            TextField(
+              controller: nameCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Domain (e.g. example.com)',
+                hintText: 'bare domain, no @ or /',
+              ),
+              autocorrect: false,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: selectedProviderId == null
+                ? null
+                : () async {
+                    Navigator.of(ctx).pop();
+                    try {
+                      await ref
+                          .read(dioClientProvider)
+                          .post(
+                            'providers/domains/',
+                            data: {
+                              'name': nameCtrl.text.trim().toLowerCase(),
+                              'provider': selectedProviderId,
+                              'outbound_enabled': true,
+                              'inbound_enabled': true,
+                            },
+                          );
+                      ref.invalidate(adminDomainsProvider);
+                    } on DioException catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Error: ${e.response?.data ?? e.message}',
+                            ),
+                          ),
+                        );
+                      }
+                    }
+                  },
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    ),
+  );
+  nameCtrl.dispose();
+}
+
+Future<void> _showEditDialog(
+  BuildContext context,
+  WidgetRef ref,
+  AdminDomain domain,
+) async {
+  List<Map<String, dynamic>> providers = [];
+  String? selectedProviderId = domain.providerId;
+  try {
+    final res = await ref
+        .read(dioClientProvider)
+        .get('providers/email-providers/', queryParameters: {'page_size': 100});
+    providers = (res.data['results'] as List? ?? [])
+        .cast<Map<String, dynamic>>();
+  } catch (_) {}
+
+  if (!context.mounted) return;
+
+  bool outboundEnabled = domain.outboundEnabled;
+  bool inboundEnabled = domain.inboundEnabled;
+  bool isActive = domain.isActive;
+
+  await showDialog<void>(
+    context: context,
+    builder: (ctx) => StatefulBuilder(
+      builder: (ctx, setState) => AlertDialog(
+        title: Text('Edit ${domain.name}'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (providers.isNotEmpty)
+                DropdownButtonFormField<String>(
+                  initialValue: selectedProviderId,
+                  decoration: const InputDecoration(labelText: 'Provider'),
+                  items: providers
+                      .map(
+                        (p) => DropdownMenuItem(
+                          value: p['id'] as String,
+                          child: Text(p['name'] as String? ?? ''),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (v) => setState(() => selectedProviderId = v),
+                ),
+              SwitchListTile(
+                value: outboundEnabled,
+                onChanged: (v) => setState(() => outboundEnabled = v),
+                title: const Text('Outbound enabled'),
+                contentPadding: EdgeInsets.zero,
+              ),
+              SwitchListTile(
+                value: inboundEnabled,
+                onChanged: (v) => setState(() => inboundEnabled = v),
+                title: const Text('Inbound enabled'),
+                contentPadding: EdgeInsets.zero,
+              ),
+              SwitchListTile(
+                value: isActive,
+                onChanged: (v) => setState(() => isActive = v),
+                title: const Text('Active'),
+                contentPadding: EdgeInsets.zero,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: selectedProviderId == null
+                ? null
+                : () async {
+                    Navigator.of(ctx).pop();
+                    try {
+                      await ref
+                          .read(dioClientProvider)
+                          .patch(
+                            'providers/domains/${domain.id}/',
+                            data: {
+                              'provider': selectedProviderId,
+                              'outbound_enabled': outboundEnabled,
+                              'inbound_enabled': inboundEnabled,
+                              'is_active': isActive,
+                            },
+                          );
+                      ref.invalidate(adminDomainsProvider);
+                    } on DioException catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Error: ${e.response?.data ?? e.message}',
+                            ),
+                          ),
+                        );
+                      }
+                    }
+                  },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Future<void> _checkDns(
+  BuildContext context,
+  WidgetRef ref,
+  AdminDomain domain,
+) async {
+  try {
+    await ref
+        .read(dioClientProvider)
+        .post('providers/domains/${domain.id}/check-dns/');
+    if (context.mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('DNS check queued.')));
+    }
+    ref.invalidate(adminDomainsProvider);
+  } on DioException catch (e) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.response?.data ?? e.message}')),
+      );
+    }
+  }
+}
+
+Future<void> _deleteDomain(
+  BuildContext context,
+  WidgetRef ref,
+  AdminDomain domain,
+) async {
+  final ok = await confirmDelete(
+    context,
+    title: 'Delete domain?',
+    message: 'Delete "${domain.name}"? Mailboxes on this domain will break.',
+  );
+  if (!ok) return;
+  try {
+    await ref.read(dioClientProvider).delete('providers/domains/${domain.id}/');
+    ref.invalidate(adminDomainsProvider);
+  } on DioException catch (e) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.response?.data ?? e.message}')),
+      );
+    }
   }
 }
 
