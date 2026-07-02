@@ -1,6 +1,8 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hedwig_client/core/api/dio_client.dart';
+import 'package:hedwig_client/core/widgets/confirm_delete_dialog.dart';
 import 'package:hedwig_client/core/widgets/empty_state.dart';
 import 'package:hedwig_client/core/widgets/loading_widget.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -14,6 +16,9 @@ class AdminMailbox {
     required this.displayName,
     required this.isActive,
     required this.sendEnabled,
+    required this.receiveEnabled,
+    required this.localPart,
+    this.domainId,
   });
 
   final String id;
@@ -21,6 +26,9 @@ class AdminMailbox {
   final String? displayName;
   final bool isActive;
   final bool sendEnabled;
+  final bool receiveEnabled;
+  final String localPart;
+  final String? domainId;
 
   factory AdminMailbox.fromJson(Map<String, dynamic> j) => AdminMailbox(
     id: j['id'] as String,
@@ -28,6 +36,9 @@ class AdminMailbox {
     displayName: j['display_name'] as String?,
     isActive: j['is_active'] as bool? ?? true,
     sendEnabled: j['send_enabled'] as bool? ?? true,
+    receiveEnabled: j['receive_enabled'] as bool? ?? true,
+    localPart: j['local_part'] as String? ?? '',
+    domainId: j['domain'] as String?,
   );
 }
 
@@ -100,6 +111,19 @@ class AdminMailboxesScreen extends ConsumerWidget {
                           color: Colors.grey,
                         ),
                       ),
+                    PopupMenuButton<String>(
+                      onSelected: (v) {
+                        if (v == 'edit') {
+                          _showEditDialog(context, ref, m);
+                        } else if (v == 'delete') {
+                          _deleteMailbox(context, ref, m);
+                        }
+                      },
+                      itemBuilder: (context) => const [
+                        PopupMenuItem(value: 'edit', child: Text('Edit')),
+                        PopupMenuItem(value: 'delete', child: Text('Delete')),
+                      ],
+                    ),
                   ],
                 ),
               );
@@ -126,7 +150,11 @@ class AdminMailboxesScreen extends ConsumerWidget {
       if (domains.isNotEmpty) selectedDomainId = domains.first['id'] as String;
     } catch (_) {}
 
-    if (!context.mounted) return;
+    if (!context.mounted) {
+      localPartCtrl.dispose();
+      displayNameCtrl.dispose();
+      return;
+    }
 
     await showDialog<void>(
       context: context,
@@ -208,5 +236,161 @@ class AdminMailboxesScreen extends ConsumerWidget {
     );
     localPartCtrl.dispose();
     displayNameCtrl.dispose();
+  }
+
+  Future<void> _showEditDialog(
+    BuildContext context,
+    WidgetRef ref,
+    AdminMailbox mailbox,
+  ) async {
+    final localPartCtrl = TextEditingController(text: mailbox.localPart);
+    final displayNameCtrl = TextEditingController(
+      text: mailbox.displayName ?? '',
+    );
+
+    List<Map<String, dynamic>> domains = [];
+    String? selectedDomainId = mailbox.domainId;
+    try {
+      final res = await ref
+          .read(dioClientProvider)
+          .get('providers/domains/', queryParameters: {'page_size': 100});
+      domains = (res.data['results'] as List? ?? [])
+          .cast<Map<String, dynamic>>();
+    } catch (_) {}
+
+    if (!context.mounted) {
+      localPartCtrl.dispose();
+      displayNameCtrl.dispose();
+      return;
+    }
+
+    bool sendEnabled = mailbox.sendEnabled;
+    bool receiveEnabled = mailbox.receiveEnabled;
+    bool isActive = mailbox.isActive;
+
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) => AlertDialog(
+          title: Text('Edit ${mailbox.emailAddress}'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (domains.isNotEmpty)
+                  DropdownButtonFormField<String>(
+                    initialValue: selectedDomainId,
+                    decoration: const InputDecoration(labelText: 'Domain'),
+                    items: domains
+                        .map(
+                          (d) => DropdownMenuItem(
+                            value: d['id'] as String,
+                            child: Text(d['name'] as String? ?? ''),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (v) => setState(() => selectedDomainId = v),
+                  ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: localPartCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Local part (before @)',
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: displayNameCtrl,
+                  decoration: const InputDecoration(labelText: 'Display name'),
+                ),
+                SwitchListTile(
+                  value: sendEnabled,
+                  onChanged: (v) => setState(() => sendEnabled = v),
+                  title: const Text('Send enabled'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+                SwitchListTile(
+                  value: receiveEnabled,
+                  onChanged: (v) => setState(() => receiveEnabled = v),
+                  title: const Text('Receive enabled'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+                SwitchListTile(
+                  value: isActive,
+                  onChanged: (v) => setState(() => isActive = v),
+                  title: const Text('Active'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: selectedDomainId == null
+                  ? null
+                  : () async {
+                      Navigator.of(ctx).pop();
+                      try {
+                        await ref
+                            .read(dioClientProvider)
+                            .patch(
+                              'mail/mailboxes/${mailbox.id}/',
+                              data: {
+                                'domain': selectedDomainId,
+                                'local_part': localPartCtrl.text.trim(),
+                                'display_name': displayNameCtrl.text.trim(),
+                                'send_enabled': sendEnabled,
+                                'receive_enabled': receiveEnabled,
+                                'is_active': isActive,
+                              },
+                            );
+                        ref.invalidate(adminMailboxesProvider);
+                      } on DioException catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Error: ${e.response?.data ?? e.message}',
+                              ),
+                            ),
+                          );
+                        }
+                      }
+                    },
+              child: const Text('Save'),
+            ),
+          ],
+        ),
+      ),
+    );
+    localPartCtrl.dispose();
+    displayNameCtrl.dispose();
+  }
+
+  Future<void> _deleteMailbox(
+    BuildContext context,
+    WidgetRef ref,
+    AdminMailbox mailbox,
+  ) async {
+    final ok = await confirmDelete(
+      context,
+      title: 'Delete mailbox?',
+      message: 'Delete "${mailbox.emailAddress}"? This cannot be undone.',
+    );
+    if (!ok) return;
+    try {
+      await ref.read(dioClientProvider).delete('mail/mailboxes/${mailbox.id}/');
+      ref.invalidate(adminMailboxesProvider);
+    } on DioException catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${e.response?.data ?? e.message}')),
+        );
+      }
+    }
   }
 }
