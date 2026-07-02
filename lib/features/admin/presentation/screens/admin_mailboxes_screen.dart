@@ -9,6 +9,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'admin_mailboxes_screen.g.dart';
 
+const _bytesPerMb = 1024 * 1024;
+
 class AdminMailbox {
   const AdminMailbox({
     required this.id,
@@ -18,6 +20,7 @@ class AdminMailbox {
     required this.sendEnabled,
     required this.receiveEnabled,
     required this.localPart,
+    required this.quotaBytes,
     this.domainId,
   });
 
@@ -28,6 +31,7 @@ class AdminMailbox {
   final bool sendEnabled;
   final bool receiveEnabled;
   final String localPart;
+  final int quotaBytes;
   final String? domainId;
 
   factory AdminMailbox.fromJson(Map<String, dynamic> j) => AdminMailbox(
@@ -38,6 +42,7 @@ class AdminMailbox {
     sendEnabled: j['send_enabled'] as bool? ?? true,
     receiveEnabled: j['receive_enabled'] as bool? ?? true,
     localPart: j['local_part'] as String? ?? '',
+    quotaBytes: (j['quota_bytes'] as num?)?.toInt() ?? 0,
     domainId: j['domain'] as String?,
   );
 }
@@ -137,6 +142,7 @@ class AdminMailboxesScreen extends ConsumerWidget {
   Future<void> _showAddDialog(BuildContext context, WidgetRef ref) async {
     final localPartCtrl = TextEditingController();
     final displayNameCtrl = TextEditingController();
+    final quotaCtrl = TextEditingController();
 
     // Fetch domains for picker
     List<Map<String, dynamic>> domains = [];
@@ -153,6 +159,7 @@ class AdminMailboxesScreen extends ConsumerWidget {
     if (!context.mounted) {
       localPartCtrl.dispose();
       displayNameCtrl.dispose();
+      quotaCtrl.dispose();
       return;
     }
 
@@ -195,6 +202,15 @@ class AdminMailboxesScreen extends ConsumerWidget {
                 controller: displayNameCtrl,
                 decoration: const InputDecoration(labelText: 'Display name'),
               ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: quotaCtrl,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Storage quota (MB)',
+                  hintText: 'Blank or 0 = unlimited',
+                ),
+              ),
             ],
           ),
           actions: [
@@ -207,6 +223,7 @@ class AdminMailboxesScreen extends ConsumerWidget {
                   ? null
                   : () async {
                       Navigator.of(ctx).pop();
+                      final quotaMb = int.tryParse(quotaCtrl.text.trim());
                       try {
                         await ref
                             .read(dioClientProvider)
@@ -217,6 +234,8 @@ class AdminMailboxesScreen extends ConsumerWidget {
                                 'local_part': localPartCtrl.text.trim(),
                                 if (displayNameCtrl.text.trim().isNotEmpty)
                                   'display_name': displayNameCtrl.text.trim(),
+                                if (quotaMb != null)
+                                  'quota_bytes': quotaMb * _bytesPerMb,
                               },
                             );
                         ref.invalidate(adminMailboxesProvider);
@@ -236,6 +255,7 @@ class AdminMailboxesScreen extends ConsumerWidget {
     );
     localPartCtrl.dispose();
     displayNameCtrl.dispose();
+    quotaCtrl.dispose();
   }
 
   Future<void> _showEditDialog(
@@ -246,6 +266,11 @@ class AdminMailboxesScreen extends ConsumerWidget {
     final localPartCtrl = TextEditingController(text: mailbox.localPart);
     final displayNameCtrl = TextEditingController(
       text: mailbox.displayName ?? '',
+    );
+    final quotaCtrl = TextEditingController(
+      text: mailbox.quotaBytes > 0
+          ? (mailbox.quotaBytes / _bytesPerMb).round().toString()
+          : '',
     );
 
     List<Map<String, dynamic>> domains = [];
@@ -261,6 +286,7 @@ class AdminMailboxesScreen extends ConsumerWidget {
     if (!context.mounted) {
       localPartCtrl.dispose();
       displayNameCtrl.dispose();
+      quotaCtrl.dispose();
       return;
     }
 
@@ -303,6 +329,15 @@ class AdminMailboxesScreen extends ConsumerWidget {
                   controller: displayNameCtrl,
                   decoration: const InputDecoration(labelText: 'Display name'),
                 ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: quotaCtrl,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Storage quota (MB)',
+                    hintText: 'Blank or 0 = unlimited',
+                  ),
+                ),
                 SwitchListTile(
                   value: sendEnabled,
                   onChanged: (v) => setState(() => sendEnabled = v),
@@ -334,6 +369,7 @@ class AdminMailboxesScreen extends ConsumerWidget {
                   ? null
                   : () async {
                       Navigator.of(ctx).pop();
+                      final quotaMb = int.tryParse(quotaCtrl.text.trim()) ?? 0;
                       try {
                         await ref
                             .read(dioClientProvider)
@@ -346,6 +382,7 @@ class AdminMailboxesScreen extends ConsumerWidget {
                                 'send_enabled': sendEnabled,
                                 'receive_enabled': receiveEnabled,
                                 'is_active': isActive,
+                                'quota_bytes': quotaMb * _bytesPerMb,
                               },
                             );
                         ref.invalidate(adminMailboxesProvider);
@@ -369,6 +406,7 @@ class AdminMailboxesScreen extends ConsumerWidget {
     );
     localPartCtrl.dispose();
     displayNameCtrl.dispose();
+    quotaCtrl.dispose();
   }
 
   Future<void> _deleteMailbox(
