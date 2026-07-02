@@ -310,9 +310,9 @@ class _MessageCard extends ConsumerWidget {
     final local = dt.toLocal();
     final now = DateTime.now();
     if (local.year == now.year) {
-      return DateFormat('MMM d, HH:mm').format(local);
+      return DateFormat('MMM d, h:mm a').format(local);
     }
-    return DateFormat('MMM d, yyyy HH:mm').format(local);
+    return DateFormat('MMM d, yyyy h:mm a').format(local);
   }
 }
 
@@ -654,7 +654,7 @@ class _ActionBar extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: Text(
-                  'Scheduled for ${DateFormat('MMM d, HH:mm').format(message.scheduledAt!.toLocal())}',
+                  'Scheduled for ${DateFormat('MMM d, h:mm a').format(message.scheduledAt!.toLocal())}',
                   style: Theme.of(context).textTheme.labelSmall,
                 ),
               ),
