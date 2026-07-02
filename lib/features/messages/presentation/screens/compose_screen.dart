@@ -237,7 +237,7 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
             _showCc = _ccChips.isNotEmpty;
           }
           _setBodyFromText(
-            '\n\nOn ${DateFormat('MMM d, yyyy HH:mm').format((original.receivedAt ?? original.createdAt ?? DateTime.now()).toLocal())}, ${original.fromAddress} wrote:\n${original.bodyText ?? original.snippet ?? ''}',
+            '\n\nOn ${DateFormat('MMM d, yyyy h:mm a').format((original.receivedAt ?? original.createdAt ?? DateTime.now()).toLocal())}, ${original.fromAddress} wrote:\n${original.bodyText ?? original.snippet ?? ''}',
           );
         }
         _draftLoaded = true;
@@ -491,6 +491,10 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
       initialTime: TimeOfDay.fromDateTime(
         _scheduledAt ?? now.add(const Duration(minutes: 5)),
       ),
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: false),
+        child: child!,
+      ),
     );
     if (time == null) return;
 
@@ -641,7 +645,7 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
         SnackBar(
           content: Text(
             _scheduledAt != null
-                ? 'Message scheduled for ${DateFormat('MMM d, HH:mm').format(_scheduledAt!)}.'
+                ? 'Message scheduled for ${DateFormat('MMM d, h:mm a').format(_scheduledAt!)}.'
                 : 'Message queued. Sending shortly.',
           ),
           action: _scheduledAt == null
@@ -828,7 +832,7 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
                   Chip(
                     avatar: const Icon(Icons.schedule, size: 18),
                     label: Text(
-                      'Sends ${DateFormat('MMM d, HH:mm').format(_scheduledAt!)}',
+                      'Sends ${DateFormat('MMM d, h:mm a').format(_scheduledAt!)}',
                     ),
                     onDeleted: () => setState(() => _scheduledAt = null),
                   ),
