@@ -20,6 +20,12 @@ class HedwigApp extends ConsumerWidget {
       darkTheme: _buildTheme(Brightness.dark),
       routerConfig: router,
       debugShowCheckedModeBanner: false,
+      // Force 12-hour time everywhere (time pickers, clocks) regardless of the
+      // device's locale/24-hour setting.
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: false),
+        child: child!,
+      ),
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
