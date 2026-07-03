@@ -137,6 +137,7 @@ class AdminDomainsScreen extends ConsumerWidget {
 
 Future<void> _showAddDialog(BuildContext context, WidgetRef ref) async {
   final nameCtrl = TextEditingController();
+  final webhookSecretCtrl = TextEditingController();
 
   // Fetch providers for the picker — a domain must belong to one.
   List<Map<String, dynamic>> providers = [];
@@ -190,6 +191,15 @@ Future<void> _showAddDialog(BuildContext context, WidgetRef ref) async {
               ),
               autocorrect: false,
             ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: webhookSecretCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Webhook secret',
+                hintText: 'Optional domain-specific shared secret',
+              ),
+              obscureText: true,
+            ),
           ],
         ),
         actions: [
@@ -212,6 +222,8 @@ Future<void> _showAddDialog(BuildContext context, WidgetRef ref) async {
                               'provider': selectedProviderId,
                               'outbound_enabled': true,
                               'inbound_enabled': true,
+                              if (webhookSecretCtrl.text.trim().isNotEmpty)
+                                'webhook_secret': webhookSecretCtrl.text.trim(),
                             },
                           );
                       ref.invalidate(adminDomainsProvider);
@@ -234,6 +246,7 @@ Future<void> _showAddDialog(BuildContext context, WidgetRef ref) async {
     ),
   );
   nameCtrl.dispose();
+  webhookSecretCtrl.dispose();
 }
 
 Future<void> _showEditDialog(
@@ -241,6 +254,7 @@ Future<void> _showEditDialog(
   WidgetRef ref,
   AdminDomain domain,
 ) async {
+  final webhookSecretCtrl = TextEditingController();
   List<Map<String, dynamic>> providers = [];
   String? selectedProviderId = domain.providerId;
   try {
@@ -298,6 +312,14 @@ Future<void> _showEditDialog(
                 title: const Text('Active'),
                 contentPadding: EdgeInsets.zero,
               ),
+              TextField(
+                controller: webhookSecretCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Webhook secret',
+                  hintText: 'Leave blank to keep existing',
+                ),
+                obscureText: true,
+              ),
             ],
           ),
         ),
@@ -321,6 +343,8 @@ Future<void> _showEditDialog(
                               'outbound_enabled': outboundEnabled,
                               'inbound_enabled': inboundEnabled,
                               'is_active': isActive,
+                              if (webhookSecretCtrl.text.trim().isNotEmpty)
+                                'webhook_secret': webhookSecretCtrl.text.trim(),
                             },
                           );
                       ref.invalidate(adminDomainsProvider);
@@ -342,6 +366,7 @@ Future<void> _showEditDialog(
       ),
     ),
   );
+  webhookSecretCtrl.dispose();
 }
 
 Future<void> _checkDns(
