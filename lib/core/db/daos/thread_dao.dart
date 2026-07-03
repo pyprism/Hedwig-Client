@@ -44,6 +44,12 @@ class ThreadDao extends DatabaseAccessor<AppDatabase> with _$ThreadDaoMixin {
           ))
           .get();
 
+  Future<List<ThreadRow>> getScheduled(String mailboxId) =>
+      (select(threads)..where(
+            (t) => t.mailboxId.equals(mailboxId) & t.folder.equals('scheduled'),
+          ))
+          .get();
+
   Future<void> upsertAll(List<ThreadsCompanion> rows) async {
     await batch((b) {
       b.insertAllOnConflictUpdate(threads, rows);
