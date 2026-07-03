@@ -22,7 +22,7 @@ MessagesCompanion messageToRow(MailMessage m) => MessagesCompanion.insert(
   threadId: Value(m.threadId),
   direction: m.direction,
   status: m.status,
-  folder: Value(m.folder),
+  folder: Value(_effectiveLocalFolder(m)),
   fromAddress: m.fromAddress,
   fromName: Value(m.fromName),
   envelopeSender: Value(m.envelopeSender),
@@ -56,6 +56,17 @@ MessagesCompanion messageToRow(MailMessage m) => MessagesCompanion.insert(
   createdAt: m.createdAt ?? DateTime.now().toUtc(),
 );
 
+String _effectiveLocalFolder(MailMessage message) {
+  final scheduledAt = message.scheduledAt;
+  if (message.direction == 'outbound' &&
+      scheduledAt != null &&
+      scheduledAt.isAfter(DateTime.now().toUtc()) &&
+      ['queued', 'sending', 'scheduled'].contains(message.status)) {
+    return 'scheduled';
+  }
+  return message.folder;
+}
+
 @Riverpod(keepAlive: true)
 MessageRepository messageRepository(Ref ref) {
   return MessageRepository(
@@ -76,10 +87,12 @@ class MessageRepository {
     final cached = db.messageDao
         .watchByThread(threadId)
         .map((rows) => rows.map(_rowToModel).toList());
+    final isLocalThread = _isLocalThreadId(threadId);
 
     return Stream.multi((controller) {
       var refreshing = false;
       Future<void> refresh() async {
+        if (isLocalThread) return;
         if (refreshing) return;
         refreshing = true;
         try {
@@ -90,29 +103,33 @@ class MessageRepository {
       }
 
       unawaited(refresh());
-      final timer = Timer.periodic(
-        _liveRefreshInterval,
-        (_) => unawaited(refresh()),
-      );
+      final timer = isLocalThread
+          ? null
+          : Timer.periodic(_liveRefreshInterval, (_) => unawaited(refresh()));
       final subscription = cached.listen(
         controller.add,
         onError: controller.addError,
         onDone: controller.close,
       );
       controller.onCancel = () {
-        timer.cancel();
+        timer?.cancel();
         return subscription.cancel();
       };
     });
   }
 
   Future<List<MailMessage>> getThreadMessages(String threadId) async {
+    if (_isLocalThreadId(threadId)) {
+      final rows = await db.messageDao.getByThread(threadId);
+      return rows.map(_rowToModel).toList();
+    }
     final messages = await remote.getByThread(threadId);
     await db.messageDao.upsertAll(messages.map(messageToRow).toList());
     return messages;
   }
 
   Future<void> _refreshThread(String threadId) async {
+    if (_isLocalThreadId(threadId)) return;
     try {
       final messages = await remote.getByThread(threadId);
       await db.messageDao.upsertAll(messages.map(messageToRow).toList());
@@ -120,6 +137,8 @@ class MessageRepository {
       debugPrint('[MessageRepository] refresh error: $e');
     }
   }
+
+  bool _isLocalThreadId(String threadId) => threadId.startsWith('local-');
 
   Future<void> updateState(
     String id, {
