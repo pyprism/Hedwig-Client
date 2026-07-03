@@ -24,7 +24,8 @@ if [ ! -f "$COLLECTION_REQUIREMENTS_FILE" ]; then
 fi
 
 echo "Building Flutter web app for production..."
-flutter build web  --release
+flutter build web --release
+cp tool/flutter_service_worker_cleanup.js build/web/flutter_service_worker.js
 
 echo "Installing Ansible collections from '$COLLECTION_REQUIREMENTS_FILE'..."
 ANSIBLE_CONFIG="$ANSIBLE_CONFIG_FILE" ansible-galaxy collection install \
