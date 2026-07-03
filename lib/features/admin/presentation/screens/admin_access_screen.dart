@@ -216,7 +216,7 @@ class AdminAccessScreen extends ConsumerWidget {
                         data: {
                           'permission': permission,
                           'is_active': isActive,
-                          'expires_at': expiresAt?.toIso8601String(),
+                          'expires_at': expiresAt?.toUtc().toIso8601String(),
                         },
                       );
                   ref.invalidate(adminAccessGrantsProvider);
