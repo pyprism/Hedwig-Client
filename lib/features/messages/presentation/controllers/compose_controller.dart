@@ -123,7 +123,9 @@ class ComposeController extends _$ComposeController {
         if (req.replyToMessageId != null)
           'reply_to_message': req.replyToMessageId,
         if (req.scheduledAt != null)
-          'scheduled_at': req.scheduledAt!.toIso8601String(),
+          // Send UTC (trailing 'Z') so the backend eta isn't shifted by the
+          // user's local offset — a naive local string would fire hours off.
+          'scheduled_at': req.scheduledAt!.toUtc().toIso8601String(),
         if (attachments.isNotEmpty)
           'attachments': attachments.map((a) => a.toPayload()).toList(),
       };
@@ -377,7 +379,7 @@ class ComposeController extends _$ComposeController {
     'body_text': ?req.bodyText,
     'body_html': ?req.bodyHtml,
     'reply_to_message': ?req.replyToMessageId,
-    'scheduled_at': ?req.scheduledAt?.toIso8601String(),
+    'scheduled_at': ?req.scheduledAt?.toUtc().toIso8601String(),
     // Full desired set every save: references keep already-staged attachments,
     // new ones carry base64. The draft endpoint reconciles against this list.
     'attachments': attachments.map((a) => a.toDraftPayload()).toList(),
