@@ -315,9 +315,39 @@ class MessageRepository {
   /// independent of the client (`docs/api.md`: outbound+queued with a
   /// pending attempt only).
   Future<void> cancelScheduledSend(String messageId) async {
+    final previous = await db.messageDao.getById(messageId);
     await remote.cancel(messageId);
     final msg = await remote.getById(messageId);
-    await db.messageDao.upsertAll([messageToRow(msg)]);
+    // Cancel converts the scheduled send into an editable draft server-side
+    // (status=draft, folder=drafts). Cache it as a proper compose draft: carry
+    // the server draft id so a re-save PATCHes the same draft (not a duplicate),
+    // and turn its staged attachments into references (no local bytes) so
+    // "Edit draft" reloads them and a re-send routes via the send-draft endpoint.
+    final metadata = Map<String, dynamic>.from(msg.metadata)
+      ..addAll({
+        'server_draft_id': msg.id,
+        if (msg.threadId != null) 'server_draft_thread_id': msg.threadId,
+        'compose_html': true,
+        'html_source_mode': false,
+        'compose_attachments': [
+          for (final a in msg.attachments)
+            {
+              'filename': a.filename,
+              'content_type': a.contentType,
+              'content': '',
+              'size_bytes': a.sizeBytes,
+              'id': a.id,
+              if (a.contentId != null && a.contentId!.isNotEmpty)
+                'content_id': a.contentId,
+            },
+        ],
+      });
+    await db.messageDao.upsertAll([
+      messageToRow(msg).copyWith(metadataJson: Value(jsonEncode(metadata))),
+    ]);
+    if (previous != null) {
+      await _syncThreadFolderCache(previous, 'drafts');
+    }
   }
 
   Future<void> restore(String messageId) async {
