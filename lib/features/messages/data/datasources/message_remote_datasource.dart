@@ -57,7 +57,7 @@ class MessageRemoteDatasource {
         'is_important': ?isImportant,
         'folder': ?folder,
         if (snoozedUntil != null)
-          'snoozed_until': snoozedUntil.toIso8601String(),
+          'snoozed_until': snoozedUntil.toUtc().toIso8601String(),
       },
     );
   }
