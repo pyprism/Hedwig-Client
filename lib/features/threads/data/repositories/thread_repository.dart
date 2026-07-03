@@ -34,9 +34,18 @@ class ThreadRepository {
   const ThreadRepository({required this.remote, required this.db});
 
   static const _liveRefreshInterval = Duration(seconds: 20);
+  // Scheduled/Sent only change when a send fires or is cancelled — not worth
+  // polling every 20s like an inbox that can receive mail at any time.
+  static const _lowChurnRefreshInterval = Duration(seconds: 90);
+  static const _lowChurnFolders = {'scheduled', 'sent'};
 
   final ThreadRemoteDatasource remote;
   final AppDatabase db;
+
+  Duration _refreshIntervalFor(String folder) =>
+      _lowChurnFolders.contains(folder)
+      ? _lowChurnRefreshInterval
+      : _liveRefreshInterval;
 
   Stream<List<MailThread>> watchThreads({
     required String mailboxId,
@@ -85,7 +94,7 @@ class ThreadRepository {
 
       unawaited(refresh());
       final timer = Timer.periodic(
-        _liveRefreshInterval,
+        _refreshIntervalFor(folder),
         (_) => unawaited(refresh()),
       );
       final subscription = cached.listen(
