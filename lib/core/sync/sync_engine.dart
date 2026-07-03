@@ -44,6 +44,7 @@ class SyncEngine {
         if (online) flushOutbox();
       });
     });
+    unawaited(_recoverStuckSending());
     unawaited(_resumePendingSendPolling());
     unawaited(_schedulePendingOutboxFlushes());
   }
@@ -59,7 +60,12 @@ class SyncEngine {
       unawaited(flushOutbox());
       return;
     }
-    _scheduledFlushTimers.add(Timer(delay, () => unawaited(flushOutbox())));
+    late final Timer timer;
+    timer = Timer(delay, () {
+      _scheduledFlushTimers.remove(timer);
+      unawaited(flushOutbox());
+    });
+    _scheduledFlushTimers.add(timer);
   }
 
   Future<void> flushOutbox() async {
@@ -95,18 +101,18 @@ class SyncEngine {
           debugPrint(
             '[SyncEngine] dispatch failed (${entry.operation}): ${e.message}',
           );
+          final retryCount = entry.retryCount + 1;
           await db.outboxDao.markFailed(
             entry.id,
             e.message ?? e.toString(),
-            entry.retryCount + 1,
+            retryCount,
           );
+          _scheduleBackoffFlush(retryCount);
         } catch (e) {
           debugPrint('[SyncEngine] dispatch error (${entry.operation}): $e');
-          await db.outboxDao.markFailed(
-            entry.id,
-            e.toString(),
-            entry.retryCount + 1,
-          );
+          final retryCount = entry.retryCount + 1;
+          await db.outboxDao.markFailed(entry.id, e.toString(), retryCount);
+          _scheduleBackoffFlush(retryCount);
         }
       }
     } finally {
@@ -312,6 +318,15 @@ class SyncEngine {
     return Duration(seconds: seconds);
   }
 
+  /// Without this, a failed entry only gets retried on the next connectivity
+  /// change, new enqueue, or scheduled-send timer — it could otherwise sit
+  /// unsynced well past its backoff window. Skipped once retries are
+  /// exhausted since the entry will dead-letter on the next flush instead.
+  void _scheduleBackoffFlush(int retryCount) {
+    if (retryCount >= _maxRetries) return;
+    scheduleFlushAt(DateTime.now().add(_backoff(retryCount)));
+  }
+
   DateTime? _notBefore(OutboxEntry entry) {
     if (entry.operation != 'send_message') return null;
     try {
@@ -322,6 +337,14 @@ class SyncEngine {
     } catch (_) {
       return null;
     }
+  }
+
+  /// Rewinds any outbox entry orphaned in `sending` by a previous crash (the
+  /// app died between `markSending` and `markDone`/`markFailed`) so it isn't
+  /// stuck forever — `getPending` never surfaces `sending` rows again.
+  Future<void> _recoverStuckSending() async {
+    final db = _ref.read(appDatabaseProvider);
+    await db.outboxDao.resetStuckSending();
   }
 
   Future<void> _schedulePendingOutboxFlushes() async {
