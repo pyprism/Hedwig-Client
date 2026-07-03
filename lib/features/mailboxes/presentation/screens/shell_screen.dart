@@ -26,10 +26,11 @@ final _countRefreshTickProvider = StreamProvider.autoDispose
 const _folders = [
   ('inbox', Icons.inbox_outlined, 'Inbox'),
   ('sent', Icons.send_outlined, 'Sent'),
+  ('scheduled', Icons.schedule_outlined, 'Scheduled'),
   ('drafts', Icons.drafts_outlined, 'Drafts'),
   ('starred', Icons.star_border, 'Starred'),
   ('important', Icons.label_important_outline, 'Important'),
-  ('snoozed', Icons.schedule_outlined, 'Snoozed'),
+  ('snoozed', Icons.access_time, 'Snoozed'),
   ('archive', Icons.archive_outlined, 'Archive'),
   ('spam', Icons.report_outlined, 'Spam'),
   ('trash', Icons.delete_outline, 'Trash'),
@@ -311,10 +312,11 @@ class _DrawerContent extends ConsumerWidget {
             child: DropdownButton<String>(
               value: selectedMailbox.id,
               isExpanded: true,
+              underline: const SizedBox.shrink(),
               items: mailboxes.map((m) {
                 return DropdownMenuItem(
                   value: m.id,
-                  child: Text(m.displayName ?? m.emailAddress),
+                  child: _MailboxDropdownLabel(mailbox: m),
                 );
               }).toList(),
               onChanged: (id) {
@@ -413,6 +415,42 @@ class _UnreadCountText extends StatelessWidget {
     return Text(
       count > 999 ? '999+' : '$count',
       style: Theme.of(context).textTheme.labelMedium,
+    );
+  }
+}
+
+class _MailboxDropdownLabel extends StatelessWidget {
+  const _MailboxDropdownLabel({required this.mailbox});
+
+  final Mailbox mailbox;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final displayName = mailbox.displayName?.trim();
+    final emailAddress = mailbox.emailAddress.trim();
+
+    if (displayName == null ||
+        displayName.isEmpty ||
+        displayName == emailAddress) {
+      return Text(emailAddress, overflow: TextOverflow.ellipsis);
+    }
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(displayName, overflow: TextOverflow.ellipsis),
+        const SizedBox(height: 1),
+        Text(
+          emailAddress,
+          overflow: TextOverflow.ellipsis,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 1),
+      ],
     );
   }
 }
