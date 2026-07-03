@@ -26,6 +26,7 @@ const _maxAttachmentBytes = 10 * 1024 * 1024;
 // Provider recipient cap (to+cc+bcc) and subject length, mirroring docs/api.md.
 const _maxRecipients = 50;
 const _maxSubjectChars = 998;
+const _sendSnackBarDuration = Duration(seconds: 5);
 
 class _SendIntent extends Intent {
   const _SendIntent();
@@ -640,14 +641,17 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
         ref.invalidate(threadCountsProvider(mailboxId));
       }
       if (!mounted) return;
+      final messenger = ScaffoldMessenger.of(context);
       context.pop();
-      ScaffoldMessenger.of(context).showSnackBar(
+      _showAutoClosingSnackBar(
+        messenger,
         SnackBar(
           content: Text(
             _scheduledAt != null
                 ? 'Message scheduled for ${DateFormat('MMM d, h:mm a').format(_scheduledAt!)}.'
                 : 'Message queued. Sending shortly.',
           ),
+          duration: _sendSnackBarDuration,
           action: _scheduledAt == null
               ? SnackBarAction(
                   label: 'Undo',
@@ -688,9 +692,29 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
     ref.invalidate(threadListProvider);
     ref.invalidate(threadCountsProvider(mailboxId));
     if (!mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
     context.pop();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Message queued. Sending shortly.')),
+    _showAutoClosingSnackBar(
+      messenger,
+      const SnackBar(
+        content: Text('Message queued. Sending shortly.'),
+        duration: _sendSnackBarDuration,
+      ),
+    );
+  }
+
+  void _showAutoClosingSnackBar(
+    ScaffoldMessengerState messenger,
+    SnackBar snackBar,
+  ) {
+    messenger.hideCurrentSnackBar();
+    final controller = messenger.showSnackBar(snackBar);
+    var closed = false;
+    unawaited(controller.closed.then((_) => closed = true));
+    unawaited(
+      Future<void>.delayed(_sendSnackBarDuration, () {
+        if (!closed) controller.close();
+      }),
     );
   }
 
