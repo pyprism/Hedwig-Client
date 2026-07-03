@@ -44,13 +44,29 @@ class OutboxBadge extends ConsumerWidget {
           : Theme.of(context).colorScheme.tertiary,
       child: child,
     );
+    final message = _tooltipMessage(count, deadLetterCount);
 
-    if (deadLetterCount == 0) return badge;
+    if (deadLetterCount == 0) {
+      return Tooltip(message: message, child: badge);
+    }
 
-    return GestureDetector(
-      onTap: () => _showDeadLetterDialog(context),
-      child: badge,
+    return Tooltip(
+      message: message,
+      child: GestureDetector(
+        onTap: () => _showDeadLetterDialog(context),
+        child: badge,
+      ),
     );
+  }
+
+  String _tooltipMessage(int pendingCount, int deadLetterCount) {
+    final parts = [
+      if (pendingCount > 0)
+        '$pendingCount queued ${pendingCount == 1 ? 'action' : 'actions'} waiting to sync',
+      if (deadLetterCount > 0)
+        '$deadLetterCount failed ${deadLetterCount == 1 ? 'action' : 'actions'} need attention',
+    ];
+    return parts.join('. ');
   }
 
   void _showDeadLetterDialog(BuildContext context) {
