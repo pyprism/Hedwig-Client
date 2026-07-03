@@ -166,6 +166,7 @@ class _DeadLetterDialog extends ConsumerWidget {
               body['body_text'] as String? ??
               '',
           'compose_html': body['body_html'] != null,
+          'restore_on_open': true,
         }),
       );
       await db.outboxDao.discard(entry.id);
