@@ -103,14 +103,12 @@ class ComposeController extends _$ComposeController {
       }
 
       final localId = 'local-${DateTime.now().microsecondsSinceEpoch}';
-      // A message scheduled for the future is held in the outbox until its
-      // send time; otherwise it flushes after the undo window.
+      // The client only holds the message for the undo window. Future-dated
+      // sends must reach the backend promptly so the server can own scheduling.
       final scheduledAt = req.scheduledAt?.toUtc();
       final isScheduled =
           scheduledAt != null && scheduledAt.isAfter(DateTime.now().toUtc());
-      final notBefore = isScheduled
-          ? scheduledAt
-          : DateTime.now().toUtc().add(_undoSendWindow);
+      final notBefore = DateTime.now().toUtc().add(_undoSendWindow);
 
       final body = {
         'mailbox': req.mailboxId,
@@ -151,13 +149,10 @@ class ComposeController extends _$ComposeController {
       lastQueuedOutboxId = outboxId;
       lastLocalMessageId = localId;
 
-      // Try immediate flush.
-      unawaited(ref.read(syncEngineProvider).flushOutbox());
-      unawaited(
-        Future<void>.delayed(_undoSendWindow, () {
-          ref.read(syncEngineProvider).flushOutbox();
-        }),
-      );
+      // Try immediate flush; the sync engine will retry after the undo window.
+      final syncEngine = ref.read(syncEngineProvider);
+      unawaited(syncEngine.flushOutbox());
+      syncEngine.scheduleFlushAt(notBefore);
     });
   }
 
@@ -450,6 +445,7 @@ class ComposeController extends _$ComposeController {
       final original = await db.messageDao.getById(req.replyToMessageId!);
       threadId = original?.threadId;
     }
+    final optimisticThreadId = threadId ?? localId;
 
     // A future-dated send lives in a scheduled view, not Sent, until it fires.
     final folder = isScheduled ? 'scheduled' : 'sent';
@@ -477,7 +473,7 @@ class ComposeController extends _$ComposeController {
         MessagesCompanion.insert(
           id: localId,
           mailboxId: req.mailboxId,
-          threadId: Value(threadId),
+          threadId: Value(optimisticThreadId),
           direction: 'outbound',
           status: status,
           folder: Value(folder),
