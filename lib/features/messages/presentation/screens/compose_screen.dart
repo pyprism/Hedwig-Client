@@ -116,6 +116,7 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
     _savedDraftMessageId = widget.draftMessageId;
     _bodyController = QuillController.basic(
       config: QuillControllerConfig(
+        // ignore: experimental_member_use
         clipboardConfig: QuillClipboardConfig(onImagePaste: _handleImagePaste),
       ),
     );
