@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hedwig_client/core/api/error_interceptor.dart';
 import 'package:hedwig_client/core/error/failure.dart';
+import 'package:hedwig_client/features/auth/domain/entities/auth_state.dart';
 import 'package:hedwig_client/features/auth/presentation/controllers/auth_controller.dart';
 
 class ChangePasswordScreen extends ConsumerStatefulWidget {
@@ -45,6 +47,11 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
           _error = e is ApiException ? e.failure.userMessage : e.toString();
         });
       },
+      data: (state) {
+        if (state is Authenticated && mounted) {
+          context.go('/inbox');
+        }
+      },
     );
   }
 
@@ -53,6 +60,14 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
     final isLoading = ref.watch(authControllerProvider).isLoading;
 
     return Scaffold(
+      appBar: context.canPop()
+          ? AppBar(
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => context.pop(),
+              ),
+            )
+          : null,
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
