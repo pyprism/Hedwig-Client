@@ -515,6 +515,10 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
         time.minute,
       );
     });
+
+    // Confirming a schedule time is the schedule action itself (Gmail-style):
+    // enqueue the deferred send now rather than making the user also press Send.
+    await _send();
   }
 
   void _addPendingRecipientChips() {
