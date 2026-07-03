@@ -121,6 +121,27 @@ void main() {
       expect(await db.outboxDao.getPending(), isEmpty);
     });
 
+    test('watchThread keeps optimistic local threads local', () async {
+      await db.messageDao.upsertAll([
+        MessagesCompanion.insert(
+          id: 'local-1',
+          mailboxId: 'mb1',
+          direction: 'outbound',
+          status: 'queued',
+          folder: const Value('sent'),
+          fromAddress: 'support@example.com',
+          subject: 'Queued',
+          createdAt: DateTime.now().toUtc(),
+        ),
+      ]);
+
+      final messages = await repo.watchThread('local-1').first;
+
+      expect(messages, hasLength(1));
+      expect(messages.single.id, 'local-1');
+      verifyNever(() => remote.getByThread('local-1'));
+    });
+
     test(
       'restore applies optimistic inbox move and enqueues when offline (A2)',
       () async {
