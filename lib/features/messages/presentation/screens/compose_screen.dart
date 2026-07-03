@@ -206,10 +206,17 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
     final draft = prefs.getString(_draftKey);
     if (draft != null) {
       final data = jsonDecode(draft) as Map<String, dynamic>;
-      setState(() {
-        _applyDraftData(data);
-      });
-      return;
+      if (_draftKey == 'compose_draft_new' && data['restore_on_open'] != true) {
+        await prefs.remove(_draftKey);
+      } else {
+        if (data['restore_on_open'] == true) {
+          data.remove('restore_on_open');
+        }
+        setState(() {
+          _applyDraftData(data);
+        });
+        return;
+      }
     }
 
     if (widget.replyToMessageId != null) {
