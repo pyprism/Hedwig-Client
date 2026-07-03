@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:dio/dio.dart';
+import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hedwig_client/core/api/dio_client.dart';
@@ -44,11 +45,22 @@ class SyncEngine {
       });
     });
     unawaited(_resumePendingSendPolling());
+    unawaited(_schedulePendingOutboxFlushes());
   }
 
   final Ref _ref;
   ProviderSubscription<AsyncValue<bool>>? _connectivitySub;
+  final List<Timer> _scheduledFlushTimers = [];
   bool _flushing = false;
+
+  void scheduleFlushAt(DateTime when) {
+    final delay = when.toLocal().difference(DateTime.now());
+    if (delay <= Duration.zero) {
+      unawaited(flushOutbox());
+      return;
+    }
+    _scheduledFlushTimers.add(Timer(delay, () => unawaited(flushOutbox())));
+  }
 
   Future<void> flushOutbox() async {
     if (_flushing) return;
@@ -69,7 +81,11 @@ class SyncEngine {
         final backoffEnd = entry.updatedAt.add(_backoff(entry.retryCount));
         if (entry.retryCount > 0 && now.isBefore(backoffEnd)) continue;
 
-        if (_notReadyToSend(entry, now)) continue;
+        final notBefore = _notBefore(entry);
+        if (notBefore != null && now.isBefore(notBefore)) {
+          scheduleFlushAt(notBefore);
+          continue;
+        }
 
         await db.outboxDao.markSending(entry.id);
         try {
@@ -110,6 +126,9 @@ class SyncEngine {
         try {
           final msg = MailMessage.fromJson(res.data as Map<String, dynamic>);
           await db.messageDao.upsertAll([messageToRow(msg)]);
+          if (_isFutureScheduled(msg)) {
+            await _upsertScheduledThread(db, msg);
+          }
           if (localId != null) {
             await db.messageDao.deleteById(localId);
             // Drop the optimistic thread row created for a new composition; the
@@ -193,6 +212,54 @@ class SyncEngine {
     }
   }
 
+  bool _isFutureScheduled(MailMessage message) {
+    final scheduledAt = message.scheduledAt;
+    return message.direction == 'outbound' &&
+        scheduledAt != null &&
+        scheduledAt.isAfter(DateTime.now().toUtc()) &&
+        ['queued', 'sending', 'scheduled'].contains(message.status);
+  }
+
+  Future<void> _upsertScheduledThread(
+    AppDatabase db,
+    MailMessage message,
+  ) async {
+    final threadId = message.threadId ?? message.id;
+    final participants = [
+      if (message.toAddresses.isNotEmpty)
+        ...message.toAddresses.map((address) => address.email)
+      else
+        message.fromAddress,
+    ];
+    await db.threadDao.upsertAll([
+      ThreadsCompanion.insert(
+        id: threadId,
+        mailboxId: message.mailboxId,
+        subject: message.subject.trim().isEmpty
+            ? '(no subject)'
+            : message.subject.trim(),
+        messageCount: const Value(1),
+        hasUnread: const Value(false),
+        unreadCount: const Value(0),
+        snippet: Value(message.snippet),
+        latestDirection: const Value('outbound'),
+        hasAttachments: Value(message.hasAttachments),
+        attachmentFilenamesJson: Value(
+          jsonEncode(
+            message.attachments
+                .map((attachment) => attachment.filename)
+                .toList(),
+          ),
+        ),
+        participantsJson: Value(jsonEncode(participants)),
+        folder: const Value('scheduled'),
+        updatedAt: DateTime.now().toUtc(),
+        lastMessageAt:
+            message.scheduledAt ?? message.createdAt ?? DateTime.now().toUtc(),
+      ),
+    ]);
+  }
+
   /// Records the server-assigned draft id on the local draft row so later
   /// saves PATCH it instead of creating a new one. If the local draft is
   /// already gone (sent or discarded before this reconcile landed), the freshly
@@ -245,16 +312,24 @@ class SyncEngine {
     return Duration(seconds: seconds);
   }
 
-  bool _notReadyToSend(OutboxEntry entry, DateTime now) {
-    if (entry.operation != 'send_message') return false;
+  DateTime? _notBefore(OutboxEntry entry) {
+    if (entry.operation != 'send_message') return null;
     try {
       final map = jsonDecode(entry.payloadJson) as Map<String, dynamic>;
       final raw = map['notBefore'] as String?;
-      if (raw == null) return false;
-      final notBefore = DateTime.parse(raw).toLocal();
-      return now.isBefore(notBefore);
+      if (raw == null) return null;
+      return DateTime.parse(raw).toLocal();
     } catch (_) {
-      return false;
+      return null;
+    }
+  }
+
+  Future<void> _schedulePendingOutboxFlushes() async {
+    final db = _ref.read(appDatabaseProvider);
+    final entries = await db.outboxDao.getPending();
+    for (final entry in entries) {
+      final notBefore = _notBefore(entry);
+      if (notBefore != null) scheduleFlushAt(notBefore);
     }
   }
 
@@ -294,5 +369,9 @@ class SyncEngine {
 
   void dispose() {
     _connectivitySub?.close();
+    for (final timer in _scheduledFlushTimers) {
+      timer.cancel();
+    }
+    _scheduledFlushTimers.clear();
   }
 }
