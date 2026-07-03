@@ -8,17 +8,27 @@ part 'message_dao.g.dart';
 class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
   MessageDao(super.db);
 
-  Stream<List<MessageRow>> watchByThread(String threadId) =>
-      (select(messages)
-            ..where((m) => m.threadId.equals(threadId))
-            ..orderBy([(m) => OrderingTerm.asc(m.createdAt)]))
-          .watch();
+  Stream<List<MessageRow>> watchByThread(String threadId) {
+    final query = select(messages)
+      ..where(
+        (m) => threadId.startsWith('local-')
+            ? (m.threadId.equals(threadId) | m.id.equals(threadId))
+            : m.threadId.equals(threadId),
+      )
+      ..orderBy([(m) => OrderingTerm.asc(m.createdAt)]);
+    return query.watch();
+  }
 
-  Future<List<MessageRow>> getByThread(String threadId) =>
-      (select(messages)
-            ..where((m) => m.threadId.equals(threadId))
-            ..orderBy([(m) => OrderingTerm.asc(m.createdAt)]))
-          .get();
+  Future<List<MessageRow>> getByThread(String threadId) {
+    final query = select(messages)
+      ..where(
+        (m) => threadId.startsWith('local-')
+            ? (m.threadId.equals(threadId) | m.id.equals(threadId))
+            : m.threadId.equals(threadId),
+      )
+      ..orderBy([(m) => OrderingTerm.asc(m.createdAt)]);
+    return query.get();
+  }
 
   Future<int> countByThreadFolder(String threadId, String folder) async {
     final count = messages.id.count();
