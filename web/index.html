@@ -55,7 +55,13 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 36px;
+      overflow: hidden;
+    }
+
+    .loader-icon img {
+      width: 56px;
+      height: 56px;
+      object-fit: contain;
     }
 
     .loader-spinner {
@@ -85,12 +91,119 @@
 </head>
 <body>
   <div id="flutter-loader">
-    <div class="loader-icon">✉️</div>
+    <div class="loader-icon">
+      <img src="icons/Icon-192.png" alt="Hedwig">
+    </div>
     <div class="loader-spinner"></div>
     <span class="loader-text">Hedwig</span>
   </div>
 
   <script>
+    (function () {
+      if (!('serviceWorker' in navigator)) return;
+
+      const reloadKey = 'hedwig-service-worker-cleanup-reloaded';
+
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.getRegistrations()
+          .then(function (registrations) {
+            if (!registrations.length) {
+              sessionStorage.removeItem(reloadKey);
+              return;
+            }
+
+            return Promise.all(
+              registrations.map(function (registration) {
+                return registration.unregister();
+              })
+            ).then(function () {
+              if (
+                navigator.serviceWorker.controller &&
+                !sessionStorage.getItem(reloadKey)
+              ) {
+                sessionStorage.setItem(reloadKey, 'true');
+                window.location.reload();
+              } else {
+                sessionStorage.removeItem(reloadKey);
+              }
+            });
+          })
+          .catch(function () {
+            sessionStorage.removeItem(reloadKey);
+          });
+      });
+    })();
+
+    (function () {
+      const checkIntervalMs = 60000;
+      let currentVersion = null;
+      let refreshing = false;
+
+      function versionUrl() {
+        return 'version.json?v=' + Date.now();
+      }
+
+      function loadVersion() {
+        return fetch(versionUrl(), { cache: 'no-store' })
+          .then(function (response) {
+            return response.ok ? response.text() : null;
+          })
+          .then(function (version) {
+            return version && version.trim();
+          });
+      }
+
+      function unregisterServiceWorkers() {
+        if (!('serviceWorker' in navigator)) return Promise.resolve();
+
+        return navigator.serviceWorker.getRegistrations()
+          .then(function (registrations) {
+            return Promise.all(
+              registrations.map(function (registration) {
+                return registration.unregister();
+              })
+            );
+          });
+      }
+
+      function refreshForNewVersion() {
+        if (refreshing) return;
+        refreshing = true;
+
+        unregisterServiceWorkers()
+          .finally(function () {
+            window.location.reload();
+          });
+      }
+
+      function checkVersion() {
+        loadVersion()
+          .then(function (version) {
+            if (!version) return;
+
+            if (currentVersion == null) {
+              currentVersion = version;
+              return;
+            }
+
+            if (version !== currentVersion) {
+              currentVersion = version;
+              refreshForNewVersion();
+            }
+          })
+          .catch(function () {});
+      }
+
+      window.addEventListener('load', function () {
+        checkVersion();
+        window.setInterval(checkVersion, checkIntervalMs);
+      });
+
+      document.addEventListener('visibilitychange', function () {
+        if (!document.hidden) checkVersion();
+      });
+    })();
+
     window.addEventListener('flutter-first-frame', function () {
       const loader = document.getElementById('flutter-loader');
       loader.classList.add('hidden');
