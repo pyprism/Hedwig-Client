@@ -43,6 +43,11 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
   Future<MessageRow?> getById(String id) =>
       (select(messages)..where((m) => m.id.equals(id))).getSingleOrNull();
 
+  Future<List<MessageRow>> getByIds(List<String> ids) {
+    if (ids.isEmpty) return Future.value(const []);
+    return (select(messages)..where((m) => m.id.isIn(ids))).get();
+  }
+
   Future<List<MessageRow>> getByStatuses(List<String> statuses) =>
       (select(messages)..where((m) => m.status.isIn(statuses))).get();
 
@@ -95,4 +100,23 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
       folder: folder != null ? Value(folder) : const Value.absent(),
     ),
   );
+
+  /// Same as [updateState] but applies to every id in one statement, so a
+  /// bulk action (e.g. trashing a multi-select of threads) issues a single
+  /// write instead of one round-trip per message.
+  Future<void> updateStatesBulk(
+    List<String> ids, {
+    bool? isRead,
+    bool? isStarred,
+    String? folder,
+  }) {
+    if (ids.isEmpty) return Future.value();
+    return (update(messages)..where((m) => m.id.isIn(ids))).write(
+      MessagesCompanion(
+        isRead: isRead != null ? Value(isRead) : const Value.absent(),
+        isStarred: isStarred != null ? Value(isStarred) : const Value.absent(),
+        folder: folder != null ? Value(folder) : const Value.absent(),
+      ),
+    );
+  }
 }
