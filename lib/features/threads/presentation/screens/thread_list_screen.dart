@@ -514,6 +514,7 @@ class _ThreadListScreenState extends ConsumerState<ThreadListScreen> {
   String _folderLabel(String folder) => switch (folder) {
     'inbox' => 'Inbox',
     'sent' => 'Sent',
+    'scheduled' => 'Scheduled',
     'drafts' => 'Drafts',
     'starred' => 'Starred',
     'important' => 'Important',
