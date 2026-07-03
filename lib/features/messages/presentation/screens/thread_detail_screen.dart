@@ -661,9 +661,7 @@ class _ActionBar extends ConsumerWidget {
             TextButton.icon(
               icon: const Icon(Icons.cancel_outlined),
               label: const Text('Cancel send'),
-              onPressed: () => ref
-                  .read(messageStateControllerProvider.notifier)
-                  .cancelScheduledSend(message.id),
+              onPressed: () => _cancelScheduledSend(context, ref),
             ),
           ] else
             Wrap(
@@ -779,6 +777,10 @@ class _ActionBar extends ConsumerWidget {
               }
               if (action == 'permanent_delete') {
                 await _permanentDelete(context, ref);
+                return;
+              }
+              if (action == 'trash' && _isCancellableSend) {
+                await _trashCancellableSend(context, ref);
                 return;
               }
               if (action == 'snooze') {
@@ -967,6 +969,60 @@ class _ActionBar extends ConsumerWidget {
         .toList();
   }
 
+  Future<void> _cancelScheduledSend(BuildContext context, WidgetRef ref) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Cancel scheduled send?'),
+        content: const Text(
+          'This stops the message from sending at its scheduled time and '
+          'turns it back into an editable draft.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Keep scheduled'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Cancel send'),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+    await ref
+        .read(messageStateControllerProvider.notifier)
+        .cancelScheduledSend(message.id);
+  }
+
+  Future<void> _trashCancellableSend(BuildContext context, WidgetRef ref) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Cancel scheduled send?'),
+        content: const Text(
+          'Trashing this message cancels the scheduled send. It becomes an '
+          'editable draft instead of sending at its scheduled time.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Keep scheduled'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Cancel send'),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+    await ref
+        .read(messageStateControllerProvider.notifier)
+        .moveToFolder(message.id, 'trash');
+  }
+
   Future<void> _permanentDelete(BuildContext context, WidgetRef ref) async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -1024,7 +1080,6 @@ class _StatusChip extends StatelessWidget {
     'clicked' => 'Clicked',
     'spam' => 'Complained',
     'failed' => 'Failed',
-    'cancelled' => 'Cancelled',
     _ =>
       status.isEmpty
           ? 'Unknown'
