@@ -44,6 +44,9 @@ dependencies:
   # File selection
   file_picker: ^11.0.2
 
+  # Collections
+  collection: ^1.19.1
+
   # Icons
   cupertino_icons: ^1.0.8
 

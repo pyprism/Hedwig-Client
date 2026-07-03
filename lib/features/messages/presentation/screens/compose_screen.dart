@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:collection/collection.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -86,7 +87,7 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
   final _bccCtrl = TextEditingController();
   final _subjectCtrl = TextEditingController();
   final _htmlSourceCtrl = TextEditingController();
-  final _bodyController = QuillController.basic();
+  late final QuillController _bodyController;
   final _bodyFocusNode = FocusNode();
   final _bodyScrollController = ScrollController();
 
@@ -113,6 +114,11 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
   void initState() {
     super.initState();
     _savedDraftMessageId = widget.draftMessageId;
+    _bodyController = QuillController.basic(
+      config: QuillControllerConfig(
+        clipboardConfig: QuillClipboardConfig(onImagePaste: _handleImagePaste),
+      ),
+    );
     _subjectCtrl.addListener(_saveDraft);
     _htmlSourceCtrl.addListener(_saveDraft);
     _bodyController.addListener(_saveDraft);
@@ -476,6 +482,84 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
 
   bool _isImageContentType(String contentType) {
     return contentType.toLowerCase().startsWith('image/');
+  }
+
+  /// Wired into the Quill editor's clipboard config so pasting an image (e.g.
+  /// a screenshot) stages it as a hidden-in-body, `cid:`-referenced inline
+  /// attachment and drops it straight into the body at the cursor — same
+  /// mechanism as "Insert inline" on a picked file, just skipping the picker.
+  /// Returning the `cid:` URL tells flutter_quill to insert a BlockEmbed.image
+  /// with that value; `_ComposeInlineImageEmbedBuilder` renders it live.
+  Future<String?> _handleImagePaste(Uint8List imageBytes) async {
+    debugPrint(
+      '[ComposeScreen] onImagePaste fired: ${imageBytes.length} bytes',
+    );
+    if (_attachments.length >= _maxAttachments) {
+      _showSnack('At most $_maxAttachments attachments are allowed.');
+      return null;
+    }
+    if (imageBytes.length > _maxAttachmentBytes - _attachmentBytes) {
+      _showSnack('Pasted image skipped: the total limit is 10 MB.');
+      return null;
+    }
+
+    final contentType = _sniffImageContentType(imageBytes);
+    final extension = contentType.split('/').last;
+    final contentId = 'pasted-${DateTime.now().microsecondsSinceEpoch}@hedwig';
+
+    setState(() {
+      _attachments.add(
+        ComposeAttachmentRequest(
+          filename: 'pasted-image-${_attachments.length + 1}.$extension',
+          contentType: contentType,
+          content: base64Encode(imageBytes),
+          sizeBytes: imageBytes.length,
+          contentId: contentId,
+        ),
+      );
+    });
+    unawaited(_saveDraft());
+    return 'cid:$contentId';
+  }
+
+  /// Clipboard image bytes carry no filename/extension, so content type is
+  /// sniffed from the file's magic-number header instead.
+  String _sniffImageContentType(Uint8List bytes) {
+    if (bytes.length >= 8 &&
+        bytes[0] == 0x89 &&
+        bytes[1] == 0x50 &&
+        bytes[2] == 0x4E &&
+        bytes[3] == 0x47) {
+      return 'image/png';
+    }
+    if (bytes.length >= 3 &&
+        bytes[0] == 0xFF &&
+        bytes[1] == 0xD8 &&
+        bytes[2] == 0xFF) {
+      return 'image/jpeg';
+    }
+    if (bytes.length >= 6 &&
+        bytes[0] == 0x47 &&
+        bytes[1] == 0x49 &&
+        bytes[2] == 0x46 &&
+        bytes[3] == 0x38) {
+      return 'image/gif';
+    }
+    if (bytes.length >= 12 &&
+        bytes[0] == 0x52 &&
+        bytes[1] == 0x49 &&
+        bytes[2] == 0x46 &&
+        bytes[3] == 0x46 &&
+        bytes[8] == 0x57 &&
+        bytes[9] == 0x45 &&
+        bytes[10] == 0x42 &&
+        bytes[11] == 0x50) {
+      return 'image/webp';
+    }
+    if (bytes.length >= 2 && bytes[0] == 0x42 && bytes[1] == 0x4D) {
+      return 'image/bmp';
+    }
+    return 'image/png';
   }
 
   void _showSnack(String message) {
@@ -1052,9 +1136,14 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
                                     controller: _bodyController,
                                     focusNode: _bodyFocusNode,
                                     scrollController: _bodyScrollController,
-                                    config: const QuillEditorConfig(
+                                    config: QuillEditorConfig(
                                       placeholder: 'Message body',
-                                      padding: EdgeInsets.all(12),
+                                      padding: const EdgeInsets.all(12),
+                                      embedBuilders: [
+                                        _ComposeInlineImageEmbedBuilder(
+                                          attachmentsOf: () => _attachments,
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
@@ -1522,4 +1611,74 @@ class _AttachmentIcon extends StatelessWidget {
     if (normalized.contains('zip')) return Icons.folder_zip;
     return Icons.insert_drive_file;
   }
+}
+
+/// Renders `image` embeds inserted by [_handleImagePaste]. Without a builder
+/// registered for the `image` embed type, flutter_quill has no default one in
+/// this app (flutter_quill_extensions isn't a dependency) and throws
+/// `UnimplementedError` trying to render it — this is what makes pasting an
+/// image into the body safe instead of crashing the editor.
+///
+/// The embed's stored value is the `cid:<contentId>` string returned to
+/// flutter_quill by the paste handler; this looks the matching staged
+/// attachment back up by [ComposeAttachmentRequest.contentId] to render its
+/// bytes, since the delta itself never carries the image bytes.
+class _ComposeInlineImageEmbedBuilder extends EmbedBuilder {
+  const _ComposeInlineImageEmbedBuilder({required this.attachmentsOf});
+
+  final List<ComposeAttachmentRequest> Function() attachmentsOf;
+
+  @override
+  String get key => BlockEmbed.imageType;
+
+  @override
+  Widget build(BuildContext context, EmbedContext embedContext) {
+    final src = embedContext.node.value.data as String;
+    final bytes = _resolveBytes(src);
+
+    final image = bytes != null
+        ? Image.memory(bytes, fit: BoxFit.contain)
+        : _brokenImagePlaceholder(context);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxHeight: 240),
+        child: image,
+      ),
+    );
+  }
+
+  Uint8List? _resolveBytes(String src) {
+    if (src.startsWith('cid:')) {
+      final contentId = src.substring(4);
+      final attachment = attachmentsOf().firstWhereOrNull(
+        (a) => a.contentId == contentId,
+      );
+      if (attachment == null || attachment.content.isEmpty) return null;
+      try {
+        return base64Decode(attachment.content);
+      } on FormatException {
+        return null;
+      }
+    }
+    if (src.startsWith('data:') && src.contains(',')) {
+      try {
+        return base64Decode(src.substring(src.indexOf(',') + 1));
+      } on FormatException {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  Widget _brokenImagePlaceholder(BuildContext context) => Container(
+    width: 120,
+    height: 90,
+    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+    child: Icon(
+      Icons.broken_image_outlined,
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    ),
+  );
 }
