@@ -141,6 +141,37 @@ class _ThreadListScreenState extends ConsumerState<ThreadListScreen> {
     String? folder,
   }) async {
     if (_selectedThreadIds.isEmpty) return;
+
+    // Everything in the Scheduled view is a still-queued future send; the
+    // backend cancels it (converts to a draft) the moment it's trashed, which
+    // "Undo" below can't reverse — so ask first instead of surprising the user.
+    final isTrashingScheduled =
+        folder == 'trash' && ref.read(selectedFolderProvider) == 'scheduled';
+    if (isTrashingScheduled) {
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Cancel scheduled send(s)?'),
+          content: Text(
+            'Trashing ${_selectedThreadIds.length} scheduled message(s) '
+            'cancels the send. They become editable drafts instead of '
+            'sending at their scheduled time.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('Keep scheduled'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('Cancel send'),
+            ),
+          ],
+        ),
+      );
+      if (confirm != true) return;
+    }
+
     final repository = ref.read(messageRepositoryProvider);
     final messageIds = <String>[];
     for (final threadId in _selectedThreadIds) {
@@ -156,12 +187,18 @@ class _ThreadListScreenState extends ConsumerState<ThreadListScreen> {
     if (mounted && folder != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Moved ${_selectedThreadIds.length} thread(s).'),
-          action: SnackBarAction(
-            label: 'Undo',
-            onPressed: () =>
-                repository.bulkUpdateState(messageIds, folder: 'inbox'),
+          content: Text(
+            isTrashingScheduled
+                ? 'Send cancelled and moved to trash.'
+                : 'Moved ${_selectedThreadIds.length} thread(s).',
           ),
+          action: isTrashingScheduled
+              ? null
+              : SnackBarAction(
+                  label: 'Undo',
+                  onPressed: () =>
+                      repository.bulkUpdateState(messageIds, folder: 'inbox'),
+                ),
         ),
       );
     }
