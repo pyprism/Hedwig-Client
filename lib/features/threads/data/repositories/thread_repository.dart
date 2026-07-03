@@ -160,6 +160,9 @@ class ThreadRepository {
     final localSentRows = folder == 'sent' && replace
         ? await db.threadDao.getLocalSent(mailboxId)
         : const <ThreadRow>[];
+    final scheduledRows = folder == 'scheduled' && replace
+        ? await db.threadDao.getScheduled(mailboxId)
+        : const <ThreadRow>[];
 
     await db.transaction(() async {
       // On a fresh load (page 1) clear the folder so threads that left it
@@ -171,6 +174,7 @@ class ThreadRepository {
         ...companions,
         ...localDraftRows.map(_threadRowToCompanion),
         ...localSentRows.map(_threadRowToCompanion),
+        ...scheduledRows.map(_threadRowToCompanion),
       ];
       if (rows.isNotEmpty) {
         await db.threadDao.upsertAll(rows);
