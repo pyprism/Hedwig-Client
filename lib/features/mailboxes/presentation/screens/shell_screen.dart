@@ -26,7 +26,7 @@ final _countRefreshTickProvider = StreamProvider.autoDispose
 const _folders = [
   ('inbox', Icons.inbox_outlined, 'Inbox'),
   ('sent', Icons.send_outlined, 'Sent'),
-  ('scheduled', Icons.schedule_outlined, 'Scheduled'),
+  ('scheduled', Icons.event_note, 'Scheduled'),
   ('drafts', Icons.drafts_outlined, 'Drafts'),
   ('starred', Icons.star_border, 'Starred'),
   ('important', Icons.label_important_outline, 'Important'),
@@ -151,7 +151,7 @@ class _CompactShell extends ConsumerWidget {
           return NavigationDestination(
             icon: _CountBadge(
               count: counts?.folders[f.$1] ?? 0,
-              child: Icon(f.$2),
+              child: _FolderIcon(folder: f.$1, icon: f.$2),
             ),
             label: f.$3,
           );
@@ -209,7 +209,7 @@ class _MediumShell extends ConsumerWidget {
                     return NavigationRailDestination(
                       icon: _CountBadge(
                         count: counts?.folders[f.$1] ?? 0,
-                        child: Icon(f.$2),
+                        child: _FolderIcon(folder: f.$1, icon: f.$2),
                       ),
                       label: Text(f.$3),
                     );
@@ -335,7 +335,7 @@ class _DrawerContent extends ConsumerWidget {
               ..._folders.map((f) {
                 final selected = selectedFolder == f.$1;
                 return ListTile(
-                  leading: Icon(f.$2),
+                  leading: _FolderIcon(folder: f.$1, icon: f.$2),
                   title: Text(f.$3),
                   trailing: _UnreadCountText(counts?.folders[f.$1] ?? 0),
                   selected: selected,
@@ -494,6 +494,92 @@ class _QuotaTile extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _FolderIcon extends StatelessWidget {
+  const _FolderIcon({required this.folder, required this.icon});
+
+  final String folder;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    if (folder != 'scheduled') return Icon(icon);
+
+    final iconTheme = IconTheme.of(context);
+    final size = iconTheme.size ?? 24;
+    final color = iconTheme.color ?? Theme.of(context).colorScheme.onSurface;
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(painter: _ScheduledFolderIconPainter(color)),
+    );
+  }
+}
+
+class _ScheduledFolderIconPainter extends CustomPainter {
+  const _ScheduledFolderIconPainter(this.color);
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final stroke = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = (size.shortestSide / 12).clamp(1.5, 2.2)
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final fill = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    final rect = Rect.fromLTWH(
+      size.width * 0.12,
+      size.height * 0.18,
+      size.width * 0.76,
+      size.height * 0.68,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(rect, Radius.circular(size.width * 0.1)),
+      stroke,
+    );
+    canvas.drawLine(
+      Offset(rect.left, size.height * 0.36),
+      Offset(rect.right, size.height * 0.36),
+      stroke,
+    );
+    canvas.drawLine(
+      Offset(size.width * 0.32, size.height * 0.12),
+      Offset(size.width * 0.32, size.height * 0.24),
+      stroke,
+    );
+    canvas.drawLine(
+      Offset(size.width * 0.68, size.height * 0.12),
+      Offset(size.width * 0.68, size.height * 0.24),
+      stroke,
+    );
+
+    final center = Offset(size.width * 0.62, size.height * 0.62);
+    final radius = size.shortestSide * 0.16;
+    canvas.drawCircle(center, radius, stroke);
+    canvas.drawLine(
+      center,
+      Offset(center.dx, center.dy - radius * 0.58),
+      stroke,
+    );
+    canvas.drawLine(
+      center,
+      Offset(center.dx + radius * 0.55, center.dy),
+      stroke,
+    );
+    canvas.drawCircle(center, stroke.strokeWidth * 0.55, fill);
+  }
+
+  @override
+  bool shouldRepaint(covariant _ScheduledFolderIconPainter oldDelegate) {
+    return oldDelegate.color != color;
   }
 }
 
