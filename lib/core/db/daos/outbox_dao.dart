@@ -54,6 +54,18 @@ class OutboxDao extends DatabaseAccessor<AppDatabase> with _$OutboxDaoMixin {
         ),
       );
 
+  /// Rewinds any entry left in `sending` back to `pending`. `sending` is only
+  /// ever set right before a dispatch and cleared right after — a row still in
+  /// that state on startup means the app died mid-dispatch, so it must be
+  /// retried rather than left stuck forever (nothing else re-queues it).
+  Future<void> resetStuckSending() =>
+      (update(outboxEntries)..where((e) => e.status.equals('sending'))).write(
+        OutboxEntriesCompanion(
+          status: const Value('pending'),
+          updatedAt: Value(DateTime.now().toUtc()),
+        ),
+      );
+
   Future<void> markSending(int id) =>
       (update(outboxEntries)..where((e) => e.id.equals(id))).write(
         OutboxEntriesCompanion(
