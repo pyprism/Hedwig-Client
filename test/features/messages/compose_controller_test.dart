@@ -1,8 +1,10 @@
 import 'dart:convert';
 
+import 'package:dio/dio.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hedwig_client/core/api/dio_client.dart';
 import 'package:hedwig_client/core/db/app_database.dart';
 import 'package:hedwig_client/features/messages/presentation/controllers/compose_controller.dart';
 import 'package:hedwig_client/shared/models/message.dart';
@@ -116,6 +118,99 @@ void main() {
       );
       expect(composeAttachments.single, containsPair('content', 'SGVkd2ln'));
       expect(composeAttachments.single, containsPair('size_bytes', 6));
+    });
+  });
+
+  group('ComposeController send', () {
+    test('links a new optimistic sent message to its local thread', () async {
+      final db = AppDatabase.forTesting(NativeDatabase.memory());
+      addTearDown(db.close);
+      await db.mailboxDao.upsertAll([
+        MailboxesCompanion.insert(
+          id: 'mb1',
+          domainId: 'domain1',
+          localPart: 'support',
+          emailAddress: 'support@example.com',
+          updatedAt: DateTime.now().toUtc(),
+        ),
+      ]);
+      final container = ProviderContainer(
+        overrides: [
+          appDatabaseProvider.overrideWithValue(db),
+          dioClientProvider.overrideWithValue(Dio()),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final controller = container.read(composeControllerProvider.notifier);
+      await controller.send(
+        const SendMessageRequest(
+          mailboxId: 'mb1',
+          to: [EmailAddress(email: 'customer@example.com')],
+          subject: 'Queued send',
+          bodyText: 'Hello.',
+        ),
+      );
+
+      expect(container.read(composeControllerProvider).hasError, isFalse);
+      final localId = controller.lastLocalMessageId;
+      expect(localId, isNotNull);
+
+      final thread = await db.threadDao.getByIdFolder(localId!, 'sent');
+      expect(thread, isNotNull);
+
+      final messages = await db.messageDao.getByThread(localId);
+      expect(messages, hasLength(1));
+      expect(messages.single.id, localId);
+      expect(messages.single.folder, 'sent');
+    });
+
+    test('flushes scheduled sends after undo window', () async {
+      final db = AppDatabase.forTesting(NativeDatabase.memory());
+      addTearDown(db.close);
+      await db.mailboxDao.upsertAll([
+        MailboxesCompanion.insert(
+          id: 'mb1',
+          domainId: 'domain1',
+          localPart: 'support',
+          emailAddress: 'support@example.com',
+          updatedAt: DateTime.now().toUtc(),
+        ),
+      ]);
+      final container = ProviderContainer(
+        overrides: [
+          appDatabaseProvider.overrideWithValue(db),
+          dioClientProvider.overrideWithValue(Dio()),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final scheduledAt = DateTime.now().toUtc().add(const Duration(hours: 1));
+      final beforeSend = DateTime.now().toUtc();
+      await container
+          .read(composeControllerProvider.notifier)
+          .send(
+            SendMessageRequest(
+              mailboxId: 'mb1',
+              to: const [EmailAddress(email: 'customer@example.com')],
+              subject: 'Scheduled send',
+              bodyText: 'Hello later.',
+              scheduledAt: scheduledAt,
+            ),
+          );
+
+      final pending = await db.outboxDao.getPending();
+      expect(pending, hasLength(1));
+      final payload =
+          jsonDecode(pending.single.payloadJson) as Map<String, dynamic>;
+      final notBefore = DateTime.parse(payload['notBefore'] as String);
+
+      expect(notBefore.isAfter(beforeSend), isTrue);
+      expect(notBefore.isBefore(scheduledAt), isTrue);
+      expect(
+        scheduledAt.difference(notBefore) > const Duration(minutes: 30),
+        isTrue,
+      );
     });
   });
 }
