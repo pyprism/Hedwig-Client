@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hedwig_client/core/api/dio_client.dart';
 import 'package:hedwig_client/core/widgets/confirm_delete_dialog.dart';
@@ -54,6 +55,8 @@ Future<List<EmailProvider>> adminProviders(Ref ref) async {
 class AdminProvidersScreen extends ConsumerWidget {
   const AdminProvidersScreen({super.key});
 
+  static final Map<String, String> _sessionWebhookSecrets = {};
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(adminProvidersProvider);
@@ -97,12 +100,13 @@ class AdminProvidersScreen extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (p.lastHealthCheckError != null)
-                      Tooltip(
-                        message: p.lastHealthCheckError!,
-                        child: const Icon(
-                          Icons.warning_amber,
+                      IconButton(
+                        icon: const Icon(
+                          Icons.warning_amber_outlined,
                           color: Colors.orange,
                         ),
+                        tooltip: 'View provider warning',
+                        onPressed: () => _showProviderWarning(context, p),
                       )
                     else
                       const Icon(
@@ -111,13 +115,16 @@ class AdminProvidersScreen extends ConsumerWidget {
                       ),
                     PopupMenuButton<String>(
                       onSelected: (v) {
-                        if (v == 'edit') {
+                        if (v == 'details') {
+                          _showProviderDetails(context, ref, p);
+                        } else if (v == 'edit') {
                           _showEditDialog(context, ref, p);
                         } else if (v == 'delete') {
                           _deleteProvider(context, ref, p);
                         }
                       },
                       itemBuilder: (context) => const [
+                        PopupMenuItem(value: 'details', child: Text('Details')),
                         PopupMenuItem(value: 'edit', child: Text('Edit')),
                         PopupMenuItem(value: 'delete', child: Text('Delete')),
                       ],
@@ -132,10 +139,107 @@ class AdminProvidersScreen extends ConsumerWidget {
     );
   }
 
+  void _showProviderDetails(
+    BuildContext context,
+    WidgetRef ref,
+    EmailProvider provider,
+  ) {
+    final origin = _serverOrigin(ref.read(dioClientProvider).options.baseUrl);
+    final secret = _sessionWebhookSecrets[provider.id];
+    final secretParam = secret?.isNotEmpty == true
+        ? Uri.encodeComponent(secret!)
+        : 'YOUR_WEBHOOK_SECRET';
+    final webhookUrl = origin == null
+        ? null
+        : '$origin/api/providers/postmark/webhooks/?provider=${provider.id}&secret=$secretParam';
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(provider.name),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Provider UUID'),
+            const SizedBox(height: 4),
+            SelectableText(provider.id),
+            const SizedBox(height: 16),
+            const Text('Postmark webhook URL'),
+            const SizedBox(height: 4),
+            SelectableText(webhookUrl ?? 'Configure server URL first.'),
+            const SizedBox(height: 12),
+            Text(
+              secret?.isNotEmpty == true
+                  ? 'The copied URL includes the webhook signing secret entered in this client session.'
+                  : 'Set the same secret in Edit provider > Webhook signing secret, then replace YOUR_WEBHOOK_SECRET in the URL.',
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () =>
+                Clipboard.setData(ClipboardData(text: provider.id)),
+            child: const Text('Copy UUID'),
+          ),
+          if (webhookUrl != null)
+            TextButton(
+              onPressed: () =>
+                  Clipboard.setData(ClipboardData(text: webhookUrl)),
+              child: const Text('Copy URL'),
+            ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String? _serverOrigin(String baseUrl) {
+    final parsed = Uri.tryParse(baseUrl);
+    if (parsed != null && parsed.hasScheme && parsed.hasAuthority) {
+      return parsed.origin;
+    }
+    final current = Uri.base;
+    if (current.hasScheme && current.hasAuthority) {
+      return current.origin;
+    }
+    return null;
+  }
+
+  void _showProviderWarning(BuildContext context, EmailProvider provider) {
+    final checkedAt = provider.lastHealthCheckAt;
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('${provider.name} warning'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (checkedAt != null) ...[
+              Text('Last checked: ${checkedAt.toLocal()}'),
+              const SizedBox(height: 12),
+            ],
+            Text(provider.lastHealthCheckError ?? 'No warning details.'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _showAddDialog(BuildContext context, WidgetRef ref) async {
     final nameCtrl = TextEditingController();
     final tokenCtrl = TextEditingController();
     final accountTokenCtrl = TextEditingController();
+    final webhookSecretCtrl = TextEditingController();
     final fromEmailCtrl = TextEditingController();
 
     await showDialog<void>(
@@ -169,6 +273,15 @@ class AdminProvidersScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
               TextField(
+                controller: webhookSecretCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Webhook signing secret',
+                  hintText: 'Use this in the Postmark webhook URL',
+                ),
+                obscureText: true,
+              ),
+              const SizedBox(height: 8),
+              TextField(
                 controller: fromEmailCtrl,
                 decoration: const InputDecoration(
                   labelText: 'Default from email',
@@ -186,7 +299,7 @@ class AdminProvidersScreen extends ConsumerWidget {
             onPressed: () async {
               Navigator.of(ctx).pop();
               try {
-                await ref
+                final res = await ref
                     .read(dioClientProvider)
                     .post(
                       'providers/email-providers/',
@@ -198,9 +311,18 @@ class AdminProvidersScreen extends ConsumerWidget {
                           if (accountTokenCtrl.text.trim().isNotEmpty)
                             'account_token': accountTokenCtrl.text.trim(),
                         },
+                        if (webhookSecretCtrl.text.trim().isNotEmpty)
+                          'webhook_signing_secret': webhookSecretCtrl.text
+                              .trim(),
                         'default_from_email': fromEmailCtrl.text.trim(),
                       },
                     );
+                final id =
+                    (res.data as Map<String, dynamic>?)?['id'] as String?;
+                final webhookSecret = webhookSecretCtrl.text.trim();
+                if (id != null && webhookSecret.isNotEmpty) {
+                  _sessionWebhookSecrets[id] = webhookSecret;
+                }
                 ref.invalidate(adminProvidersProvider);
               } on DioException catch (e) {
                 if (context.mounted) {
@@ -220,6 +342,7 @@ class AdminProvidersScreen extends ConsumerWidget {
     nameCtrl.dispose();
     tokenCtrl.dispose();
     accountTokenCtrl.dispose();
+    webhookSecretCtrl.dispose();
     fromEmailCtrl.dispose();
   }
 
@@ -231,6 +354,7 @@ class AdminProvidersScreen extends ConsumerWidget {
     final nameCtrl = TextEditingController(text: provider.name);
     final tokenCtrl = TextEditingController();
     final accountTokenCtrl = TextEditingController();
+    final webhookSecretCtrl = TextEditingController();
     final fromEmailCtrl = TextEditingController(
       text: provider.defaultFromEmail ?? '',
     );
@@ -269,6 +393,15 @@ class AdminProvidersScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 TextField(
+                  controller: webhookSecretCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Webhook signing secret',
+                    hintText: 'Leave blank to keep existing',
+                  ),
+                  obscureText: true,
+                ),
+                const SizedBox(height: 8),
+                TextField(
                   controller: fromEmailCtrl,
                   decoration: const InputDecoration(
                     labelText: 'Default from email',
@@ -297,6 +430,7 @@ class AdminProvidersScreen extends ConsumerWidget {
                   if (accountTokenCtrl.text.trim().isNotEmpty)
                     'account_token': accountTokenCtrl.text.trim(),
                 };
+                final webhookSecret = webhookSecretCtrl.text.trim();
                 try {
                   await ref
                       .read(dioClientProvider)
@@ -308,8 +442,13 @@ class AdminProvidersScreen extends ConsumerWidget {
                           'is_active': isActive,
                           if (credentials.isNotEmpty)
                             'credentials': credentials,
+                          if (webhookSecret.isNotEmpty)
+                            'webhook_signing_secret': webhookSecret,
                         },
                       );
+                  if (webhookSecret.isNotEmpty) {
+                    _sessionWebhookSecrets[provider.id] = webhookSecret;
+                  }
                   ref.invalidate(adminProvidersProvider);
                 } on DioException catch (e) {
                   if (context.mounted) {
@@ -332,6 +471,7 @@ class AdminProvidersScreen extends ConsumerWidget {
     nameCtrl.dispose();
     tokenCtrl.dispose();
     accountTokenCtrl.dispose();
+    webhookSecretCtrl.dispose();
     fromEmailCtrl.dispose();
   }
 
