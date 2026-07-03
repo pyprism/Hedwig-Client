@@ -234,7 +234,7 @@ class MessageRepository {
     'is_starred': ?isStarred,
     'is_important': ?isImportant,
     'folder': ?folder,
-    'snoozed_until': ?snoozedUntil?.toIso8601String(),
+    'snoozed_until': ?snoozedUntil?.toUtc().toIso8601String(),
   };
 
   Future<void> _enqueueStateChange(String id, Map<String, dynamic> payload) =>
@@ -255,31 +255,34 @@ class MessageRepository {
     DateTime? snoozedUntil,
   }) async {
     if (ids.isEmpty) return;
-    final previousRows = <MessageRow>[];
+    final previousRows = folder != null
+        ? await db.messageDao.getByIds(ids)
+        : const <MessageRow>[];
+
+    await db.messageDao.updateStatesBulk(
+      ids,
+      isRead: isRead,
+      isStarred: isStarred,
+      folder: folder,
+    );
+    await _cacheUserStatesBulk(
+      ids,
+      isRead: isRead,
+      isStarred: isStarred,
+      isImportant: isImportant,
+      folder: folder,
+      snoozedUntil: snoozedUntil,
+    );
+
     if (folder != null) {
-      for (final id in ids) {
-        final previous = await db.messageDao.getById(id);
-        if (previous != null) previousRows.add(previous);
-      }
-    }
-    for (final id in ids) {
-      await db.messageDao.updateState(
-        id,
-        isRead: isRead,
-        isStarred: isStarred,
-        folder: folder,
-      );
-      await _cacheUserState(
-        id,
-        isRead: isRead,
-        isStarred: isStarred,
-        isImportant: isImportant,
-        folder: folder,
-        snoozedUntil: snoozedUntil,
-      );
-    }
-    if (folder != null) {
+      // Dedupe by (thread, previous folder): several selected messages often
+      // share a thread, and _syncThreadFolderCache's per-thread work would
+      // otherwise repeat once per message instead of once per thread.
+      final seenThreadFolders = <String>{};
       for (final previous in previousRows) {
+        final threadId = previous.threadId;
+        if (threadId == null) continue;
+        if (!seenThreadFolders.add('$threadId|${previous.folder}')) continue;
         await _syncThreadFolderCache(previous, folder);
       }
     }
@@ -429,10 +432,25 @@ class MessageRepository {
     } on DioException catch (e) {
       throw ApiException(failureFromError(e.error ?? e));
     }
+    final previous = await db.messageDao.getById(messageId);
     await db.messageDao.deleteById(messageId);
     await (db.delete(
       db.messageUserStates,
     )..where((row) => row.messageId.equals(messageId))).go();
+    // Without this the thread list's cached row for this folder survives
+    // until the next periodic poll (up to _liveRefreshInterval later), so a
+    // permanently-deleted thread lingers in the list even though it already
+    // vanished from thread detail (whose message row is gone immediately).
+    final threadId = previous?.threadId;
+    if (threadId != null) {
+      final remaining = await db.messageDao.countByThreadFolder(
+        threadId,
+        previous!.folder,
+      );
+      if (remaining == 0) {
+        await db.threadDao.deleteByIdFolder(threadId, previous.folder);
+      }
+    }
   }
 
   Future<void> _cacheUserState(
@@ -463,6 +481,49 @@ class MessageRepository {
             updatedAt: DateTime.now().toUtc(),
           ),
         );
+  }
+
+  /// Bulk variant of [_cacheUserState]: one read for all existing rows, one
+  /// batched upsert, instead of a read+write round-trip per message id.
+  Future<void> _cacheUserStatesBulk(
+    List<String> ids, {
+    bool? isRead,
+    bool? isStarred,
+    bool? isImportant,
+    String? folder,
+    DateTime? snoozedUntil,
+  }) async {
+    if (ids.isEmpty) return;
+    final existingRows = await (db.select(
+      db.messageUserStates,
+    )..where((row) => row.messageId.isIn(ids))).get();
+    final existingByMessageId = {
+      for (final row in existingRows) row.messageId: row,
+    };
+    final now = DateTime.now().toUtc();
+    final companions = [
+      for (final id in ids)
+        MessageUserStatesCompanion.insert(
+          messageId: id,
+          folder: Value(folder ?? existingByMessageId[id]?.folder ?? 'inbox'),
+          isRead: Value(isRead ?? existingByMessageId[id]?.isRead ?? false),
+          isStarred: Value(
+            isStarred ?? existingByMessageId[id]?.isStarred ?? false,
+          ),
+          isImportant: Value(
+            isImportant ?? existingByMessageId[id]?.isImportant ?? false,
+          ),
+          snoozedUntil: Value(
+            snoozedUntil ?? existingByMessageId[id]?.snoozedUntil,
+          ),
+          archivedAt: Value(existingByMessageId[id]?.archivedAt),
+          deletedAt: Value(existingByMessageId[id]?.deletedAt),
+          updatedAt: now,
+        ),
+    ];
+    await db.batch((b) {
+      b.insertAllOnConflictUpdate(db.messageUserStates, companions);
+    });
   }
 
   MailMessage _rowToModel(MessageRow r) => MailMessage(
