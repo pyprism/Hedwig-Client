@@ -105,9 +105,7 @@ GoRouter router(Ref ref) {
       }
 
       if (auth is Authenticated) {
-        if (loc == '/login' ||
-            loc == '/register' ||
-            loc == '/change-password') {
+        if (loc == '/login' || loc == '/register') {
           return '/inbox';
         }
         // Staff guard: non-staff hitting /admin/* → / (superuser counts as staff)
