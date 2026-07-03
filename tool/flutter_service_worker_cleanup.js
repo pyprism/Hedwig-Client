@@ -1,0 +1,32 @@
+self.addEventListener('install', function () {
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', function (event) {
+  event.waitUntil(
+    caches.keys()
+      .then(function (cacheNames) {
+        return Promise.all(
+          cacheNames.map(function (cacheName) {
+            return caches.delete(cacheName);
+          })
+        );
+      })
+      .then(function () {
+        return self.clients.claim();
+      })
+      .then(function () {
+        return self.clients.matchAll({
+          includeUncontrolled: true,
+          type: 'window',
+        });
+      })
+      .then(function (clients) {
+        return Promise.all(
+          clients.map(function (client) {
+            return client.navigate(client.url).catch(function () {});
+          })
+        );
+      })
+  );
+});
