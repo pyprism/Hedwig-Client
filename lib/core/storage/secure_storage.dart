@@ -9,9 +9,7 @@ const _kRefreshToken = 'refresh_token';
 
 @Riverpod(keepAlive: true)
 FlutterSecureStorage secureStorage(Ref ref) {
-  return const FlutterSecureStorage(
-    aOptions: AndroidOptions(encryptedSharedPreferences: true),
-  );
+  return const FlutterSecureStorage(aOptions: AndroidOptions());
 }
 
 @Riverpod(keepAlive: true)
