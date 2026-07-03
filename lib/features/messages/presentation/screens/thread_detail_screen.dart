@@ -996,7 +996,10 @@ class _ActionBar extends ConsumerWidget {
         .cancelScheduledSend(message.id);
   }
 
-  Future<void> _trashCancellableSend(BuildContext context, WidgetRef ref) async {
+  Future<void> _trashCancellableSend(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
