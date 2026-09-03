@@ -53,6 +53,13 @@ class AdminScreen extends StatelessWidget {
             subtitle: 'Per-message delivery tracking',
             route: '/admin/delivery',
           ),
+          _AdminTile(
+            icon: Icons.report_problem_outlined,
+            title: 'Ingest issues',
+            subtitle:
+                'Inbound mail that failed to route (no mailbox match, quota, etc.)',
+            route: '/admin/ingest-issues',
+          ),
         ],
       ),
     );
