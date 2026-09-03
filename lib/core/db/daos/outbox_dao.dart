@@ -77,15 +77,23 @@ class OutboxDao extends DatabaseAccessor<AppDatabase> with _$OutboxDaoMixin {
   Future<void> markDone(int id) =>
       (delete(outboxEntries)..where((e) => e.id.equals(id))).go();
 
-  Future<void> markFailed(int id, String error, int retryCount) =>
-      (update(outboxEntries)..where((e) => e.id.equals(id))).write(
-        OutboxEntriesCompanion(
-          status: const Value('failed'),
-          lastError: Value(error),
-          retryCount: Value(retryCount),
-          updatedAt: Value(DateTime.now().toUtc()),
-        ),
-      );
+  Future<void> markFailed(
+    int id,
+    String error,
+    int retryCount, {
+    DateTime? retryAfterUntil,
+  }) => (update(outboxEntries)..where((e) => e.id.equals(id))).write(
+    OutboxEntriesCompanion(
+      status: const Value('failed'),
+      lastError: Value(error),
+      retryCount: Value(retryCount),
+      // Always overwritten (not left stale): a retry-after from a previous
+      // 429 must not keep gating retries once a later failure was for some
+      // other reason.
+      retryAfterUntil: Value(retryAfterUntil),
+      updatedAt: Value(DateTime.now().toUtc()),
+    ),
+  );
 
   /// Entries that exhausted their retry budget. Excluded from [getPending]/
   /// [watchPending] so the sync engine stops touching them; surfaced to the
