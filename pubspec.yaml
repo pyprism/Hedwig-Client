@@ -59,7 +59,7 @@ dependencies:
   url_launcher: ^6.3.1
 
   # Localised date/time formatting
-  intl: ^0.20.2
+  intl: ^0.20.3
 
 dev_dependencies:
   flutter_test:
