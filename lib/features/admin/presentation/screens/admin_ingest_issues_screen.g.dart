@@ -1,0 +1,51 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'admin_ingest_issues_screen.dart';
+
+// **************************************************************************
+// RiverpodGenerator
+// **************************************************************************
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
+@ProviderFor(adminIngestIssues)
+final adminIngestIssuesProvider = AdminIngestIssuesProvider._();
+
+final class AdminIngestIssuesProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<IngestIssue>>,
+          List<IngestIssue>,
+          FutureOr<List<IngestIssue>>
+        >
+    with
+        $FutureModifier<List<IngestIssue>>,
+        $FutureProvider<List<IngestIssue>> {
+  AdminIngestIssuesProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'adminIngestIssuesProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$adminIngestIssuesHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<IngestIssue>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<IngestIssue>> create(Ref ref) {
+    return adminIngestIssues(ref);
+  }
+}
+
+String _$adminIngestIssuesHash() => r'f69f6034117e980dda562769dacc21349e00d0fd';
