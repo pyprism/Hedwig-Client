@@ -54,9 +54,10 @@ class ErrorInterceptor extends Interceptor {
         message: detail ?? 'Access denied.',
       ),
       404 => Failure.notFound(message: detail),
-      429 => const Failure.server(
+      429 => Failure.server(
         statusCode: 429,
-        message: 'Too many requests. Please wait and try again.',
+        message: 'Too many requests.',
+        retryAfterSeconds: _retryAfterSeconds(err),
       ),
       _ => Failure.server(
         statusCode: status,
@@ -64,6 +65,14 @@ class ErrorInterceptor extends Interceptor {
         fieldErrors: _extractFieldErrors(data),
       ),
     };
+  }
+
+  /// Parses a `429` response's `Retry-After` header (seconds, per DRF's
+  /// throttle implementation). `docs/api.md`: anon 60/min, auth 150/min.
+  int? _retryAfterSeconds(DioException err) {
+    final raw = err.response?.headers.value('retry-after');
+    if (raw == null) return null;
+    return int.tryParse(raw.trim());
   }
 
   String? _extractDetail(dynamic data) {
