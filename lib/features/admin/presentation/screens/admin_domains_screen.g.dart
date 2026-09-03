@@ -48,4 +48,4 @@ final class AdminDomainsProvider
   }
 }
 
-String _$adminDomainsHash() => r'308ced6efe5f37f5a7b0a79ae5a9cb151a7df708';
+String _$adminDomainsHash() => r'f72f5e625c132fcca753a41eb7b004d97d7f347f';
