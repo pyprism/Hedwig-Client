@@ -44,6 +44,7 @@ MessagesCompanion messageToRow(MailMessage m) => MessagesCompanion.insert(
   rawMimeUrl: Value(m.rawMimeUrl),
   isRead: Value(m.isRead),
   isStarred: Value(m.isStarred),
+  isImportant: Value(m.isImportant),
   hasAttachments: Value(m.hasAttachments),
   attachmentsJson: Value(
     jsonEncode(m.attachments.map((a) => a.toJson()).toList()),
@@ -155,6 +156,7 @@ class MessageRepository {
       id,
       isRead: isRead,
       isStarred: isStarred,
+      isImportant: isImportant,
       folder: folder,
     );
     if (folder != null && previous != null) {
@@ -263,6 +265,7 @@ class MessageRepository {
       ids,
       isRead: isRead,
       isStarred: isStarred,
+      isImportant: isImportant,
       folder: folder,
     );
     await _cacheUserStatesBulk(
@@ -548,6 +551,7 @@ class MessageRepository {
     rawMimeUrl: r.rawMimeUrl,
     isRead: r.isRead,
     isStarred: r.isStarred,
+    isImportant: r.isImportant,
     hasAttachments: r.hasAttachments,
     attachments: _decodeAttachments(r.attachmentsJson),
     rawHeaders: _decodeMap(r.rawHeadersJson),
