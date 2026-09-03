@@ -28,7 +28,7 @@ jobs:
           - { target: ios,     os: macos-latest }
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Select Xcode 26 (Apple)
         if: matrix.target == 'macos' || matrix.target == 'ios'
