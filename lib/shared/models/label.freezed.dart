@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'label.dart';
@@ -9,6 +9,7 @@ part of 'label.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $LabelCopyWith<Label> get copyWith => _$LabelCopyWithImpl<Label>(this as Label, 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Label&&(identical(other.id, id) || other.id == id)&&(identical(other.mailboxId, mailboxId) || other.mailboxId == mailboxId)&&(identical(other.name, name) || other.name == name)&&(identical(other.color, color) || other.color == color)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  final _this = this as Label;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Label&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.mailboxId, _this.mailboxId) || other.mailboxId == _this.mailboxId)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.color, _this.color) || other.color == _this.color)&&(identical(other.createdAt, _this.createdAt) || other.createdAt == _this.createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,mailboxId,name,color,createdAt);
+int get hashCode {
+  final _this = this as Label;
+  return Object.hash(runtimeType,_this.id,_this.mailboxId,_this.name,_this.color,_this.createdAt);
+}
 
 @override
 String toString() {
-  return 'Label(id: $id, mailboxId: $mailboxId, name: $name, color: $color, createdAt: $createdAt)';
+  final _this = this as Label;
+  return 'Label(id: ${_this.id}, mailboxId: ${_this.mailboxId}, name: ${_this.name}, color: ${_this.color}, createdAt: ${_this.createdAt})';
 }
 
 
@@ -66,7 +72,7 @@ class _$LabelCopyWithImpl<$Res>
 /// Create a copy of Label
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? mailboxId = null,Object? name = null,Object? color = freezed,Object? createdAt = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(Label(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,mailboxId: null == mailboxId ? _self.mailboxId : mailboxId // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -235,16 +241,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Label&&(identical(other.id, id) || other.id == id)&&(identical(other.mailboxId, mailboxId) || other.mailboxId == mailboxId)&&(identical(other.name, name) || other.name == name)&&(identical(other.color, color) || other.color == color)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Label&&(identical(other.id, id) || other.id == id)&&(identical(other.mailboxId, mailboxId) || other.mailboxId == mailboxId)&&(identical(other.name, name) || other.name == name)&&(identical(other.color, color) || other.color == color)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,mailboxId,name,color,createdAt);
+int get hashCode {
+    return Object.hash(runtimeType,id,mailboxId,name,color,createdAt);
+}
 
 @override
 String toString() {
-  return 'Label(id: $id, mailboxId: $mailboxId, name: $name, color: $color, createdAt: $createdAt)';
+    return 'Label(id: $id, mailboxId: $mailboxId, name: $name, color: $color, createdAt: $createdAt)';
 }
 
 

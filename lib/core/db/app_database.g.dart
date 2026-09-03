@@ -5955,40 +5955,38 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   ];
 }
 
-typedef $$MailboxesTableCreateCompanionBuilder =
-    MailboxesCompanion Function({
-      required String id,
-      required String domainId,
-      required String localPart,
-      required String emailAddress,
-      Value<String?> displayName,
-      Value<bool> sendEnabled,
-      Value<bool> receiveEnabled,
-      Value<bool> isActive,
-      Value<int> quotaBytes,
-      Value<int> usedBytes,
-      Value<String?> signatureHtml,
-      Value<String?> signatureText,
-      required DateTime updatedAt,
-      Value<int> rowid,
-    });
-typedef $$MailboxesTableUpdateCompanionBuilder =
-    MailboxesCompanion Function({
-      Value<String> id,
-      Value<String> domainId,
-      Value<String> localPart,
-      Value<String> emailAddress,
-      Value<String?> displayName,
-      Value<bool> sendEnabled,
-      Value<bool> receiveEnabled,
-      Value<bool> isActive,
-      Value<int> quotaBytes,
-      Value<int> usedBytes,
-      Value<String?> signatureHtml,
-      Value<String?> signatureText,
-      Value<DateTime> updatedAt,
-      Value<int> rowid,
-    });
+typedef $$MailboxesTableCreateCompanionBuilder = MailboxesCompanion Function({
+  required String id,
+  required String domainId,
+  required String localPart,
+  required String emailAddress,
+  Value<String?> displayName,
+  Value<bool> sendEnabled,
+  Value<bool> receiveEnabled,
+  Value<bool> isActive,
+  Value<int> quotaBytes,
+  Value<int> usedBytes,
+  Value<String?> signatureHtml,
+  Value<String?> signatureText,
+  required DateTime updatedAt,
+  Value<int> rowid,
+});
+typedef $$MailboxesTableUpdateCompanionBuilder = MailboxesCompanion Function({
+  Value<String> id,
+  Value<String> domainId,
+  Value<String> localPart,
+  Value<String> emailAddress,
+  Value<String?> displayName,
+  Value<bool> sendEnabled,
+  Value<bool> receiveEnabled,
+  Value<bool> isActive,
+  Value<int> quotaBytes,
+  Value<int> usedBytes,
+  Value<String?> signatureHtml,
+  Value<String?> signatureText,
+  Value<DateTime> updatedAt,
+  Value<int> rowid,
+});
 
 class $$MailboxesTableFilterComposer
     extends Composer<_$AppDatabase, $MailboxesTable> {
@@ -6297,7 +6295,16 @@ class $$MailboxesTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$MailboxesTable, MailboxRow>(table),
+                  BaseReferences<_$AppDatabase, $MailboxesTable, MailboxRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -6318,46 +6325,44 @@ typedef $$MailboxesTableProcessedTableManager =
       MailboxRow,
       PrefetchHooks Function()
     >;
-typedef $$ThreadsTableCreateCompanionBuilder =
-    ThreadsCompanion Function({
-      required String id,
-      required String mailboxId,
-      required String subject,
-      Value<int> messageCount,
-      Value<bool> hasUnread,
-      Value<int> unreadCount,
-      Value<String?> snippet,
-      Value<String?> latestDirection,
-      Value<bool> hasAttachments,
-      Value<String> attachmentFilenamesJson,
-      Value<String> labelsJson,
-      Value<String?> searchHighlight,
-      required DateTime lastMessageAt,
-      Value<String> participantsJson,
-      Value<String> folder,
-      required DateTime updatedAt,
-      Value<int> rowid,
-    });
-typedef $$ThreadsTableUpdateCompanionBuilder =
-    ThreadsCompanion Function({
-      Value<String> id,
-      Value<String> mailboxId,
-      Value<String> subject,
-      Value<int> messageCount,
-      Value<bool> hasUnread,
-      Value<int> unreadCount,
-      Value<String?> snippet,
-      Value<String?> latestDirection,
-      Value<bool> hasAttachments,
-      Value<String> attachmentFilenamesJson,
-      Value<String> labelsJson,
-      Value<String?> searchHighlight,
-      Value<DateTime> lastMessageAt,
-      Value<String> participantsJson,
-      Value<String> folder,
-      Value<DateTime> updatedAt,
-      Value<int> rowid,
-    });
+typedef $$ThreadsTableCreateCompanionBuilder = ThreadsCompanion Function({
+  required String id,
+  required String mailboxId,
+  required String subject,
+  Value<int> messageCount,
+  Value<bool> hasUnread,
+  Value<int> unreadCount,
+  Value<String?> snippet,
+  Value<String?> latestDirection,
+  Value<bool> hasAttachments,
+  Value<String> attachmentFilenamesJson,
+  Value<String> labelsJson,
+  Value<String?> searchHighlight,
+  required DateTime lastMessageAt,
+  Value<String> participantsJson,
+  Value<String> folder,
+  required DateTime updatedAt,
+  Value<int> rowid,
+});
+typedef $$ThreadsTableUpdateCompanionBuilder = ThreadsCompanion Function({
+  Value<String> id,
+  Value<String> mailboxId,
+  Value<String> subject,
+  Value<int> messageCount,
+  Value<bool> hasUnread,
+  Value<int> unreadCount,
+  Value<String?> snippet,
+  Value<String?> latestDirection,
+  Value<bool> hasAttachments,
+  Value<String> attachmentFilenamesJson,
+  Value<String> labelsJson,
+  Value<String?> searchHighlight,
+  Value<DateTime> lastMessageAt,
+  Value<String> participantsJson,
+  Value<String> folder,
+  Value<DateTime> updatedAt,
+  Value<int> rowid,
+});
 
 class $$ThreadsTableFilterComposer
     extends Composer<_$AppDatabase, $ThreadsTable> {
@@ -6718,7 +6723,16 @@ class $$ThreadsTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$ThreadsTable, ThreadRow>(table),
+                  BaseReferences<_$AppDatabase, $ThreadsTable, ThreadRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -6739,74 +6753,72 @@ typedef $$ThreadsTableProcessedTableManager =
       ThreadRow,
       PrefetchHooks Function()
     >;
-typedef $$MessagesTableCreateCompanionBuilder =
-    MessagesCompanion Function({
-      required String id,
-      required String mailboxId,
-      Value<String?> threadId,
-      required String direction,
-      required String status,
-      Value<String> folder,
-      required String fromAddress,
-      Value<String?> fromName,
-      Value<String?> envelopeSender,
-      Value<String?> envelopeRecipient,
-      Value<String> toAddressesJson,
-      Value<String> ccAddressesJson,
-      Value<String> bccAddressesJson,
-      Value<String?> replyTo,
-      required String subject,
-      Value<String?> snippet,
-      Value<String?> bodyText,
-      Value<String?> bodyHtml,
-      Value<String?> rawMimeUrl,
-      Value<bool> isRead,
-      Value<bool> isStarred,
-      Value<bool> isImportant,
-      Value<bool> hasAttachments,
-      Value<String> attachmentsJson,
-      Value<String> rawHeadersJson,
-      Value<String> metadataJson,
-      Value<DateTime?> receivedAt,
-      Value<DateTime?> sentAt,
-      Value<DateTime?> scheduledAt,
-      required DateTime createdAt,
-      Value<int> rowid,
-    });
-typedef $$MessagesTableUpdateCompanionBuilder =
-    MessagesCompanion Function({
-      Value<String> id,
-      Value<String> mailboxId,
-      Value<String?> threadId,
-      Value<String> direction,
-      Value<String> status,
-      Value<String> folder,
-      Value<String> fromAddress,
-      Value<String?> fromName,
-      Value<String?> envelopeSender,
-      Value<String?> envelopeRecipient,
-      Value<String> toAddressesJson,
-      Value<String> ccAddressesJson,
-      Value<String> bccAddressesJson,
-      Value<String?> replyTo,
-      Value<String> subject,
-      Value<String?> snippet,
-      Value<String?> bodyText,
-      Value<String?> bodyHtml,
-      Value<String?> rawMimeUrl,
-      Value<bool> isRead,
-      Value<bool> isStarred,
-      Value<bool> isImportant,
-      Value<bool> hasAttachments,
-      Value<String> attachmentsJson,
-      Value<String> rawHeadersJson,
-      Value<String> metadataJson,
-      Value<DateTime?> receivedAt,
-      Value<DateTime?> sentAt,
-      Value<DateTime?> scheduledAt,
-      Value<DateTime> createdAt,
-      Value<int> rowid,
-    });
+typedef $$MessagesTableCreateCompanionBuilder = MessagesCompanion Function({
+  required String id,
+  required String mailboxId,
+  Value<String?> threadId,
+  required String direction,
+  required String status,
+  Value<String> folder,
+  required String fromAddress,
+  Value<String?> fromName,
+  Value<String?> envelopeSender,
+  Value<String?> envelopeRecipient,
+  Value<String> toAddressesJson,
+  Value<String> ccAddressesJson,
+  Value<String> bccAddressesJson,
+  Value<String?> replyTo,
+  required String subject,
+  Value<String?> snippet,
+  Value<String?> bodyText,
+  Value<String?> bodyHtml,
+  Value<String?> rawMimeUrl,
+  Value<bool> isRead,
+  Value<bool> isStarred,
+  Value<bool> isImportant,
+  Value<bool> hasAttachments,
+  Value<String> attachmentsJson,
+  Value<String> rawHeadersJson,
+  Value<String> metadataJson,
+  Value<DateTime?> receivedAt,
+  Value<DateTime?> sentAt,
+  Value<DateTime?> scheduledAt,
+  required DateTime createdAt,
+  Value<int> rowid,
+});
+typedef $$MessagesTableUpdateCompanionBuilder = MessagesCompanion Function({
+  Value<String> id,
+  Value<String> mailboxId,
+  Value<String?> threadId,
+  Value<String> direction,
+  Value<String> status,
+  Value<String> folder,
+  Value<String> fromAddress,
+  Value<String?> fromName,
+  Value<String?> envelopeSender,
+  Value<String?> envelopeRecipient,
+  Value<String> toAddressesJson,
+  Value<String> ccAddressesJson,
+  Value<String> bccAddressesJson,
+  Value<String?> replyTo,
+  Value<String> subject,
+  Value<String?> snippet,
+  Value<String?> bodyText,
+  Value<String?> bodyHtml,
+  Value<String?> rawMimeUrl,
+  Value<bool> isRead,
+  Value<bool> isStarred,
+  Value<bool> isImportant,
+  Value<bool> hasAttachments,
+  Value<String> attachmentsJson,
+  Value<String> rawHeadersJson,
+  Value<String> metadataJson,
+  Value<DateTime?> receivedAt,
+  Value<DateTime?> sentAt,
+  Value<DateTime?> scheduledAt,
+  Value<DateTime> createdAt,
+  Value<int> rowid,
+});
 
 class $$MessagesTableFilterComposer
     extends Composer<_$AppDatabase, $MessagesTable> {
@@ -7418,7 +7430,16 @@ class $$MessagesTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$MessagesTable, MessageRow>(table),
+                  BaseReferences<_$AppDatabase, $MessagesTable, MessageRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -7439,30 +7460,28 @@ typedef $$MessagesTableProcessedTableManager =
       MessageRow,
       PrefetchHooks Function()
     >;
-typedef $$ContactsTableCreateCompanionBuilder =
-    ContactsCompanion Function({
-      required String id,
-      required String mailboxId,
-      required String email,
-      Value<String?> name,
-      Value<bool> isFavorite,
-      Value<int> timesContacted,
-      Value<DateTime?> lastContactedAt,
-      required DateTime updatedAt,
-      Value<int> rowid,
-    });
-typedef $$ContactsTableUpdateCompanionBuilder =
-    ContactsCompanion Function({
-      Value<String> id,
-      Value<String> mailboxId,
-      Value<String> email,
-      Value<String?> name,
-      Value<bool> isFavorite,
-      Value<int> timesContacted,
-      Value<DateTime?> lastContactedAt,
-      Value<DateTime> updatedAt,
-      Value<int> rowid,
-    });
+typedef $$ContactsTableCreateCompanionBuilder = ContactsCompanion Function({
+  required String id,
+  required String mailboxId,
+  required String email,
+  Value<String?> name,
+  Value<bool> isFavorite,
+  Value<int> timesContacted,
+  Value<DateTime?> lastContactedAt,
+  required DateTime updatedAt,
+  Value<int> rowid,
+});
+typedef $$ContactsTableUpdateCompanionBuilder = ContactsCompanion Function({
+  Value<String> id,
+  Value<String> mailboxId,
+  Value<String> email,
+  Value<String?> name,
+  Value<bool> isFavorite,
+  Value<int> timesContacted,
+  Value<DateTime?> lastContactedAt,
+  Value<DateTime> updatedAt,
+  Value<int> rowid,
+});
 
 class $$ContactsTableFilterComposer
     extends Composer<_$AppDatabase, $ContactsTable> {
@@ -7678,7 +7697,16 @@ class $$ContactsTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$ContactsTable, ContactRow>(table),
+                  BaseReferences<_$AppDatabase, $ContactsTable, ContactRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -7699,24 +7727,22 @@ typedef $$ContactsTableProcessedTableManager =
       ContactRow,
       PrefetchHooks Function()
     >;
-typedef $$LabelsTableCreateCompanionBuilder =
-    LabelsCompanion Function({
-      required String id,
-      required String mailboxId,
-      required String name,
-      Value<String?> color,
-      required DateTime createdAt,
-      Value<int> rowid,
-    });
-typedef $$LabelsTableUpdateCompanionBuilder =
-    LabelsCompanion Function({
-      Value<String> id,
-      Value<String> mailboxId,
-      Value<String> name,
-      Value<String?> color,
-      Value<DateTime> createdAt,
-      Value<int> rowid,
-    });
+typedef $$LabelsTableCreateCompanionBuilder = LabelsCompanion Function({
+  required String id,
+  required String mailboxId,
+  required String name,
+  Value<String?> color,
+  required DateTime createdAt,
+  Value<int> rowid,
+});
+typedef $$LabelsTableUpdateCompanionBuilder = LabelsCompanion Function({
+  Value<String> id,
+  Value<String> mailboxId,
+  Value<String> name,
+  Value<String?> color,
+  Value<DateTime> createdAt,
+  Value<int> rowid,
+});
 
 class $$LabelsTableFilterComposer
     extends Composer<_$AppDatabase, $LabelsTable> {
@@ -7872,7 +7898,16 @@ class $$LabelsTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$LabelsTable, LabelRow>(table),
+                  BaseReferences<_$AppDatabase, $LabelsTable, LabelRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -8040,7 +8075,18 @@ class $$MessageLabelCacheTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$MessageLabelCacheTable, MessageLabelCacheRow>(
+                    table,
+                  ),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $MessageLabelCacheTable,
+                    MessageLabelCacheRow
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -8335,7 +8381,18 @@ class $$MessageUserStatesTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$MessageUserStatesTable, MessageUserStateRow>(
+                    table,
+                  ),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $MessageUserStatesTable,
+                    MessageUserStateRow
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -8363,20 +8420,18 @@ typedef $$MessageUserStatesTableProcessedTableManager =
       MessageUserStateRow,
       PrefetchHooks Function()
     >;
-typedef $$SyncMetaTableCreateCompanionBuilder =
-    SyncMetaCompanion Function({
-      required String key,
-      required String value,
-      required DateTime updatedAt,
-      Value<int> rowid,
-    });
-typedef $$SyncMetaTableUpdateCompanionBuilder =
-    SyncMetaCompanion Function({
-      Value<String> key,
-      Value<String> value,
-      Value<DateTime> updatedAt,
-      Value<int> rowid,
-    });
+typedef $$SyncMetaTableCreateCompanionBuilder = SyncMetaCompanion Function({
+  required String key,
+  required String value,
+  required DateTime updatedAt,
+  Value<int> rowid,
+});
+typedef $$SyncMetaTableUpdateCompanionBuilder = SyncMetaCompanion Function({
+  Value<String> key,
+  Value<String> value,
+  Value<DateTime> updatedAt,
+  Value<int> rowid,
+});
 
 class $$SyncMetaTableFilterComposer
     extends Composer<_$AppDatabase, $SyncMetaTable> {
@@ -8501,7 +8556,16 @@ class $$SyncMetaTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$SyncMetaTable, SyncMetaRow>(table),
+                  BaseReferences<_$AppDatabase, $SyncMetaTable, SyncMetaRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -8774,7 +8838,16 @@ class $$OutboxEntriesTableTableManager
                 updatedAt: updatedAt,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$OutboxEntriesTable, OutboxEntry>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $OutboxEntriesTable,
+                    OutboxEntry
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),

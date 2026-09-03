@@ -56,8 +56,7 @@ class AdminScreen extends StatelessWidget {
           _AdminTile(
             icon: Icons.report_problem_outlined,
             title: 'Ingest issues',
-            subtitle:
-                'Inbound mail that failed to route (no mailbox match, quota, etc.)',
+            subtitle: 'Inbound mail that failed to route (no mailbox match, quota, etc.)',
             route: '/admin/ingest-issues',
           ),
         ],

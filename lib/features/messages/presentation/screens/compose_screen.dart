@@ -465,14 +465,12 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
       'xml' => 'application/xml',
       'zip' => 'application/zip',
       'doc' => 'application/msword',
-      'docx' =>
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       'xls' => 'application/vnd.ms-excel',
       'xlsx' =>
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'ppt' => 'application/vnd.ms-powerpoint',
-      'pptx' =>
-        'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'pptx' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
       'mp3' => 'audio/mpeg',
       'wav' => 'audio/wav',
       'mp4' => 'video/mp4',
@@ -564,9 +562,8 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
   }
 
   void _showSnack(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _pickScheduledTime() async {
@@ -671,9 +668,8 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
       ref.invalidate(threadCountsProvider(mailboxId));
       if (!mounted) return;
       if (closeAfter) context.pop();
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Draft saved.')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Draft saved.')));
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -1054,13 +1050,12 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
                   controller: _subjectCtrl,
                   maxLength: _maxSubjectChars,
                   // Hide the per-field counter; the cap just fails fast.
-                  buildCounter:
-                      (
-                        _, {
-                        required currentLength,
-                        required isFocused,
-                        maxLength,
-                      }) => null,
+                  buildCounter: (
+                    _, {
+                    required currentLength,
+                    required isFocused,
+                    maxLength,
+                  }) => null,
                   decoration: const InputDecoration(
                     labelText: 'Subject',
                     border: InputBorder.none,

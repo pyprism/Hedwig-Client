@@ -259,9 +259,8 @@ class _ThreadListScreenState extends ConsumerState<ThreadListScreen> {
     for (final threadId in _selectedThreadIds) {
       final messages = await messageRepository.getThreadMessages(threadId);
       for (final message in messages) {
-        final applied = (await labelRepository.getMessageLabelIds(
-          message.id,
-        )).toSet();
+        final applied = (await labelRepository.getMessageLabelIds(message.id))
+            .toSet();
         if (applied.contains(labelId)) {
           await labelRepository.removeFromMessage(
             messageId: message.id,

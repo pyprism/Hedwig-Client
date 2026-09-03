@@ -48,4 +48,4 @@ final class AdminIngestIssuesProvider
   }
 }
 
-String _$adminIngestIssuesHash() => r'f69f6034117e980dda562769dacc21349e00d0fd';
+String _$adminIngestIssuesHash() => r'680db9197961e5d45981ac03783c8247b5039147';

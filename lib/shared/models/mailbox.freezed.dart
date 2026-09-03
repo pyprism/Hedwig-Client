@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'mailbox.dart';
@@ -9,6 +9,7 @@ part of 'mailbox.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $MailboxCopyWith<Mailbox> get copyWith => _$MailboxCopyWithImpl<Mailbox>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Mailbox&&(identical(other.id, id) || other.id == id)&&(identical(other.domainId, domainId) || other.domainId == domainId)&&(identical(other.localPart, localPart) || other.localPart == localPart)&&(identical(other.emailAddress, emailAddress) || other.emailAddress == emailAddress)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.sendEnabled, sendEnabled) || other.sendEnabled == sendEnabled)&&(identical(other.receiveEnabled, receiveEnabled) || other.receiveEnabled == receiveEnabled)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.quotaBytes, quotaBytes) || other.quotaBytes == quotaBytes)&&(identical(other.usedBytes, usedBytes) || other.usedBytes == usedBytes)&&(identical(other.signatureHtml, signatureHtml) || other.signatureHtml == signatureHtml)&&(identical(other.signatureText, signatureText) || other.signatureText == signatureText)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  final _this = this as Mailbox;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Mailbox&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.domainId, _this.domainId) || other.domainId == _this.domainId)&&(identical(other.localPart, _this.localPart) || other.localPart == _this.localPart)&&(identical(other.emailAddress, _this.emailAddress) || other.emailAddress == _this.emailAddress)&&(identical(other.displayName, _this.displayName) || other.displayName == _this.displayName)&&(identical(other.sendEnabled, _this.sendEnabled) || other.sendEnabled == _this.sendEnabled)&&(identical(other.receiveEnabled, _this.receiveEnabled) || other.receiveEnabled == _this.receiveEnabled)&&(identical(other.isActive, _this.isActive) || other.isActive == _this.isActive)&&(identical(other.quotaBytes, _this.quotaBytes) || other.quotaBytes == _this.quotaBytes)&&(identical(other.usedBytes, _this.usedBytes) || other.usedBytes == _this.usedBytes)&&(identical(other.signatureHtml, _this.signatureHtml) || other.signatureHtml == _this.signatureHtml)&&(identical(other.signatureText, _this.signatureText) || other.signatureText == _this.signatureText)&&(identical(other.updatedAt, _this.updatedAt) || other.updatedAt == _this.updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,domainId,localPart,emailAddress,displayName,sendEnabled,receiveEnabled,isActive,quotaBytes,usedBytes,signatureHtml,signatureText,updatedAt);
+int get hashCode {
+  final _this = this as Mailbox;
+  return Object.hash(runtimeType,_this.id,_this.domainId,_this.localPart,_this.emailAddress,_this.displayName,_this.sendEnabled,_this.receiveEnabled,_this.isActive,_this.quotaBytes,_this.usedBytes,_this.signatureHtml,_this.signatureText,_this.updatedAt);
+}
 
 @override
 String toString() {
-  return 'Mailbox(id: $id, domainId: $domainId, localPart: $localPart, emailAddress: $emailAddress, displayName: $displayName, sendEnabled: $sendEnabled, receiveEnabled: $receiveEnabled, isActive: $isActive, quotaBytes: $quotaBytes, usedBytes: $usedBytes, signatureHtml: $signatureHtml, signatureText: $signatureText, updatedAt: $updatedAt)';
+  final _this = this as Mailbox;
+  return 'Mailbox(id: ${_this.id}, domainId: ${_this.domainId}, localPart: ${_this.localPart}, emailAddress: ${_this.emailAddress}, displayName: ${_this.displayName}, sendEnabled: ${_this.sendEnabled}, receiveEnabled: ${_this.receiveEnabled}, isActive: ${_this.isActive}, quotaBytes: ${_this.quotaBytes}, usedBytes: ${_this.usedBytes}, signatureHtml: ${_this.signatureHtml}, signatureText: ${_this.signatureText}, updatedAt: ${_this.updatedAt})';
 }
 
 
@@ -66,7 +72,7 @@ class _$MailboxCopyWithImpl<$Res>
 /// Create a copy of Mailbox
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? domainId = null,Object? localPart = null,Object? emailAddress = null,Object? displayName = freezed,Object? sendEnabled = null,Object? receiveEnabled = null,Object? isActive = null,Object? quotaBytes = null,Object? usedBytes = null,Object? signatureHtml = freezed,Object? signatureText = freezed,Object? updatedAt = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(Mailbox(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,domainId: null == domainId ? _self.domainId : domainId // ignore: cast_nullable_to_non_nullable
 as String,localPart: null == localPart ? _self.localPart : localPart // ignore: cast_nullable_to_non_nullable
@@ -251,16 +257,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Mailbox&&(identical(other.id, id) || other.id == id)&&(identical(other.domainId, domainId) || other.domainId == domainId)&&(identical(other.localPart, localPart) || other.localPart == localPart)&&(identical(other.emailAddress, emailAddress) || other.emailAddress == emailAddress)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.sendEnabled, sendEnabled) || other.sendEnabled == sendEnabled)&&(identical(other.receiveEnabled, receiveEnabled) || other.receiveEnabled == receiveEnabled)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.quotaBytes, quotaBytes) || other.quotaBytes == quotaBytes)&&(identical(other.usedBytes, usedBytes) || other.usedBytes == usedBytes)&&(identical(other.signatureHtml, signatureHtml) || other.signatureHtml == signatureHtml)&&(identical(other.signatureText, signatureText) || other.signatureText == signatureText)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Mailbox&&(identical(other.id, id) || other.id == id)&&(identical(other.domainId, domainId) || other.domainId == domainId)&&(identical(other.localPart, localPart) || other.localPart == localPart)&&(identical(other.emailAddress, emailAddress) || other.emailAddress == emailAddress)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.sendEnabled, sendEnabled) || other.sendEnabled == sendEnabled)&&(identical(other.receiveEnabled, receiveEnabled) || other.receiveEnabled == receiveEnabled)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.quotaBytes, quotaBytes) || other.quotaBytes == quotaBytes)&&(identical(other.usedBytes, usedBytes) || other.usedBytes == usedBytes)&&(identical(other.signatureHtml, signatureHtml) || other.signatureHtml == signatureHtml)&&(identical(other.signatureText, signatureText) || other.signatureText == signatureText)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,domainId,localPart,emailAddress,displayName,sendEnabled,receiveEnabled,isActive,quotaBytes,usedBytes,signatureHtml,signatureText,updatedAt);
+int get hashCode {
+    return Object.hash(runtimeType,id,domainId,localPart,emailAddress,displayName,sendEnabled,receiveEnabled,isActive,quotaBytes,usedBytes,signatureHtml,signatureText,updatedAt);
+}
 
 @override
 String toString() {
-  return 'Mailbox(id: $id, domainId: $domainId, localPart: $localPart, emailAddress: $emailAddress, displayName: $displayName, sendEnabled: $sendEnabled, receiveEnabled: $receiveEnabled, isActive: $isActive, quotaBytes: $quotaBytes, usedBytes: $usedBytes, signatureHtml: $signatureHtml, signatureText: $signatureText, updatedAt: $updatedAt)';
+    return 'Mailbox(id: $id, domainId: $domainId, localPart: $localPart, emailAddress: $emailAddress, displayName: $displayName, sendEnabled: $sendEnabled, receiveEnabled: $receiveEnabled, isActive: $isActive, quotaBytes: $quotaBytes, usedBytes: $usedBytes, signatureHtml: $signatureHtml, signatureText: $signatureText, updatedAt: $updatedAt)';
 }
 
 

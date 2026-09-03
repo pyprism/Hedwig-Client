@@ -16,12 +16,10 @@ void main() {
     });
 
     test('reads access and refresh tokens', () async {
-      when(
-        () => secureStorage.read(key: 'access_token'),
-      ).thenAnswer((_) async => 'access');
-      when(
-        () => secureStorage.read(key: 'refresh_token'),
-      ).thenAnswer((_) async => 'refresh');
+      when(() => secureStorage.read(key: 'access_token'))
+          .thenAnswer((_) async => 'access');
+      when(() => secureStorage.read(key: 'refresh_token'))
+          .thenAnswer((_) async => 'refresh');
 
       expect(await tokenStorage.getAccessToken(), 'access');
       expect(await tokenStorage.getRefreshToken(), 'refresh');
@@ -37,18 +35,15 @@ void main() {
 
       await tokenStorage.saveTokens(access: 'access', refresh: 'refresh');
 
-      verify(
-        () => secureStorage.write(key: 'access_token', value: 'access'),
-      ).called(1);
-      verify(
-        () => secureStorage.write(key: 'refresh_token', value: 'refresh'),
-      ).called(1);
+      verify(() => secureStorage.write(key: 'access_token', value: 'access'))
+          .called(1);
+      verify(() => secureStorage.write(key: 'refresh_token', value: 'refresh'))
+          .called(1);
     });
 
     test('clearTokens deletes both token values', () async {
-      when(
-        () => secureStorage.delete(key: any(named: 'key')),
-      ).thenAnswer((_) async {});
+      when(() => secureStorage.delete(key: any(named: 'key')))
+          .thenAnswer((_) async {});
 
       await tokenStorage.clearTokens();
 
@@ -57,21 +52,18 @@ void main() {
     });
 
     test('read errors are treated as missing tokens and cleared', () async {
-      when(
-        () => secureStorage.read(key: 'access_token'),
-      ).thenThrow(Exception('corrupt crypto payload'));
-      when(
-        () => secureStorage.delete(key: 'access_token'),
-      ).thenAnswer((_) async {});
+      when(() => secureStorage.read(key: 'access_token'))
+          .thenThrow(Exception('corrupt crypto payload'));
+      when(() => secureStorage.delete(key: 'access_token'))
+          .thenAnswer((_) async {});
 
       expect(await tokenStorage.getAccessToken(), isNull);
       verify(() => secureStorage.delete(key: 'access_token')).called(1);
     });
 
     test('clearTokens swallows storage delete errors', () async {
-      when(
-        () => secureStorage.delete(key: any(named: 'key')),
-      ).thenThrow(Exception('platform failure'));
+      when(() => secureStorage.delete(key: any(named: 'key')))
+          .thenThrow(Exception('platform failure'));
 
       await expectLater(tokenStorage.clearTokens(), completes);
     });

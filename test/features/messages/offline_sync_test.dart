@@ -64,46 +64,41 @@ void main() {
 
     tearDown(() => db.close());
 
-    test(
-      'bulkUpdateState enqueues one state_change per id when remote throws (A1)',
-      () async {
-        await _seedMessage(db, id: 'm1');
-        await _seedMessage(db, id: 'm2');
-        when(
-          () => remote.bulkState(
-            any(),
-            isRead: any(named: 'isRead'),
-            isStarred: any(named: 'isStarred'),
-            isImportant: any(named: 'isImportant'),
-            folder: any(named: 'folder'),
-            snoozedUntil: any(named: 'snoozedUntil'),
-          ),
-        ).thenThrow(DioException(requestOptions: RequestOptions(path: '')));
+    test('bulkUpdateState enqueues one state_change per id when remote throws (A1)', () async {
+      await _seedMessage(db, id: 'm1');
+      await _seedMessage(db, id: 'm2');
+      when(
+        () => remote.bulkState(
+          any(),
+          isRead: any(named: 'isRead'),
+          isStarred: any(named: 'isStarred'),
+          isImportant: any(named: 'isImportant'),
+          folder: any(named: 'folder'),
+          snoozedUntil: any(named: 'snoozedUntil'),
+        ),
+      ).thenThrow(DioException(requestOptions: RequestOptions(path: '')));
 
-        await repo.bulkUpdateState(['m1', 'm2'], folder: 'archive');
+      await repo.bulkUpdateState(['m1', 'm2'], folder: 'archive');
 
-        // Optimistic local write applied despite the remote failure.
-        expect((await db.messageDao.getById('m1'))!.folder, 'archive');
-        expect((await db.messageDao.getById('m2'))!.folder, 'archive');
+      // Optimistic local write applied despite the remote failure.
+      expect((await db.messageDao.getById('m1'))!.folder, 'archive');
+      expect((await db.messageDao.getById('m2'))!.folder, 'archive');
 
-        // One outbox state_change per id, carrying the folder change.
-        final pending = await db.outboxDao.getPending();
-        expect(pending, hasLength(2));
-        expect(pending.every((e) => e.operation == 'state_change'), isTrue);
-        final ids = pending
-            .map(
-              (e) => (jsonDecode(e.payloadJson) as Map<String, dynamic>)['id'],
-            )
-            .toSet();
-        expect(ids, {'m1', 'm2'});
-        for (final e in pending) {
-          final body =
-              (jsonDecode(e.payloadJson) as Map<String, dynamic>)['body']
-                  as Map<String, dynamic>;
-          expect(body['folder'], 'archive');
-        }
-      },
-    );
+      // One outbox state_change per id, carrying the folder change.
+      final pending = await db.outboxDao.getPending();
+      expect(pending, hasLength(2));
+      expect(pending.every((e) => e.operation == 'state_change'), isTrue);
+      final ids = pending
+          .map((e) => (jsonDecode(e.payloadJson) as Map<String, dynamic>)['id'])
+          .toSet();
+      expect(ids, {'m1', 'm2'});
+      for (final e in pending) {
+        final body =
+            (jsonDecode(e.payloadJson) as Map<String, dynamic>)['body']
+                as Map<String, dynamic>;
+        expect(body['folder'], 'archive');
+      }
+    });
 
     test('bulkUpdateState does not enqueue when remote succeeds', () async {
       await _seedMessage(db, id: 'm1');
@@ -148,9 +143,8 @@ void main() {
       'restore applies optimistic inbox move and enqueues when offline (A2)',
       () async {
         await _seedMessage(db, id: 'm1', folder: 'trash');
-        when(
-          () => remote.restore('m1'),
-        ).thenThrow(DioException(requestOptions: RequestOptions(path: '')));
+        when(() => remote.restore('m1'))
+            .thenThrow(DioException(requestOptions: RequestOptions(path: '')));
 
         await repo.restore('m1');
 
@@ -321,9 +315,8 @@ void main() {
       // Not retried/left pending or failed: the send already succeeded
       // server-side, so this must not be re-dispatched.
       expect(await db.outboxDao.getPending(), isEmpty);
-      verify(
-        () => dio.post('mail/messages/send/', data: any(named: 'data')),
-      ).called(1);
+      verify(() => dio.post('mail/messages/send/', data: any(named: 'data')))
+          .called(1);
       // The optimistic placeholder is gone rather than stuck forever as a
       // permanent duplicate; the real message reappears on next refresh.
       expect(await db.messageDao.getById('local-abc') == null, isTrue);
@@ -503,15 +496,14 @@ void main() {
       final db = _memoryDb();
       addTearDown(db.close);
       final dio = _MockDio();
-      when(
-        () => dio.post('mail/messages/draft/', data: any(named: 'data')),
-      ).thenAnswer(
-        (_) async => Response(
-          requestOptions: RequestOptions(path: ''),
-          statusCode: 201,
-          data: {'id': 'srv-draft-1'},
-        ),
-      );
+      when(() => dio.post('mail/messages/draft/', data: any(named: 'data')))
+          .thenAnswer(
+            (_) async => Response(
+              requestOptions: RequestOptions(path: ''),
+              statusCode: 201,
+              data: {'id': 'srv-draft-1'},
+            ),
+          );
 
       await db.outboxDao.enqueue(
         operation: 'save_draft',
@@ -545,9 +537,8 @@ void main() {
 
       await container.read(syncEngineProvider).flushOutbox();
 
-      verify(
-        () => dio.post('mail/messages/draft/', data: any(named: 'data')),
-      ).called(1);
+      verify(() => dio.post('mail/messages/draft/', data: any(named: 'data')))
+          .called(1);
       expect(await db.outboxDao.getPending(), isEmpty);
       // Server id is stored so subsequent saves PATCH the same remote draft.
       final row = await db.messageDao.getById('draft-local-1');
@@ -778,85 +769,74 @@ void main() {
       expect(row!.folder, 'sent');
     });
 
-    test(
-      'drafts refresh dedupes a local draft against its server thread',
-      () async {
-        final db = _memoryDb();
-        addTearDown(db.close);
-        await seedMailbox(db);
-        // A locally-authored draft already synced to server thread srv-thread-1.
-        await db.messageDao.upsertAll([
-          MessagesCompanion.insert(
-            id: 'draft-local-1',
-            mailboxId: 'mb1',
-            direction: 'outbound',
-            status: 'draft',
-            fromAddress: 'support@example.com',
-            subject: 'Local',
-            folder: const Value('drafts'),
-            metadataJson: Value(
-              jsonEncode({'server_draft_thread_id': 'srv-thread-1'}),
-            ),
-            createdAt: DateTime.now().toUtc(),
+    test('drafts refresh dedupes a local draft against its server thread', () async {
+      final db = _memoryDb();
+      addTearDown(db.close);
+      await seedMailbox(db);
+      // A locally-authored draft already synced to server thread srv-thread-1.
+      await db.messageDao.upsertAll([
+        MessagesCompanion.insert(
+          id: 'draft-local-1',
+          mailboxId: 'mb1',
+          direction: 'outbound',
+          status: 'draft',
+          fromAddress: 'support@example.com',
+          subject: 'Local',
+          folder: const Value('drafts'),
+          metadataJson: Value(
+            jsonEncode({'server_draft_thread_id': 'srv-thread-1'}),
           ),
-        ]);
-        await db.threadDao.upsertAll([
-          ThreadsCompanion.insert(
-            id: 'draft-local-1',
-            mailboxId: 'mb1',
-            subject: 'Local',
-            participantsJson: const Value('[]'),
-            folder: const Value('drafts'),
-            lastMessageAt: DateTime.now().toUtc(),
-            updatedAt: DateTime.now().toUtc(),
-          ),
-        ]);
-        final remote = _MockThreadRemote();
-        when(
-          () => remote.getThreads(
-            mailboxId: any(named: 'mailboxId'),
-            folder: any(named: 'folder'),
-            search: any(named: 'search'),
-            page: any(named: 'page'),
-            pageSize: any(named: 'pageSize'),
-          ),
-        ).thenAnswer(
-          (_) async => const PaginatedResponse<MailThread>(
-            count: 2,
-            results: [
-              MailThread(
-                id: 'srv-thread-1',
-                mailboxId: 'mb1',
-                subject: 'Local',
-              ),
-              MailThread(
-                id: 'srv-thread-2',
-                mailboxId: 'mb1',
-                subject: 'Other',
-              ),
-            ],
-          ),
-        );
-        final repo = ThreadRepository(remote: remote, db: db);
+          createdAt: DateTime.now().toUtc(),
+        ),
+      ]);
+      await db.threadDao.upsertAll([
+        ThreadsCompanion.insert(
+          id: 'draft-local-1',
+          mailboxId: 'mb1',
+          subject: 'Local',
+          participantsJson: const Value('[]'),
+          folder: const Value('drafts'),
+          lastMessageAt: DateTime.now().toUtc(),
+          updatedAt: DateTime.now().toUtc(),
+        ),
+      ]);
+      final remote = _MockThreadRemote();
+      when(
+        () => remote.getThreads(
+          mailboxId: any(named: 'mailboxId'),
+          folder: any(named: 'folder'),
+          search: any(named: 'search'),
+          page: any(named: 'page'),
+          pageSize: any(named: 'pageSize'),
+        ),
+      ).thenAnswer(
+        (_) async => const PaginatedResponse<MailThread>(
+          count: 2,
+          results: [
+            MailThread(id: 'srv-thread-1', mailboxId: 'mb1', subject: 'Local'),
+            MailThread(id: 'srv-thread-2', mailboxId: 'mb1', subject: 'Other'),
+          ],
+        ),
+      );
+      final repo = ThreadRepository(remote: remote, db: db);
 
-        final sub = repo
-            .watchThreads(mailboxId: 'mb1', folder: 'drafts')
-            .listen((_) {});
-        // Let the background refresh write reconciled rows, then stop the stream
-        // (cancelling its periodic timer).
-        await Future<void>.delayed(const Duration(milliseconds: 100));
-        await sub.cancel();
+      final sub = repo
+          .watchThreads(mailboxId: 'mb1', folder: 'drafts')
+          .listen((_) {});
+      // Let the background refresh write reconciled rows, then stop the stream
+      // (cancelling its periodic timer).
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+      await sub.cancel();
 
-        final draftThreads =
-            await (db.select(db.threads)..where(
-                  (t) => t.mailboxId.equals('mb1') & t.folder.equals('drafts'),
-                ))
-                .get();
-        final ids = draftThreads.map((t) => t.id).toSet();
-        // Local draft kept, other device's draft shown, the duplicate hidden.
-        expect(ids, containsAll(['draft-local-1', 'srv-thread-2']));
-        expect(ids, isNot(contains('srv-thread-1')));
-      },
-    );
+      final draftThreads =
+          await (db.select(db.threads)..where(
+                (t) => t.mailboxId.equals('mb1') & t.folder.equals('drafts'),
+              ))
+              .get();
+      final ids = draftThreads.map((t) => t.id).toSet();
+      // Local draft kept, other device's draft shown, the duplicate hidden.
+      expect(ids, containsAll(['draft-local-1', 'srv-thread-2']));
+      expect(ids, isNot(contains('srv-thread-1')));
+    });
   });
 }

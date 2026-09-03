@@ -82,9 +82,9 @@ class AdminUsersScreen extends ConsumerWidget {
               final u = users[i];
               return ListTile(
                 leading: CircleAvatar(
-                  backgroundColor: Theme.of(
-                    context,
-                  ).colorScheme.primaryContainer,
+                  backgroundColor: Theme.of(context)
+                      .colorScheme
+                      .primaryContainer,
                   child: Text(
                     u.username.substring(0, 1).toUpperCase(),
                     style: TextStyle(
@@ -205,9 +205,8 @@ class AdminUsersScreen extends ConsumerWidget {
                   ref.invalidate(adminUsersProvider);
                 } catch (e) {
                   if (context.mounted) {
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text('Error: $e')));
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(SnackBar(content: Text('Error: $e')));
                   }
                 }
               },
@@ -309,9 +308,8 @@ class AdminUsersScreen extends ConsumerWidget {
                   ref.invalidate(adminUsersProvider);
                 } catch (e) {
                   if (context.mounted) {
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text('Error: $e')));
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(SnackBar(content: Text('Error: $e')));
                   }
                 }
               },

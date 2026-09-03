@@ -80,9 +80,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: Text(
                 'Profile',
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: Theme.of(context).colorScheme.primary,
-                ),
+                style: Theme.of(context).textTheme.labelLarge
+                    ?.copyWith(color: Theme.of(context).colorScheme.primary),
               ),
             ),
             ListTile(
@@ -124,9 +123,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
             child: Text(
               'Appearance',
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-              ),
+              style: Theme.of(context).textTheme.labelLarge
+                  ?.copyWith(color: Theme.of(context).colorScheme.primary),
             ),
           ),
           Padding(
@@ -195,9 +193,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
             child: Text(
               'Organise',
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-              ),
+              style: Theme.of(context).textTheme.labelLarge
+                  ?.copyWith(color: Theme.of(context).colorScheme.primary),
             ),
           ),
           ListTile(
@@ -221,9 +218,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
               child: Text(
                 'Administration',
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: Theme.of(context).colorScheme.primary,
-                ),
+                style: Theme.of(context).textTheme.labelLarge
+                    ?.copyWith(color: Theme.of(context).colorScheme.primary),
               ),
             ),
             ListTile(

@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'message.dart';
@@ -9,6 +9,7 @@ part of 'message.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $EmailAddressCopyWith<EmailAddress> get copyWith => _$EmailAddressCopyWithImpl<E
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is EmailAddress&&(identical(other.email, email) || other.email == email)&&(identical(other.name, name) || other.name == name));
+  final _this = this as EmailAddress;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is EmailAddress&&(identical(other.email, _this.email) || other.email == _this.email)&&(identical(other.name, _this.name) || other.name == _this.name));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,email,name);
+int get hashCode {
+  final _this = this as EmailAddress;
+  return Object.hash(runtimeType,_this.email,_this.name);
+}
 
 @override
 String toString() {
-  return 'EmailAddress(email: $email, name: $name)';
+  final _this = this as EmailAddress;
+  return 'EmailAddress(email: ${_this.email}, name: ${_this.name})';
 }
 
 
@@ -66,7 +72,7 @@ class _$EmailAddressCopyWithImpl<$Res>
 /// Create a copy of EmailAddress
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? email = null,Object? name = null,}) {
-  return _then(_self.copyWith(
+  return _then(EmailAddress(
 email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,
@@ -229,16 +235,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _EmailAddress&&(identical(other.email, email) || other.email == email)&&(identical(other.name, name) || other.name == name));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _EmailAddress&&(identical(other.email, email) || other.email == email)&&(identical(other.name, name) || other.name == name));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,email,name);
+int get hashCode {
+    return Object.hash(runtimeType,email,name);
+}
 
 @override
 String toString() {
-  return 'EmailAddress(email: $email, name: $name)';
+    return 'EmailAddress(email: $email, name: $name)';
 }
 
 
@@ -294,16 +302,21 @@ $AttachmentCopyWith<Attachment> get copyWith => _$AttachmentCopyWithImpl<Attachm
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Attachment&&(identical(other.id, id) || other.id == id)&&(identical(other.filename, filename) || other.filename == filename)&&(identical(other.contentType, contentType) || other.contentType == contentType)&&(identical(other.sizeBytes, sizeBytes) || other.sizeBytes == sizeBytes)&&(identical(other.file, file) || other.file == file)&&(identical(other.isInline, isInline) || other.isInline == isInline)&&(identical(other.contentId, contentId) || other.contentId == contentId));
+  final _this = this as Attachment;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Attachment&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.filename, _this.filename) || other.filename == _this.filename)&&(identical(other.contentType, _this.contentType) || other.contentType == _this.contentType)&&(identical(other.sizeBytes, _this.sizeBytes) || other.sizeBytes == _this.sizeBytes)&&(identical(other.file, _this.file) || other.file == _this.file)&&(identical(other.isInline, _this.isInline) || other.isInline == _this.isInline)&&(identical(other.contentId, _this.contentId) || other.contentId == _this.contentId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,filename,contentType,sizeBytes,file,isInline,contentId);
+int get hashCode {
+  final _this = this as Attachment;
+  return Object.hash(runtimeType,_this.id,_this.filename,_this.contentType,_this.sizeBytes,_this.file,_this.isInline,_this.contentId);
+}
 
 @override
 String toString() {
-  return 'Attachment(id: $id, filename: $filename, contentType: $contentType, sizeBytes: $sizeBytes, file: $file, isInline: $isInline, contentId: $contentId)';
+  final _this = this as Attachment;
+  return 'Attachment(id: ${_this.id}, filename: ${_this.filename}, contentType: ${_this.contentType}, sizeBytes: ${_this.sizeBytes}, file: ${_this.file}, isInline: ${_this.isInline}, contentId: ${_this.contentId})';
 }
 
 
@@ -332,7 +345,7 @@ class _$AttachmentCopyWithImpl<$Res>
 /// Create a copy of Attachment
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? filename = null,Object? contentType = null,Object? sizeBytes = null,Object? file = freezed,Object? isInline = null,Object? contentId = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(Attachment(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,filename: null == filename ? _self.filename : filename // ignore: cast_nullable_to_non_nullable
 as String,contentType: null == contentType ? _self.contentType : contentType // ignore: cast_nullable_to_non_nullable
@@ -505,16 +518,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Attachment&&(identical(other.id, id) || other.id == id)&&(identical(other.filename, filename) || other.filename == filename)&&(identical(other.contentType, contentType) || other.contentType == contentType)&&(identical(other.sizeBytes, sizeBytes) || other.sizeBytes == sizeBytes)&&(identical(other.file, file) || other.file == file)&&(identical(other.isInline, isInline) || other.isInline == isInline)&&(identical(other.contentId, contentId) || other.contentId == contentId));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Attachment&&(identical(other.id, id) || other.id == id)&&(identical(other.filename, filename) || other.filename == filename)&&(identical(other.contentType, contentType) || other.contentType == contentType)&&(identical(other.sizeBytes, sizeBytes) || other.sizeBytes == sizeBytes)&&(identical(other.file, file) || other.file == file)&&(identical(other.isInline, isInline) || other.isInline == isInline)&&(identical(other.contentId, contentId) || other.contentId == contentId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,filename,contentType,sizeBytes,file,isInline,contentId);
+int get hashCode {
+    return Object.hash(runtimeType,id,filename,contentType,sizeBytes,file,isInline,contentId);
+}
 
 @override
 String toString() {
-  return 'Attachment(id: $id, filename: $filename, contentType: $contentType, sizeBytes: $sizeBytes, file: $file, isInline: $isInline, contentId: $contentId)';
+    return 'Attachment(id: $id, filename: $filename, contentType: $contentType, sizeBytes: $sizeBytes, file: $file, isInline: $isInline, contentId: $contentId)';
 }
 
 
@@ -575,16 +590,21 @@ $MailMessageCopyWith<MailMessage> get copyWith => _$MailMessageCopyWithImpl<Mail
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MailMessage&&(identical(other.id, id) || other.id == id)&&(identical(other.mailboxId, mailboxId) || other.mailboxId == mailboxId)&&(identical(other.threadId, threadId) || other.threadId == threadId)&&(identical(other.direction, direction) || other.direction == direction)&&(identical(other.status, status) || other.status == status)&&(identical(other.folder, folder) || other.folder == folder)&&(identical(other.fromAddress, fromAddress) || other.fromAddress == fromAddress)&&(identical(other.fromName, fromName) || other.fromName == fromName)&&(identical(other.envelopeSender, envelopeSender) || other.envelopeSender == envelopeSender)&&(identical(other.envelopeRecipient, envelopeRecipient) || other.envelopeRecipient == envelopeRecipient)&&const DeepCollectionEquality().equals(other.toAddresses, toAddresses)&&const DeepCollectionEquality().equals(other.ccAddresses, ccAddresses)&&const DeepCollectionEquality().equals(other.bccAddresses, bccAddresses)&&(identical(other.replyTo, replyTo) || other.replyTo == replyTo)&&(identical(other.subject, subject) || other.subject == subject)&&(identical(other.snippet, snippet) || other.snippet == snippet)&&(identical(other.bodyText, bodyText) || other.bodyText == bodyText)&&(identical(other.bodyHtml, bodyHtml) || other.bodyHtml == bodyHtml)&&(identical(other.rawMimeUrl, rawMimeUrl) || other.rawMimeUrl == rawMimeUrl)&&(identical(other.isRead, isRead) || other.isRead == isRead)&&(identical(other.isStarred, isStarred) || other.isStarred == isStarred)&&(identical(other.isImportant, isImportant) || other.isImportant == isImportant)&&(identical(other.hasAttachments, hasAttachments) || other.hasAttachments == hasAttachments)&&const DeepCollectionEquality().equals(other.attachments, attachments)&&const DeepCollectionEquality().equals(other.rawHeaders, rawHeaders)&&const DeepCollectionEquality().equals(other.metadata, metadata)&&(identical(other.receivedAt, receivedAt) || other.receivedAt == receivedAt)&&(identical(other.sentAt, sentAt) || other.sentAt == sentAt)&&(identical(other.scheduledAt, scheduledAt) || other.scheduledAt == scheduledAt)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  final _this = this as MailMessage;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MailMessage&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.mailboxId, _this.mailboxId) || other.mailboxId == _this.mailboxId)&&(identical(other.threadId, _this.threadId) || other.threadId == _this.threadId)&&(identical(other.direction, _this.direction) || other.direction == _this.direction)&&(identical(other.status, _this.status) || other.status == _this.status)&&(identical(other.folder, _this.folder) || other.folder == _this.folder)&&(identical(other.fromAddress, _this.fromAddress) || other.fromAddress == _this.fromAddress)&&(identical(other.fromName, _this.fromName) || other.fromName == _this.fromName)&&(identical(other.envelopeSender, _this.envelopeSender) || other.envelopeSender == _this.envelopeSender)&&(identical(other.envelopeRecipient, _this.envelopeRecipient) || other.envelopeRecipient == _this.envelopeRecipient)&&const DeepCollectionEquality().equals(other.toAddresses, _this.toAddresses)&&const DeepCollectionEquality().equals(other.ccAddresses, _this.ccAddresses)&&const DeepCollectionEquality().equals(other.bccAddresses, _this.bccAddresses)&&(identical(other.replyTo, _this.replyTo) || other.replyTo == _this.replyTo)&&(identical(other.subject, _this.subject) || other.subject == _this.subject)&&(identical(other.snippet, _this.snippet) || other.snippet == _this.snippet)&&(identical(other.bodyText, _this.bodyText) || other.bodyText == _this.bodyText)&&(identical(other.bodyHtml, _this.bodyHtml) || other.bodyHtml == _this.bodyHtml)&&(identical(other.rawMimeUrl, _this.rawMimeUrl) || other.rawMimeUrl == _this.rawMimeUrl)&&(identical(other.isRead, _this.isRead) || other.isRead == _this.isRead)&&(identical(other.isStarred, _this.isStarred) || other.isStarred == _this.isStarred)&&(identical(other.isImportant, _this.isImportant) || other.isImportant == _this.isImportant)&&(identical(other.hasAttachments, _this.hasAttachments) || other.hasAttachments == _this.hasAttachments)&&const DeepCollectionEquality().equals(other.attachments, _this.attachments)&&const DeepCollectionEquality().equals(other.rawHeaders, _this.rawHeaders)&&const DeepCollectionEquality().equals(other.metadata, _this.metadata)&&(identical(other.receivedAt, _this.receivedAt) || other.receivedAt == _this.receivedAt)&&(identical(other.sentAt, _this.sentAt) || other.sentAt == _this.sentAt)&&(identical(other.scheduledAt, _this.scheduledAt) || other.scheduledAt == _this.scheduledAt)&&(identical(other.createdAt, _this.createdAt) || other.createdAt == _this.createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,mailboxId,threadId,direction,status,folder,fromAddress,fromName,envelopeSender,envelopeRecipient,const DeepCollectionEquality().hash(toAddresses),const DeepCollectionEquality().hash(ccAddresses),const DeepCollectionEquality().hash(bccAddresses),replyTo,subject,snippet,bodyText,bodyHtml,rawMimeUrl,isRead,isStarred,isImportant,hasAttachments,const DeepCollectionEquality().hash(attachments),const DeepCollectionEquality().hash(rawHeaders),const DeepCollectionEquality().hash(metadata),receivedAt,sentAt,scheduledAt,createdAt]);
+int get hashCode {
+  final _this = this as MailMessage;
+  return Object.hashAll([runtimeType,_this.id,_this.mailboxId,_this.threadId,_this.direction,_this.status,_this.folder,_this.fromAddress,_this.fromName,_this.envelopeSender,_this.envelopeRecipient,const DeepCollectionEquality().hash(_this.toAddresses),const DeepCollectionEquality().hash(_this.ccAddresses),const DeepCollectionEquality().hash(_this.bccAddresses),_this.replyTo,_this.subject,_this.snippet,_this.bodyText,_this.bodyHtml,_this.rawMimeUrl,_this.isRead,_this.isStarred,_this.isImportant,_this.hasAttachments,const DeepCollectionEquality().hash(_this.attachments),const DeepCollectionEquality().hash(_this.rawHeaders),const DeepCollectionEquality().hash(_this.metadata),_this.receivedAt,_this.sentAt,_this.scheduledAt,_this.createdAt]);
+}
 
 @override
 String toString() {
-  return 'MailMessage(id: $id, mailboxId: $mailboxId, threadId: $threadId, direction: $direction, status: $status, folder: $folder, fromAddress: $fromAddress, fromName: $fromName, envelopeSender: $envelopeSender, envelopeRecipient: $envelopeRecipient, toAddresses: $toAddresses, ccAddresses: $ccAddresses, bccAddresses: $bccAddresses, replyTo: $replyTo, subject: $subject, snippet: $snippet, bodyText: $bodyText, bodyHtml: $bodyHtml, rawMimeUrl: $rawMimeUrl, isRead: $isRead, isStarred: $isStarred, isImportant: $isImportant, hasAttachments: $hasAttachments, attachments: $attachments, rawHeaders: $rawHeaders, metadata: $metadata, receivedAt: $receivedAt, sentAt: $sentAt, scheduledAt: $scheduledAt, createdAt: $createdAt)';
+  final _this = this as MailMessage;
+  return 'MailMessage(id: ${_this.id}, mailboxId: ${_this.mailboxId}, threadId: ${_this.threadId}, direction: ${_this.direction}, status: ${_this.status}, folder: ${_this.folder}, fromAddress: ${_this.fromAddress}, fromName: ${_this.fromName}, envelopeSender: ${_this.envelopeSender}, envelopeRecipient: ${_this.envelopeRecipient}, toAddresses: ${_this.toAddresses}, ccAddresses: ${_this.ccAddresses}, bccAddresses: ${_this.bccAddresses}, replyTo: ${_this.replyTo}, subject: ${_this.subject}, snippet: ${_this.snippet}, bodyText: ${_this.bodyText}, bodyHtml: ${_this.bodyHtml}, rawMimeUrl: ${_this.rawMimeUrl}, isRead: ${_this.isRead}, isStarred: ${_this.isStarred}, isImportant: ${_this.isImportant}, hasAttachments: ${_this.hasAttachments}, attachments: ${_this.attachments}, rawHeaders: ${_this.rawHeaders}, metadata: ${_this.metadata}, receivedAt: ${_this.receivedAt}, sentAt: ${_this.sentAt}, scheduledAt: ${_this.scheduledAt}, createdAt: ${_this.createdAt})';
 }
 
 
@@ -613,7 +633,7 @@ class _$MailMessageCopyWithImpl<$Res>
 /// Create a copy of MailMessage
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? mailboxId = null,Object? threadId = freezed,Object? direction = null,Object? status = null,Object? folder = null,Object? fromAddress = null,Object? fromName = freezed,Object? envelopeSender = freezed,Object? envelopeRecipient = freezed,Object? toAddresses = null,Object? ccAddresses = null,Object? bccAddresses = null,Object? replyTo = freezed,Object? subject = null,Object? snippet = freezed,Object? bodyText = freezed,Object? bodyHtml = freezed,Object? rawMimeUrl = freezed,Object? isRead = null,Object? isStarred = null,Object? isImportant = null,Object? hasAttachments = null,Object? attachments = null,Object? rawHeaders = null,Object? metadata = null,Object? receivedAt = freezed,Object? sentAt = freezed,Object? scheduledAt = freezed,Object? createdAt = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(MailMessage(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,mailboxId: null == mailboxId ? _self.mailboxId : mailboxId // ignore: cast_nullable_to_non_nullable
 as String,threadId: freezed == threadId ? _self.threadId : threadId // ignore: cast_nullable_to_non_nullable
@@ -785,7 +805,7 @@ return $default(_that.id,_that.mailboxId,_that.threadId,_that.direction,_that.st
 @JsonSerializable()
 
 class _MailMessage implements MailMessage {
-  const _MailMessage({required this.id, @JsonKey(name: 'mailbox') required this.mailboxId, @JsonKey(name: 'thread') this.threadId, required this.direction, required this.status, this.folder = 'inbox', required this.fromAddress, this.fromName, this.envelopeSender, this.envelopeRecipient, final  List<EmailAddress> toAddresses = const [], final  List<EmailAddress> ccAddresses = const [], final  List<EmailAddress> bccAddresses = const [], this.replyTo, required this.subject, this.snippet, this.bodyText, this.bodyHtml, this.rawMimeUrl, this.isRead = false, this.isStarred = false, this.isImportant = false, this.hasAttachments = false, final  List<Attachment> attachments = const [], final  Map<String, dynamic> rawHeaders = const {}, final  Map<String, dynamic> metadata = const {}, this.receivedAt, this.sentAt, this.scheduledAt, this.createdAt}): _toAddresses = toAddresses,_ccAddresses = ccAddresses,_bccAddresses = bccAddresses,_attachments = attachments,_rawHeaders = rawHeaders,_metadata = metadata;
+  const _MailMessage({required this.id, @JsonKey(name: 'mailbox') required this.mailboxId, @JsonKey(name: 'thread') this.threadId, required this.direction, required this.status, this.folder = 'inbox', required this.fromAddress, this.fromName, this.envelopeSender, this.envelopeRecipient,  List<EmailAddress> toAddresses = const [],  List<EmailAddress> ccAddresses = const [],  List<EmailAddress> bccAddresses = const [], this.replyTo, required this.subject, this.snippet, this.bodyText, this.bodyHtml, this.rawMimeUrl, this.isRead = false, this.isStarred = false, this.isImportant = false, this.hasAttachments = false,  List<Attachment> attachments = const [],  Map<String, dynamic> rawHeaders = const {},  Map<String, dynamic> metadata = const {}, this.receivedAt, this.sentAt, this.scheduledAt, this.createdAt}): _toAddresses = toAddresses,_ccAddresses = ccAddresses,_bccAddresses = bccAddresses,_attachments = attachments,_rawHeaders = rawHeaders,_metadata = metadata;
   factory _MailMessage.fromJson(Map<String, dynamic> json) => _$MailMessageFromJson(json);
 
 @override final  String id;
@@ -868,16 +888,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MailMessage&&(identical(other.id, id) || other.id == id)&&(identical(other.mailboxId, mailboxId) || other.mailboxId == mailboxId)&&(identical(other.threadId, threadId) || other.threadId == threadId)&&(identical(other.direction, direction) || other.direction == direction)&&(identical(other.status, status) || other.status == status)&&(identical(other.folder, folder) || other.folder == folder)&&(identical(other.fromAddress, fromAddress) || other.fromAddress == fromAddress)&&(identical(other.fromName, fromName) || other.fromName == fromName)&&(identical(other.envelopeSender, envelopeSender) || other.envelopeSender == envelopeSender)&&(identical(other.envelopeRecipient, envelopeRecipient) || other.envelopeRecipient == envelopeRecipient)&&const DeepCollectionEquality().equals(other._toAddresses, _toAddresses)&&const DeepCollectionEquality().equals(other._ccAddresses, _ccAddresses)&&const DeepCollectionEquality().equals(other._bccAddresses, _bccAddresses)&&(identical(other.replyTo, replyTo) || other.replyTo == replyTo)&&(identical(other.subject, subject) || other.subject == subject)&&(identical(other.snippet, snippet) || other.snippet == snippet)&&(identical(other.bodyText, bodyText) || other.bodyText == bodyText)&&(identical(other.bodyHtml, bodyHtml) || other.bodyHtml == bodyHtml)&&(identical(other.rawMimeUrl, rawMimeUrl) || other.rawMimeUrl == rawMimeUrl)&&(identical(other.isRead, isRead) || other.isRead == isRead)&&(identical(other.isStarred, isStarred) || other.isStarred == isStarred)&&(identical(other.isImportant, isImportant) || other.isImportant == isImportant)&&(identical(other.hasAttachments, hasAttachments) || other.hasAttachments == hasAttachments)&&const DeepCollectionEquality().equals(other._attachments, _attachments)&&const DeepCollectionEquality().equals(other._rawHeaders, _rawHeaders)&&const DeepCollectionEquality().equals(other._metadata, _metadata)&&(identical(other.receivedAt, receivedAt) || other.receivedAt == receivedAt)&&(identical(other.sentAt, sentAt) || other.sentAt == sentAt)&&(identical(other.scheduledAt, scheduledAt) || other.scheduledAt == scheduledAt)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _MailMessage&&(identical(other.id, id) || other.id == id)&&(identical(other.mailboxId, mailboxId) || other.mailboxId == mailboxId)&&(identical(other.threadId, threadId) || other.threadId == threadId)&&(identical(other.direction, direction) || other.direction == direction)&&(identical(other.status, status) || other.status == status)&&(identical(other.folder, folder) || other.folder == folder)&&(identical(other.fromAddress, fromAddress) || other.fromAddress == fromAddress)&&(identical(other.fromName, fromName) || other.fromName == fromName)&&(identical(other.envelopeSender, envelopeSender) || other.envelopeSender == envelopeSender)&&(identical(other.envelopeRecipient, envelopeRecipient) || other.envelopeRecipient == envelopeRecipient)&&const DeepCollectionEquality().equals(other.toAddresses, _toAddresses)&&const DeepCollectionEquality().equals(other.ccAddresses, _ccAddresses)&&const DeepCollectionEquality().equals(other.bccAddresses, _bccAddresses)&&(identical(other.replyTo, replyTo) || other.replyTo == replyTo)&&(identical(other.subject, subject) || other.subject == subject)&&(identical(other.snippet, snippet) || other.snippet == snippet)&&(identical(other.bodyText, bodyText) || other.bodyText == bodyText)&&(identical(other.bodyHtml, bodyHtml) || other.bodyHtml == bodyHtml)&&(identical(other.rawMimeUrl, rawMimeUrl) || other.rawMimeUrl == rawMimeUrl)&&(identical(other.isRead, isRead) || other.isRead == isRead)&&(identical(other.isStarred, isStarred) || other.isStarred == isStarred)&&(identical(other.isImportant, isImportant) || other.isImportant == isImportant)&&(identical(other.hasAttachments, hasAttachments) || other.hasAttachments == hasAttachments)&&const DeepCollectionEquality().equals(other.attachments, _attachments)&&const DeepCollectionEquality().equals(other.rawHeaders, _rawHeaders)&&const DeepCollectionEquality().equals(other.metadata, _metadata)&&(identical(other.receivedAt, receivedAt) || other.receivedAt == receivedAt)&&(identical(other.sentAt, sentAt) || other.sentAt == sentAt)&&(identical(other.scheduledAt, scheduledAt) || other.scheduledAt == scheduledAt)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,mailboxId,threadId,direction,status,folder,fromAddress,fromName,envelopeSender,envelopeRecipient,const DeepCollectionEquality().hash(_toAddresses),const DeepCollectionEquality().hash(_ccAddresses),const DeepCollectionEquality().hash(_bccAddresses),replyTo,subject,snippet,bodyText,bodyHtml,rawMimeUrl,isRead,isStarred,isImportant,hasAttachments,const DeepCollectionEquality().hash(_attachments),const DeepCollectionEquality().hash(_rawHeaders),const DeepCollectionEquality().hash(_metadata),receivedAt,sentAt,scheduledAt,createdAt]);
+int get hashCode {
+    return Object.hashAll([runtimeType,id,mailboxId,threadId,direction,status,folder,fromAddress,fromName,envelopeSender,envelopeRecipient,const DeepCollectionEquality().hash(_toAddresses),const DeepCollectionEquality().hash(_ccAddresses),const DeepCollectionEquality().hash(_bccAddresses),replyTo,subject,snippet,bodyText,bodyHtml,rawMimeUrl,isRead,isStarred,isImportant,hasAttachments,const DeepCollectionEquality().hash(_attachments),const DeepCollectionEquality().hash(_rawHeaders),const DeepCollectionEquality().hash(_metadata),receivedAt,sentAt,scheduledAt,createdAt]);
+}
 
 @override
 String toString() {
-  return 'MailMessage(id: $id, mailboxId: $mailboxId, threadId: $threadId, direction: $direction, status: $status, folder: $folder, fromAddress: $fromAddress, fromName: $fromName, envelopeSender: $envelopeSender, envelopeRecipient: $envelopeRecipient, toAddresses: $toAddresses, ccAddresses: $ccAddresses, bccAddresses: $bccAddresses, replyTo: $replyTo, subject: $subject, snippet: $snippet, bodyText: $bodyText, bodyHtml: $bodyHtml, rawMimeUrl: $rawMimeUrl, isRead: $isRead, isStarred: $isStarred, isImportant: $isImportant, hasAttachments: $hasAttachments, attachments: $attachments, rawHeaders: $rawHeaders, metadata: $metadata, receivedAt: $receivedAt, sentAt: $sentAt, scheduledAt: $scheduledAt, createdAt: $createdAt)';
+    return 'MailMessage(id: $id, mailboxId: $mailboxId, threadId: $threadId, direction: $direction, status: $status, folder: $folder, fromAddress: $fromAddress, fromName: $fromName, envelopeSender: $envelopeSender, envelopeRecipient: $envelopeRecipient, toAddresses: $toAddresses, ccAddresses: $ccAddresses, bccAddresses: $bccAddresses, replyTo: $replyTo, subject: $subject, snippet: $snippet, bodyText: $bodyText, bodyHtml: $bodyHtml, rawMimeUrl: $rawMimeUrl, isRead: $isRead, isStarred: $isStarred, isImportant: $isImportant, hasAttachments: $hasAttachments, attachments: $attachments, rawHeaders: $rawHeaders, metadata: $metadata, receivedAt: $receivedAt, sentAt: $sentAt, scheduledAt: $scheduledAt, createdAt: $createdAt)';
 }
 
 
@@ -961,16 +983,21 @@ $SendMessageRequestCopyWith<SendMessageRequest> get copyWith => _$SendMessageReq
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SendMessageRequest&&(identical(other.mailboxId, mailboxId) || other.mailboxId == mailboxId)&&(identical(other.senderIdentityId, senderIdentityId) || other.senderIdentityId == senderIdentityId)&&const DeepCollectionEquality().equals(other.to, to)&&const DeepCollectionEquality().equals(other.cc, cc)&&const DeepCollectionEquality().equals(other.bcc, bcc)&&(identical(other.subject, subject) || other.subject == subject)&&(identical(other.bodyText, bodyText) || other.bodyText == bodyText)&&(identical(other.bodyHtml, bodyHtml) || other.bodyHtml == bodyHtml)&&(identical(other.replyToMessageId, replyToMessageId) || other.replyToMessageId == replyToMessageId)&&(identical(other.scheduledAt, scheduledAt) || other.scheduledAt == scheduledAt));
+  final _this = this as SendMessageRequest;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SendMessageRequest&&(identical(other.mailboxId, _this.mailboxId) || other.mailboxId == _this.mailboxId)&&(identical(other.senderIdentityId, _this.senderIdentityId) || other.senderIdentityId == _this.senderIdentityId)&&const DeepCollectionEquality().equals(other.to, _this.to)&&const DeepCollectionEquality().equals(other.cc, _this.cc)&&const DeepCollectionEquality().equals(other.bcc, _this.bcc)&&(identical(other.subject, _this.subject) || other.subject == _this.subject)&&(identical(other.bodyText, _this.bodyText) || other.bodyText == _this.bodyText)&&(identical(other.bodyHtml, _this.bodyHtml) || other.bodyHtml == _this.bodyHtml)&&(identical(other.replyToMessageId, _this.replyToMessageId) || other.replyToMessageId == _this.replyToMessageId)&&(identical(other.scheduledAt, _this.scheduledAt) || other.scheduledAt == _this.scheduledAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,mailboxId,senderIdentityId,const DeepCollectionEquality().hash(to),const DeepCollectionEquality().hash(cc),const DeepCollectionEquality().hash(bcc),subject,bodyText,bodyHtml,replyToMessageId,scheduledAt);
+int get hashCode {
+  final _this = this as SendMessageRequest;
+  return Object.hash(runtimeType,_this.mailboxId,_this.senderIdentityId,const DeepCollectionEquality().hash(_this.to),const DeepCollectionEquality().hash(_this.cc),const DeepCollectionEquality().hash(_this.bcc),_this.subject,_this.bodyText,_this.bodyHtml,_this.replyToMessageId,_this.scheduledAt);
+}
 
 @override
 String toString() {
-  return 'SendMessageRequest(mailboxId: $mailboxId, senderIdentityId: $senderIdentityId, to: $to, cc: $cc, bcc: $bcc, subject: $subject, bodyText: $bodyText, bodyHtml: $bodyHtml, replyToMessageId: $replyToMessageId, scheduledAt: $scheduledAt)';
+  final _this = this as SendMessageRequest;
+  return 'SendMessageRequest(mailboxId: ${_this.mailboxId}, senderIdentityId: ${_this.senderIdentityId}, to: ${_this.to}, cc: ${_this.cc}, bcc: ${_this.bcc}, subject: ${_this.subject}, bodyText: ${_this.bodyText}, bodyHtml: ${_this.bodyHtml}, replyToMessageId: ${_this.replyToMessageId}, scheduledAt: ${_this.scheduledAt})';
 }
 
 
@@ -999,7 +1026,7 @@ class _$SendMessageRequestCopyWithImpl<$Res>
 /// Create a copy of SendMessageRequest
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? mailboxId = null,Object? senderIdentityId = freezed,Object? to = null,Object? cc = null,Object? bcc = null,Object? subject = null,Object? bodyText = freezed,Object? bodyHtml = freezed,Object? replyToMessageId = freezed,Object? scheduledAt = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(SendMessageRequest(
 mailboxId: null == mailboxId ? _self.mailboxId : mailboxId // ignore: cast_nullable_to_non_nullable
 as String,senderIdentityId: freezed == senderIdentityId ? _self.senderIdentityId : senderIdentityId // ignore: cast_nullable_to_non_nullable
 as String?,to: null == to ? _self.to : to // ignore: cast_nullable_to_non_nullable
@@ -1151,7 +1178,7 @@ return $default(_that.mailboxId,_that.senderIdentityId,_that.to,_that.cc,_that.b
 @JsonSerializable()
 
 class _SendMessageRequest implements SendMessageRequest {
-  const _SendMessageRequest({required this.mailboxId, this.senderIdentityId, required final  List<EmailAddress> to, final  List<EmailAddress> cc = const [], final  List<EmailAddress> bcc = const [], required this.subject, this.bodyText, this.bodyHtml, this.replyToMessageId, this.scheduledAt}): _to = to,_cc = cc,_bcc = bcc;
+  const _SendMessageRequest({required this.mailboxId, this.senderIdentityId, required  List<EmailAddress> to,  List<EmailAddress> cc = const [],  List<EmailAddress> bcc = const [], required this.subject, this.bodyText, this.bodyHtml, this.replyToMessageId, this.scheduledAt}): _to = to,_cc = cc,_bcc = bcc;
   factory _SendMessageRequest.fromJson(Map<String, dynamic> json) => _$SendMessageRequestFromJson(json);
 
 @override final  String mailboxId;
@@ -1196,16 +1223,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SendMessageRequest&&(identical(other.mailboxId, mailboxId) || other.mailboxId == mailboxId)&&(identical(other.senderIdentityId, senderIdentityId) || other.senderIdentityId == senderIdentityId)&&const DeepCollectionEquality().equals(other._to, _to)&&const DeepCollectionEquality().equals(other._cc, _cc)&&const DeepCollectionEquality().equals(other._bcc, _bcc)&&(identical(other.subject, subject) || other.subject == subject)&&(identical(other.bodyText, bodyText) || other.bodyText == bodyText)&&(identical(other.bodyHtml, bodyHtml) || other.bodyHtml == bodyHtml)&&(identical(other.replyToMessageId, replyToMessageId) || other.replyToMessageId == replyToMessageId)&&(identical(other.scheduledAt, scheduledAt) || other.scheduledAt == scheduledAt));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _SendMessageRequest&&(identical(other.mailboxId, mailboxId) || other.mailboxId == mailboxId)&&(identical(other.senderIdentityId, senderIdentityId) || other.senderIdentityId == senderIdentityId)&&const DeepCollectionEquality().equals(other.to, _to)&&const DeepCollectionEquality().equals(other.cc, _cc)&&const DeepCollectionEquality().equals(other.bcc, _bcc)&&(identical(other.subject, subject) || other.subject == subject)&&(identical(other.bodyText, bodyText) || other.bodyText == bodyText)&&(identical(other.bodyHtml, bodyHtml) || other.bodyHtml == bodyHtml)&&(identical(other.replyToMessageId, replyToMessageId) || other.replyToMessageId == replyToMessageId)&&(identical(other.scheduledAt, scheduledAt) || other.scheduledAt == scheduledAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,mailboxId,senderIdentityId,const DeepCollectionEquality().hash(_to),const DeepCollectionEquality().hash(_cc),const DeepCollectionEquality().hash(_bcc),subject,bodyText,bodyHtml,replyToMessageId,scheduledAt);
+int get hashCode {
+    return Object.hash(runtimeType,mailboxId,senderIdentityId,const DeepCollectionEquality().hash(_to),const DeepCollectionEquality().hash(_cc),const DeepCollectionEquality().hash(_bcc),subject,bodyText,bodyHtml,replyToMessageId,scheduledAt);
+}
 
 @override
 String toString() {
-  return 'SendMessageRequest(mailboxId: $mailboxId, senderIdentityId: $senderIdentityId, to: $to, cc: $cc, bcc: $bcc, subject: $subject, bodyText: $bodyText, bodyHtml: $bodyHtml, replyToMessageId: $replyToMessageId, scheduledAt: $scheduledAt)';
+    return 'SendMessageRequest(mailboxId: $mailboxId, senderIdentityId: $senderIdentityId, to: $to, cc: $cc, bcc: $bcc, subject: $subject, bodyText: $bodyText, bodyHtml: $bodyHtml, replyToMessageId: $replyToMessageId, scheduledAt: $scheduledAt)';
 }
 
 

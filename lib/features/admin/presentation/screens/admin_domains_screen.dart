@@ -379,9 +379,8 @@ Future<void> _checkDns(
         .read(dioClientProvider)
         .post('providers/domains/${domain.id}/check-dns/');
     if (context.mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('DNS check queued.')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('DNS check queued.')));
     }
     ref.invalidate(adminDomainsProvider);
   } on DioException catch (e) {
@@ -434,15 +433,13 @@ class _DnsRecordTile extends StatelessWidget {
       ),
       title: Text(
         '${record['record_type']} ${record['host']}',
-        style: Theme.of(
-          context,
-        ).textTheme.bodySmall?.copyWith(fontFamily: 'monospace'),
+        style: Theme.of(context).textTheme.bodySmall
+            ?.copyWith(fontFamily: 'monospace'),
       ),
       subtitle: Text(
         record['value'] as String? ?? '',
-        style: Theme.of(
-          context,
-        ).textTheme.bodySmall?.copyWith(fontFamily: 'monospace'),
+        style: Theme.of(context).textTheme.bodySmall
+            ?.copyWith(fontFamily: 'monospace'),
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
       ),

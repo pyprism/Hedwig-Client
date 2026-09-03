@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'user.dart';
@@ -9,6 +9,7 @@ part of 'user.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $HedwigUserCopyWith<HedwigUser> get copyWith => _$HedwigUserCopyWithImpl<HedwigU
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is HedwigUser&&(identical(other.id, id) || other.id == id)&&(identical(other.username, username) || other.username == username)&&(identical(other.email, email) || other.email == email)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.timezone, timezone) || other.timezone == timezone)&&(identical(other.locale, locale) || other.locale == locale)&&(identical(other.mustChangePassword, mustChangePassword) || other.mustChangePassword == mustChangePassword)&&(identical(other.isStaff, isStaff) || other.isStaff == isStaff)&&(identical(other.isSuperuser, isSuperuser) || other.isSuperuser == isSuperuser)&&(identical(other.lastSeenAt, lastSeenAt) || other.lastSeenAt == lastSeenAt)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  final _this = this as HedwigUser;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is HedwigUser&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.username, _this.username) || other.username == _this.username)&&(identical(other.email, _this.email) || other.email == _this.email)&&(identical(other.displayName, _this.displayName) || other.displayName == _this.displayName)&&(identical(other.firstName, _this.firstName) || other.firstName == _this.firstName)&&(identical(other.lastName, _this.lastName) || other.lastName == _this.lastName)&&(identical(other.avatarUrl, _this.avatarUrl) || other.avatarUrl == _this.avatarUrl)&&(identical(other.timezone, _this.timezone) || other.timezone == _this.timezone)&&(identical(other.locale, _this.locale) || other.locale == _this.locale)&&(identical(other.mustChangePassword, _this.mustChangePassword) || other.mustChangePassword == _this.mustChangePassword)&&(identical(other.isStaff, _this.isStaff) || other.isStaff == _this.isStaff)&&(identical(other.isSuperuser, _this.isSuperuser) || other.isSuperuser == _this.isSuperuser)&&(identical(other.lastSeenAt, _this.lastSeenAt) || other.lastSeenAt == _this.lastSeenAt)&&(identical(other.createdAt, _this.createdAt) || other.createdAt == _this.createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,username,email,displayName,firstName,lastName,avatarUrl,timezone,locale,mustChangePassword,isStaff,isSuperuser,lastSeenAt,createdAt);
+int get hashCode {
+  final _this = this as HedwigUser;
+  return Object.hash(runtimeType,_this.id,_this.username,_this.email,_this.displayName,_this.firstName,_this.lastName,_this.avatarUrl,_this.timezone,_this.locale,_this.mustChangePassword,_this.isStaff,_this.isSuperuser,_this.lastSeenAt,_this.createdAt);
+}
 
 @override
 String toString() {
-  return 'HedwigUser(id: $id, username: $username, email: $email, displayName: $displayName, firstName: $firstName, lastName: $lastName, avatarUrl: $avatarUrl, timezone: $timezone, locale: $locale, mustChangePassword: $mustChangePassword, isStaff: $isStaff, isSuperuser: $isSuperuser, lastSeenAt: $lastSeenAt, createdAt: $createdAt)';
+  final _this = this as HedwigUser;
+  return 'HedwigUser(id: ${_this.id}, username: ${_this.username}, email: ${_this.email}, displayName: ${_this.displayName}, firstName: ${_this.firstName}, lastName: ${_this.lastName}, avatarUrl: ${_this.avatarUrl}, timezone: ${_this.timezone}, locale: ${_this.locale}, mustChangePassword: ${_this.mustChangePassword}, isStaff: ${_this.isStaff}, isSuperuser: ${_this.isSuperuser}, lastSeenAt: ${_this.lastSeenAt}, createdAt: ${_this.createdAt})';
 }
 
 
@@ -66,7 +72,7 @@ class _$HedwigUserCopyWithImpl<$Res>
 /// Create a copy of HedwigUser
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? username = null,Object? email = null,Object? displayName = freezed,Object? firstName = freezed,Object? lastName = freezed,Object? avatarUrl = freezed,Object? timezone = freezed,Object? locale = freezed,Object? mustChangePassword = null,Object? isStaff = null,Object? isSuperuser = null,Object? lastSeenAt = freezed,Object? createdAt = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(HedwigUser(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,username: null == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
 as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
@@ -253,16 +259,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HedwigUser&&(identical(other.id, id) || other.id == id)&&(identical(other.username, username) || other.username == username)&&(identical(other.email, email) || other.email == email)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.timezone, timezone) || other.timezone == timezone)&&(identical(other.locale, locale) || other.locale == locale)&&(identical(other.mustChangePassword, mustChangePassword) || other.mustChangePassword == mustChangePassword)&&(identical(other.isStaff, isStaff) || other.isStaff == isStaff)&&(identical(other.isSuperuser, isSuperuser) || other.isSuperuser == isSuperuser)&&(identical(other.lastSeenAt, lastSeenAt) || other.lastSeenAt == lastSeenAt)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _HedwigUser&&(identical(other.id, id) || other.id == id)&&(identical(other.username, username) || other.username == username)&&(identical(other.email, email) || other.email == email)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.timezone, timezone) || other.timezone == timezone)&&(identical(other.locale, locale) || other.locale == locale)&&(identical(other.mustChangePassword, mustChangePassword) || other.mustChangePassword == mustChangePassword)&&(identical(other.isStaff, isStaff) || other.isStaff == isStaff)&&(identical(other.isSuperuser, isSuperuser) || other.isSuperuser == isSuperuser)&&(identical(other.lastSeenAt, lastSeenAt) || other.lastSeenAt == lastSeenAt)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,username,email,displayName,firstName,lastName,avatarUrl,timezone,locale,mustChangePassword,isStaff,isSuperuser,lastSeenAt,createdAt);
+int get hashCode {
+    return Object.hash(runtimeType,id,username,email,displayName,firstName,lastName,avatarUrl,timezone,locale,mustChangePassword,isStaff,isSuperuser,lastSeenAt,createdAt);
+}
 
 @override
 String toString() {
-  return 'HedwigUser(id: $id, username: $username, email: $email, displayName: $displayName, firstName: $firstName, lastName: $lastName, avatarUrl: $avatarUrl, timezone: $timezone, locale: $locale, mustChangePassword: $mustChangePassword, isStaff: $isStaff, isSuperuser: $isSuperuser, lastSeenAt: $lastSeenAt, createdAt: $createdAt)';
+    return 'HedwigUser(id: $id, username: $username, email: $email, displayName: $displayName, firstName: $firstName, lastName: $lastName, avatarUrl: $avatarUrl, timezone: $timezone, locale: $locale, mustChangePassword: $mustChangePassword, isStaff: $isStaff, isSuperuser: $isSuperuser, lastSeenAt: $lastSeenAt, createdAt: $createdAt)';
 }
 
 

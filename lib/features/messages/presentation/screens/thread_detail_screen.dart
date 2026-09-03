@@ -1382,9 +1382,9 @@ String _stripHtml(String html) {
       .replaceAll(RegExp(r'</\s*p\s*>', caseSensitive: false), '\n\n')
       .replaceAll(RegExp(r'</\s*div\s*>', caseSensitive: false), '\n');
   final stripped = withBreaks.replaceAll(RegExp(r'<[^>]+>'), '');
-  return _decodeBasicHtmlEntities(
-    stripped,
-  ).replaceAll(RegExp(r'\n{3,}'), '\n\n').trim();
+  return _decodeBasicHtmlEntities(stripped)
+      .replaceAll(RegExp(r'\n{3,}'), '\n\n')
+      .trim();
 }
 
 String _decodeBasicHtmlEntities(String value) => value

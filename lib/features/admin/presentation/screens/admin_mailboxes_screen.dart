@@ -112,9 +112,9 @@ class AdminMailboxesScreen extends ConsumerWidget {
                                   'address on ${m.emailAddress.split('@').last}',
                               child: Chip(
                                 label: const Text('Unassigned mail'),
-                                labelStyle: Theme.of(
-                                  context,
-                                ).textTheme.labelSmall,
+                                labelStyle: Theme.of(context)
+                                    .textTheme
+                                    .labelSmall,
                                 visualDensity: VisualDensity.compact,
                                 materialTapTargetSize:
                                     MaterialTapTargetSize.shrinkWrap,

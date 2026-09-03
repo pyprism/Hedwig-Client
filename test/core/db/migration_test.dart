@@ -10,11 +10,9 @@ import 'package:sqlite3/sqlite3.dart' as sqlite3;
 // AppDatabase on top of it, forcing the from<10/from<11 onUpgrade branches
 // in app_database.dart to actually run.
 void main() {
-  test(
-    'migrating from schema v9 adds isImportant and retryAfterUntil without error',
-    () async {
-      final raw = sqlite3.sqlite3.openInMemory();
-      raw.execute('''
+  test('migrating from schema v9 adds isImportant and retryAfterUntil without error', () async {
+    final raw = sqlite3.sqlite3.openInMemory();
+    raw.execute('''
       CREATE TABLE messages (
         id TEXT NOT NULL PRIMARY KEY,
         mailbox_id TEXT NOT NULL,
@@ -47,7 +45,7 @@ void main() {
         created_at INTEGER NOT NULL
       );
     ''');
-      raw.execute('''
+    raw.execute('''
       CREATE TABLE outbox_entries (
         id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
         operation TEXT NOT NULL,
@@ -59,35 +57,34 @@ void main() {
         updated_at INTEGER NOT NULL
       );
     ''');
-      // Seed a row in each so we can assert the new columns' default values,
-      // not just that the ALTER TABLE didn't throw.
-      raw.execute('''
+    // Seed a row in each so we can assert the new columns' default values,
+    // not just that the ALTER TABLE didn't throw.
+    raw.execute('''
       INSERT INTO messages (id, mailbox_id, direction, status, from_address, subject, created_at)
       VALUES ('m1', 'mb1', 'inbound', 'delivered', 'a@example.com', 'Hi', 0);
     ''');
-      raw.execute('''
+    raw.execute('''
       INSERT INTO outbox_entries (operation, payload_json, created_at, updated_at)
       VALUES ('send_message', '{}', 0, 0);
     ''');
-      raw.execute('PRAGMA user_version = 9;');
+    raw.execute('PRAGMA user_version = 9;');
 
-      final db = AppDatabase.forTesting(NativeDatabase.opened(raw));
-      addTearDown(db.close);
+    final db = AppDatabase.forTesting(NativeDatabase.opened(raw));
+    addTearDown(db.close);
 
-      final message = await (db.select(
-        db.messages,
-      )..where((m) => m.id.equals('m1'))).getSingle();
-      expect(message.isImportant, isFalse);
-      // Confirm the ALTER TABLE actually backfilled a real 0, not a NULL that
-      // drift's mapper happens to coerce to false — a NULL here would mean
-      // pre-existing installs get a non-nullable field backed by NULL.
-      final rawValue = raw
-          .select("SELECT is_important FROM messages WHERE id = 'm1'")
-          .single;
-      expect(rawValue['is_important'], 0);
+    final message = await (db.select(
+      db.messages,
+    )..where((m) => m.id.equals('m1'))).getSingle();
+    expect(message.isImportant, isFalse);
+    // Confirm the ALTER TABLE actually backfilled a real 0, not a NULL that
+    // drift's mapper happens to coerce to false — a NULL here would mean
+    // pre-existing installs get a non-nullable field backed by NULL.
+    final rawValue = raw
+        .select("SELECT is_important FROM messages WHERE id = 'm1'")
+        .single;
+    expect(rawValue['is_important'], 0);
 
-      final entry = await db.select(db.outboxEntries).getSingle();
-      expect(entry.retryAfterUntil == null, isTrue);
-    },
-  );
+    final entry = await db.select(db.outboxEntries).getSingle();
+    expect(entry.retryAfterUntil == null, isTrue);
+  });
 }

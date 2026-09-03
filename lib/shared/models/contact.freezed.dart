@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'contact.dart';
@@ -9,6 +9,7 @@ part of 'contact.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $ContactCopyWith<Contact> get copyWith => _$ContactCopyWithImpl<Contact>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Contact&&(identical(other.id, id) || other.id == id)&&(identical(other.mailboxId, mailboxId) || other.mailboxId == mailboxId)&&(identical(other.email, email) || other.email == email)&&(identical(other.name, name) || other.name == name)&&(identical(other.isFavorite, isFavorite) || other.isFavorite == isFavorite)&&(identical(other.timesContacted, timesContacted) || other.timesContacted == timesContacted)&&(identical(other.lastContactedAt, lastContactedAt) || other.lastContactedAt == lastContactedAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  final _this = this as Contact;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Contact&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.mailboxId, _this.mailboxId) || other.mailboxId == _this.mailboxId)&&(identical(other.email, _this.email) || other.email == _this.email)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.isFavorite, _this.isFavorite) || other.isFavorite == _this.isFavorite)&&(identical(other.timesContacted, _this.timesContacted) || other.timesContacted == _this.timesContacted)&&(identical(other.lastContactedAt, _this.lastContactedAt) || other.lastContactedAt == _this.lastContactedAt)&&(identical(other.updatedAt, _this.updatedAt) || other.updatedAt == _this.updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,mailboxId,email,name,isFavorite,timesContacted,lastContactedAt,updatedAt);
+int get hashCode {
+  final _this = this as Contact;
+  return Object.hash(runtimeType,_this.id,_this.mailboxId,_this.email,_this.name,_this.isFavorite,_this.timesContacted,_this.lastContactedAt,_this.updatedAt);
+}
 
 @override
 String toString() {
-  return 'Contact(id: $id, mailboxId: $mailboxId, email: $email, name: $name, isFavorite: $isFavorite, timesContacted: $timesContacted, lastContactedAt: $lastContactedAt, updatedAt: $updatedAt)';
+  final _this = this as Contact;
+  return 'Contact(id: ${_this.id}, mailboxId: ${_this.mailboxId}, email: ${_this.email}, name: ${_this.name}, isFavorite: ${_this.isFavorite}, timesContacted: ${_this.timesContacted}, lastContactedAt: ${_this.lastContactedAt}, updatedAt: ${_this.updatedAt})';
 }
 
 
@@ -66,7 +72,7 @@ class _$ContactCopyWithImpl<$Res>
 /// Create a copy of Contact
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? mailboxId = null,Object? email = null,Object? name = freezed,Object? isFavorite = null,Object? timesContacted = null,Object? lastContactedAt = freezed,Object? updatedAt = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(Contact(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,mailboxId: null == mailboxId ? _self.mailboxId : mailboxId // ignore: cast_nullable_to_non_nullable
 as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
@@ -241,16 +247,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Contact&&(identical(other.id, id) || other.id == id)&&(identical(other.mailboxId, mailboxId) || other.mailboxId == mailboxId)&&(identical(other.email, email) || other.email == email)&&(identical(other.name, name) || other.name == name)&&(identical(other.isFavorite, isFavorite) || other.isFavorite == isFavorite)&&(identical(other.timesContacted, timesContacted) || other.timesContacted == timesContacted)&&(identical(other.lastContactedAt, lastContactedAt) || other.lastContactedAt == lastContactedAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Contact&&(identical(other.id, id) || other.id == id)&&(identical(other.mailboxId, mailboxId) || other.mailboxId == mailboxId)&&(identical(other.email, email) || other.email == email)&&(identical(other.name, name) || other.name == name)&&(identical(other.isFavorite, isFavorite) || other.isFavorite == isFavorite)&&(identical(other.timesContacted, timesContacted) || other.timesContacted == timesContacted)&&(identical(other.lastContactedAt, lastContactedAt) || other.lastContactedAt == lastContactedAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,mailboxId,email,name,isFavorite,timesContacted,lastContactedAt,updatedAt);
+int get hashCode {
+    return Object.hash(runtimeType,id,mailboxId,email,name,isFavorite,timesContacted,lastContactedAt,updatedAt);
+}
 
 @override
 String toString() {
-  return 'Contact(id: $id, mailboxId: $mailboxId, email: $email, name: $name, isFavorite: $isFavorite, timesContacted: $timesContacted, lastContactedAt: $lastContactedAt, updatedAt: $updatedAt)';
+    return 'Contact(id: $id, mailboxId: $mailboxId, email: $email, name: $name, isFavorite: $isFavorite, timesContacted: $timesContacted, lastContactedAt: $lastContactedAt, updatedAt: $updatedAt)';
 }
 
 

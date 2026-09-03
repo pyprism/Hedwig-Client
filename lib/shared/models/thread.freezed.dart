@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'thread.dart';
@@ -9,6 +9,7 @@ part of 'thread.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $MailThreadCopyWith<MailThread> get copyWith => _$MailThreadCopyWithImpl<MailThr
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MailThread&&(identical(other.id, id) || other.id == id)&&(identical(other.mailboxId, mailboxId) || other.mailboxId == mailboxId)&&(identical(other.subject, subject) || other.subject == subject)&&const DeepCollectionEquality().equals(other.participants, participants)&&(identical(other.messageCount, messageCount) || other.messageCount == messageCount)&&(identical(other.hasUnread, hasUnread) || other.hasUnread == hasUnread)&&(identical(other.unreadCount, unreadCount) || other.unreadCount == unreadCount)&&(identical(other.snippet, snippet) || other.snippet == snippet)&&(identical(other.latestDirection, latestDirection) || other.latestDirection == latestDirection)&&(identical(other.hasAttachments, hasAttachments) || other.hasAttachments == hasAttachments)&&const DeepCollectionEquality().equals(other.attachmentFilenames, attachmentFilenames)&&const DeepCollectionEquality().equals(other.labels, labels)&&(identical(other.searchHighlight, searchHighlight) || other.searchHighlight == searchHighlight)&&(identical(other.lastMessageAt, lastMessageAt) || other.lastMessageAt == lastMessageAt)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  final _this = this as MailThread;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MailThread&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.mailboxId, _this.mailboxId) || other.mailboxId == _this.mailboxId)&&(identical(other.subject, _this.subject) || other.subject == _this.subject)&&const DeepCollectionEquality().equals(other.participants, _this.participants)&&(identical(other.messageCount, _this.messageCount) || other.messageCount == _this.messageCount)&&(identical(other.hasUnread, _this.hasUnread) || other.hasUnread == _this.hasUnread)&&(identical(other.unreadCount, _this.unreadCount) || other.unreadCount == _this.unreadCount)&&(identical(other.snippet, _this.snippet) || other.snippet == _this.snippet)&&(identical(other.latestDirection, _this.latestDirection) || other.latestDirection == _this.latestDirection)&&(identical(other.hasAttachments, _this.hasAttachments) || other.hasAttachments == _this.hasAttachments)&&const DeepCollectionEquality().equals(other.attachmentFilenames, _this.attachmentFilenames)&&const DeepCollectionEquality().equals(other.labels, _this.labels)&&(identical(other.searchHighlight, _this.searchHighlight) || other.searchHighlight == _this.searchHighlight)&&(identical(other.lastMessageAt, _this.lastMessageAt) || other.lastMessageAt == _this.lastMessageAt)&&(identical(other.createdAt, _this.createdAt) || other.createdAt == _this.createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,mailboxId,subject,const DeepCollectionEquality().hash(participants),messageCount,hasUnread,unreadCount,snippet,latestDirection,hasAttachments,const DeepCollectionEquality().hash(attachmentFilenames),const DeepCollectionEquality().hash(labels),searchHighlight,lastMessageAt,createdAt);
+int get hashCode {
+  final _this = this as MailThread;
+  return Object.hash(runtimeType,_this.id,_this.mailboxId,_this.subject,const DeepCollectionEquality().hash(_this.participants),_this.messageCount,_this.hasUnread,_this.unreadCount,_this.snippet,_this.latestDirection,_this.hasAttachments,const DeepCollectionEquality().hash(_this.attachmentFilenames),const DeepCollectionEquality().hash(_this.labels),_this.searchHighlight,_this.lastMessageAt,_this.createdAt);
+}
 
 @override
 String toString() {
-  return 'MailThread(id: $id, mailboxId: $mailboxId, subject: $subject, participants: $participants, messageCount: $messageCount, hasUnread: $hasUnread, unreadCount: $unreadCount, snippet: $snippet, latestDirection: $latestDirection, hasAttachments: $hasAttachments, attachmentFilenames: $attachmentFilenames, labels: $labels, searchHighlight: $searchHighlight, lastMessageAt: $lastMessageAt, createdAt: $createdAt)';
+  final _this = this as MailThread;
+  return 'MailThread(id: ${_this.id}, mailboxId: ${_this.mailboxId}, subject: ${_this.subject}, participants: ${_this.participants}, messageCount: ${_this.messageCount}, hasUnread: ${_this.hasUnread}, unreadCount: ${_this.unreadCount}, snippet: ${_this.snippet}, latestDirection: ${_this.latestDirection}, hasAttachments: ${_this.hasAttachments}, attachmentFilenames: ${_this.attachmentFilenames}, labels: ${_this.labels}, searchHighlight: ${_this.searchHighlight}, lastMessageAt: ${_this.lastMessageAt}, createdAt: ${_this.createdAt})';
 }
 
 
@@ -66,7 +72,7 @@ class _$MailThreadCopyWithImpl<$Res>
 /// Create a copy of MailThread
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? mailboxId = null,Object? subject = null,Object? participants = null,Object? messageCount = null,Object? hasUnread = null,Object? unreadCount = null,Object? snippet = freezed,Object? latestDirection = freezed,Object? hasAttachments = null,Object? attachmentFilenames = null,Object? labels = null,Object? searchHighlight = freezed,Object? lastMessageAt = freezed,Object? createdAt = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(MailThread(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,mailboxId: null == mailboxId ? _self.mailboxId : mailboxId // ignore: cast_nullable_to_non_nullable
 as String,subject: null == subject ? _self.subject : subject // ignore: cast_nullable_to_non_nullable
@@ -223,7 +229,7 @@ return $default(_that.id,_that.mailboxId,_that.subject,_that.participants,_that.
 @JsonSerializable()
 
 class _MailThread implements MailThread {
-  const _MailThread({required this.id, @JsonKey(name: 'mailbox') required this.mailboxId, required this.subject, final  List<String> participants = const [], this.messageCount = 0, this.hasUnread = false, this.unreadCount = 0, this.snippet, this.latestDirection, this.hasAttachments = false, final  List<String> attachmentFilenames = const [], final  List<ThreadLabel> labels = const [], this.searchHighlight, this.lastMessageAt, this.createdAt}): _participants = participants,_attachmentFilenames = attachmentFilenames,_labels = labels;
+  const _MailThread({required this.id, @JsonKey(name: 'mailbox') required this.mailboxId, required this.subject,  List<String> participants = const [], this.messageCount = 0, this.hasUnread = false, this.unreadCount = 0, this.snippet, this.latestDirection, this.hasAttachments = false,  List<String> attachmentFilenames = const [],  List<ThreadLabel> labels = const [], this.searchHighlight, this.lastMessageAt, this.createdAt}): _participants = participants,_attachmentFilenames = attachmentFilenames,_labels = labels;
   factory _MailThread.fromJson(Map<String, dynamic> json) => _$MailThreadFromJson(json);
 
 @override final  String id;
@@ -273,16 +279,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MailThread&&(identical(other.id, id) || other.id == id)&&(identical(other.mailboxId, mailboxId) || other.mailboxId == mailboxId)&&(identical(other.subject, subject) || other.subject == subject)&&const DeepCollectionEquality().equals(other._participants, _participants)&&(identical(other.messageCount, messageCount) || other.messageCount == messageCount)&&(identical(other.hasUnread, hasUnread) || other.hasUnread == hasUnread)&&(identical(other.unreadCount, unreadCount) || other.unreadCount == unreadCount)&&(identical(other.snippet, snippet) || other.snippet == snippet)&&(identical(other.latestDirection, latestDirection) || other.latestDirection == latestDirection)&&(identical(other.hasAttachments, hasAttachments) || other.hasAttachments == hasAttachments)&&const DeepCollectionEquality().equals(other._attachmentFilenames, _attachmentFilenames)&&const DeepCollectionEquality().equals(other._labels, _labels)&&(identical(other.searchHighlight, searchHighlight) || other.searchHighlight == searchHighlight)&&(identical(other.lastMessageAt, lastMessageAt) || other.lastMessageAt == lastMessageAt)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _MailThread&&(identical(other.id, id) || other.id == id)&&(identical(other.mailboxId, mailboxId) || other.mailboxId == mailboxId)&&(identical(other.subject, subject) || other.subject == subject)&&const DeepCollectionEquality().equals(other.participants, _participants)&&(identical(other.messageCount, messageCount) || other.messageCount == messageCount)&&(identical(other.hasUnread, hasUnread) || other.hasUnread == hasUnread)&&(identical(other.unreadCount, unreadCount) || other.unreadCount == unreadCount)&&(identical(other.snippet, snippet) || other.snippet == snippet)&&(identical(other.latestDirection, latestDirection) || other.latestDirection == latestDirection)&&(identical(other.hasAttachments, hasAttachments) || other.hasAttachments == hasAttachments)&&const DeepCollectionEquality().equals(other.attachmentFilenames, _attachmentFilenames)&&const DeepCollectionEquality().equals(other.labels, _labels)&&(identical(other.searchHighlight, searchHighlight) || other.searchHighlight == searchHighlight)&&(identical(other.lastMessageAt, lastMessageAt) || other.lastMessageAt == lastMessageAt)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,mailboxId,subject,const DeepCollectionEquality().hash(_participants),messageCount,hasUnread,unreadCount,snippet,latestDirection,hasAttachments,const DeepCollectionEquality().hash(_attachmentFilenames),const DeepCollectionEquality().hash(_labels),searchHighlight,lastMessageAt,createdAt);
+int get hashCode {
+    return Object.hash(runtimeType,id,mailboxId,subject,const DeepCollectionEquality().hash(_participants),messageCount,hasUnread,unreadCount,snippet,latestDirection,hasAttachments,const DeepCollectionEquality().hash(_attachmentFilenames),const DeepCollectionEquality().hash(_labels),searchHighlight,lastMessageAt,createdAt);
+}
 
 @override
 String toString() {
-  return 'MailThread(id: $id, mailboxId: $mailboxId, subject: $subject, participants: $participants, messageCount: $messageCount, hasUnread: $hasUnread, unreadCount: $unreadCount, snippet: $snippet, latestDirection: $latestDirection, hasAttachments: $hasAttachments, attachmentFilenames: $attachmentFilenames, labels: $labels, searchHighlight: $searchHighlight, lastMessageAt: $lastMessageAt, createdAt: $createdAt)';
+    return 'MailThread(id: $id, mailboxId: $mailboxId, subject: $subject, participants: $participants, messageCount: $messageCount, hasUnread: $hasUnread, unreadCount: $unreadCount, snippet: $snippet, latestDirection: $latestDirection, hasAttachments: $hasAttachments, attachmentFilenames: $attachmentFilenames, labels: $labels, searchHighlight: $searchHighlight, lastMessageAt: $lastMessageAt, createdAt: $createdAt)';
 }
 
 
@@ -351,16 +359,21 @@ $ThreadLabelCopyWith<ThreadLabel> get copyWith => _$ThreadLabelCopyWithImpl<Thre
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ThreadLabel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.color, color) || other.color == color));
+  final _this = this as ThreadLabel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ThreadLabel&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.color, _this.color) || other.color == _this.color));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,color);
+int get hashCode {
+  final _this = this as ThreadLabel;
+  return Object.hash(runtimeType,_this.id,_this.name,_this.color);
+}
 
 @override
 String toString() {
-  return 'ThreadLabel(id: $id, name: $name, color: $color)';
+  final _this = this as ThreadLabel;
+  return 'ThreadLabel(id: ${_this.id}, name: ${_this.name}, color: ${_this.color})';
 }
 
 
@@ -389,7 +402,7 @@ class _$ThreadLabelCopyWithImpl<$Res>
 /// Create a copy of ThreadLabel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? color = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(ThreadLabel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,color: freezed == color ? _self.color : color // ignore: cast_nullable_to_non_nullable
@@ -554,16 +567,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ThreadLabel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.color, color) || other.color == color));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ThreadLabel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.color, color) || other.color == color));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,color);
+int get hashCode {
+    return Object.hash(runtimeType,id,name,color);
+}
 
 @override
 String toString() {
-  return 'ThreadLabel(id: $id, name: $name, color: $color)';
+    return 'ThreadLabel(id: $id, name: $name, color: $color)';
 }
 
 
