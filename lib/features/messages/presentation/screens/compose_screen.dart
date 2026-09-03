@@ -360,13 +360,11 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
     }
 
     final remainingSlots = _maxAttachments - _attachments.length;
-    final result = await FilePicker.pickFiles(
-      allowMultiple: true,
-      withData: true,
+    final files = await FilePicker.pickFiles(
       type: FileType.any,
       dialogTitle: 'Attach files',
     );
-    if (result == null || result.files.isEmpty) return;
+    if (files.isEmpty) return;
 
     var availableBytes = _maxAttachmentBytes - _attachmentBytes;
     final accepted = <ComposeAttachmentRequest>[];
@@ -374,14 +372,16 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
     var skippedBytes = 0;
     var missingBytes = 0;
 
-    for (final file in result.files.take(remainingSlots)) {
-      final bytes = file.bytes;
-      if (bytes == null) {
-        missingBytes++;
+    for (final file in files.take(remainingSlots)) {
+      final fileSize = await file.length();
+      if (fileSize > availableBytes) {
+        skippedBytes++;
         continue;
       }
-      if (file.size > availableBytes) {
-        skippedBytes++;
+
+      final bytes = await file.readAsBytes();
+      if (bytes.isEmpty && fileSize > 0) {
+        missingBytes++;
         continue;
       }
 
@@ -390,14 +390,14 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
           filename: file.name,
           contentType: _contentTypeFor(file.name),
           content: base64Encode(bytes),
-          sizeBytes: file.size,
+          sizeBytes: bytes.length,
         ),
       );
-      availableBytes -= file.size;
+      availableBytes -= bytes.length;
     }
 
-    if (result.files.length > remainingSlots) {
-      skippedCount = result.files.length - remainingSlots;
+    if (files.length > remainingSlots) {
+      skippedCount = files.length - remainingSlots;
     }
 
     if (accepted.isNotEmpty) {
