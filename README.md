@@ -46,6 +46,15 @@ flutter build linux      # Linux
 - `.github/workflows/release.yml` — on a published GitHub Release, builds
   binaries for all platforms and uploads them to that release.
 
+#### Deploy web via ansible
+```bash
+cd deploy/ansible
+# copy and edit values
+cp deploy_config.yaml.example deploy_config.yaml
+
+ansible-playbook update.yaml --ask-become-pass -i hosts
+```
+
 ## Icon Credit
 Hedwig icons created by Vector Squad - Flaticon
 [https://www.flaticon.com/free-icon/potter_13717556](https://www.flaticon.com/free-icon/potter_13717556)
