@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hedwig_client/features/admin/presentation/screens/admin_access_screen.dart';
 import 'package:hedwig_client/features/admin/presentation/screens/admin_delivery_screen.dart';
+import 'package:hedwig_client/features/admin/presentation/screens/admin_ingest_issues_screen.dart';
 import 'package:hedwig_client/features/admin/presentation/screens/admin_domains_screen.dart';
 import 'package:hedwig_client/features/admin/presentation/screens/admin_mailboxes_screen.dart';
 import 'package:hedwig_client/features/admin/presentation/screens/admin_providers_screen.dart';
@@ -198,6 +199,10 @@ GoRouter router(Ref ref) {
       GoRoute(
         path: '/admin/delivery',
         builder: (context, _) => const AdminDeliveryScreen(),
+      ),
+      GoRoute(
+        path: '/admin/ingest-issues',
+        builder: (context, _) => const AdminIngestIssuesScreen(),
       ),
     ],
     errorBuilder: (_, state) =>
