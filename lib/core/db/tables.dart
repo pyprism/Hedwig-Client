@@ -73,6 +73,7 @@ class Messages extends Table {
   TextColumn get rawMimeUrl => text().nullable()();
   BoolColumn get isRead => boolean().withDefault(const Constant(false))();
   BoolColumn get isStarred => boolean().withDefault(const Constant(false))();
+  BoolColumn get isImportant => boolean().withDefault(const Constant(false))();
   BoolColumn get hasAttachments =>
       boolean().withDefault(const Constant(false))();
   TextColumn get attachmentsJson => text().withDefault(const Constant('[]'))();
@@ -158,6 +159,11 @@ class OutboxEntries extends Table {
   TextColumn get status => text().withDefault(const Constant('pending'))();
   IntColumn get retryCount => integer().withDefault(const Constant(0))();
   TextColumn get lastError => text().nullable()();
+  // Set when the last failure was a 429 carrying a `Retry-After` header —
+  // the backoff-window check honors this in addition to the normal
+  // exponential backoff, so the outbox retry loop can't immediately re-hit
+  // an endpoint the server just asked it to back off from.
+  DateTimeColumn get retryAfterUntil => dateTime().nullable()();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
 }
