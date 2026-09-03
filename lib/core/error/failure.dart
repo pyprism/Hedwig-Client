@@ -9,6 +9,11 @@ sealed class Failure with _$Failure {
     required int statusCode,
     required String message,
     @Default({}) Map<String, dynamic> fieldErrors,
+    // Parsed from a 429 response's `Retry-After` header (seconds). Lets a
+    // caller disable a retry action or show a countdown for the advertised
+    // window instead of allowing an immediate re-hit of the throttled
+    // endpoint.
+    int? retryAfterSeconds,
   }) = ServerFailure;
   const factory Failure.auth({String? message}) = AuthFailure;
   const factory Failure.notFound({String? message}) = NotFoundFailure;
@@ -18,7 +23,9 @@ sealed class Failure with _$Failure {
 extension FailureMessage on Failure {
   String get userMessage => when(
     network: (msg) => 'No connection. $msg',
-    server: (code, msg, _) => msg,
+    server: (code, msg, _, retryAfterSeconds) => retryAfterSeconds != null
+        ? '$msg Try again in ${retryAfterSeconds}s.'
+        : msg,
     auth: (msg) => msg ?? 'Session expired. Please log in again.',
     notFound: (msg) => msg ?? 'Not found.',
     unknown: (msg) => msg,
