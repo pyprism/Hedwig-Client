@@ -83,9 +83,18 @@ class SyncEngine {
           continue;
         }
 
-        // Skip entries that are in backoff: next retry is updatedAt + backoff window.
+        // Skip entries that are in backoff: next retry is updatedAt + backoff
+        // window, or the server-advertised Retry-After window if that's
+        // later (set below when a dispatch fails with 429).
         final backoffEnd = entry.updatedAt.add(_backoff(entry.retryCount));
-        if (entry.retryCount > 0 && now.isBefore(backoffEnd)) continue;
+        final effectiveBackoffEnd =
+            entry.retryAfterUntil != null &&
+                entry.retryAfterUntil!.isAfter(backoffEnd)
+            ? entry.retryAfterUntil!
+            : backoffEnd;
+        if (entry.retryCount > 0 && now.isBefore(effectiveBackoffEnd)) {
+          continue;
+        }
 
         final notBefore = _notBefore(entry);
         if (notBefore != null && now.isBefore(notBefore)) {
@@ -102,12 +111,18 @@ class SyncEngine {
             '[SyncEngine] dispatch failed (${entry.operation}): ${e.message}',
           );
           final retryCount = entry.retryCount + 1;
+          final retryAfter = _retryAfterUntil(e);
           await db.outboxDao.markFailed(
             entry.id,
             e.message ?? e.toString(),
             retryCount,
+            retryAfterUntil: retryAfter,
           );
-          _scheduleBackoffFlush(retryCount);
+          if (retryAfter != null && retryAfter.isAfter(DateTime.now())) {
+            if (retryCount < _maxRetries) scheduleFlushAt(retryAfter);
+          } else {
+            _scheduleBackoffFlush(retryCount);
+          }
         } catch (e) {
           debugPrint('[SyncEngine] dispatch error (${entry.operation}): $e');
           final retryCount = entry.retryCount + 1;
@@ -128,7 +143,16 @@ class SyncEngine {
         final localId = map['localId'] as String?;
         final body = map['body'] as Map<String, dynamic>;
         final res = await dio.post('mail/messages/send/', data: body);
-        // Reconcile: replace the optimistic local row with the server-assigned message.
+        // The POST above already succeeded server-side — the message was
+        // sent (or queued to send). Everything from here is *local* cache
+        // reconciliation, and a failure in it must never cause a retry: this
+        // outbox entry stays `done` regardless, because retrying would
+        // re-POST and double-send. If full reconciliation fails (unexpected
+        // response shape, a local DB write error), fall back to just
+        // deleting the optimistic `local-...` row instead of leaving it
+        // permanently stuck — the real message reappears on the next
+        // thread/mailbox refresh from the server, which is a brief gap, not
+        // silent data loss or a stuck duplicate.
         try {
           final msg = MailMessage.fromJson(res.data as Map<String, dynamic>);
           await db.messageDao.upsertAll([messageToRow(msg)]);
@@ -136,17 +160,26 @@ class SyncEngine {
             await _upsertScheduledThread(db, msg);
           }
           if (localId != null) {
-            await db.messageDao.deleteById(localId);
-            // Drop the optimistic thread row created for a new composition; the
-            // reconciled server message carries the real thread.
-            await db.threadDao.deleteByIdFolder(localId, 'sent');
-            await db.threadDao.deleteByIdFolder(localId, 'scheduled');
+            await _dropOptimisticRow(db, localId);
           }
           if (!_terminalSendStatuses.contains(msg.status)) {
             unawaited(_pollSendStatus(msg.id));
           }
         } catch (e) {
-          debugPrint('[SyncEngine] reconcile error: $e');
+          debugPrint(
+            '[SyncEngine] reconcile error (send already succeeded '
+            'server-side; dropping optimistic row, not retrying): $e',
+          );
+          if (localId != null) {
+            try {
+              await _dropOptimisticRow(db, localId);
+            } catch (dropError) {
+              debugPrint(
+                '[SyncEngine] failed to drop optimistic row $localId '
+                'after reconcile failure: $dropError',
+              );
+            }
+          }
         }
       case 'state_change':
         // Payload: {"id": "<msgId>", "body": {...}}
@@ -191,6 +224,13 @@ class SyncEngine {
           final res = await dio.post(
             'mail/messages/$serverDraftId/send-draft/',
           );
+          // As with send_message: the POST above already promoted the draft
+          // to a queued send server-side. A failure below is a *local*
+          // reconcile problem, not a reason to retry — retrying would hit
+          // the draft-only `send-draft` endpoint on a message that's no
+          // longer a draft. The local row is left stale (still shows
+          // `draft`) rather than duplicated; it self-corrects on the next
+          // thread/mailbox refresh.
           try {
             final msg = MailMessage.fromJson(res.data as Map<String, dynamic>);
             await db.messageDao.upsertAll([messageToRow(msg)]);
@@ -198,7 +238,10 @@ class SyncEngine {
               unawaited(_pollSendStatus(msg.id));
             }
           } catch (e) {
-            debugPrint('[SyncEngine] send_draft reconcile error: $e');
+            debugPrint(
+              '[SyncEngine] send_draft reconcile error (send already '
+              'succeeded server-side, not retrying): $e',
+            );
           }
         }
       case 'delete_draft':
@@ -216,6 +259,17 @@ class SyncEngine {
       default:
         debugPrint('[SyncEngine] unknown operation: ${entry.operation}');
     }
+  }
+
+  /// Removes the optimistic `local-...` placeholder row (and its scheduled
+  /// composition thread rows, if any) for a message that's now confirmed
+  /// sent server-side — used both on the reconcile happy path (replaced by
+  /// the real server row) and on reconcile failure (nothing to replace it
+  /// with locally yet; the real message reappears on the next server fetch).
+  Future<void> _dropOptimisticRow(AppDatabase db, String localId) async {
+    await db.messageDao.deleteById(localId);
+    await db.threadDao.deleteByIdFolder(localId, 'sent');
+    await db.threadDao.deleteByIdFolder(localId, 'scheduled');
   }
 
   bool _isFutureScheduled(MailMessage message) {
@@ -318,6 +372,20 @@ class SyncEngine {
     return Duration(seconds: seconds);
   }
 
+  /// Parses a `429` response's `Retry-After` header (seconds, per DRF's
+  /// throttle implementation) into an absolute retry time, or null if the
+  /// failure wasn't a 429 or didn't carry a parseable header. Without this,
+  /// the outbox's own retry loop could immediately re-hit the same
+  /// throttled endpoint on its next exponential-backoff attempt.
+  DateTime? _retryAfterUntil(DioException e) {
+    if (e.response?.statusCode != 429) return null;
+    final raw = e.response?.headers.value('retry-after');
+    if (raw == null) return null;
+    final seconds = int.tryParse(raw.trim());
+    if (seconds == null) return null;
+    return DateTime.now().add(Duration(seconds: seconds));
+  }
+
   /// Without this, a failed entry only gets retried on the next connectivity
   /// change, new enqueue, or scheduled-send timer — it could otherwise sit
   /// unsynced well past its backoff window. Skipped once retries are
@@ -368,9 +436,25 @@ class SyncEngine {
     }
   }
 
+  /// Re-runs status polling for a message the previous poll gave up on
+  /// (`metadata['poll_timed_out']`) — wired to a "Check status" affordance
+  /// in the UI so a stuck-looking `queued`/`sending` message isn't a dead
+  /// end. A successful response on any attempt naturally clears the flag,
+  /// since `messageToRow` overwrites local `metadata` with the server's
+  /// (which never carries this client-only key).
+  Future<void> retryPollSendStatus(String messageId) =>
+      _pollSendStatus(messageId);
+
   /// Polls `GET /api/mail/messages/{id}/` until the send reaches a terminal
   /// status  (queued→sending→sent→delivered, or failed/bounced/
   /// cancelled), updating the local cache after each response.
+  ///
+  /// If the server hasn't reached a terminal status after all attempts (slow
+  /// provider, retry storm), this doesn't just give up silently: it flags
+  /// the local row with `metadata['poll_timed_out'] = true` so the UI can
+  /// show something other than an indefinite "still sending" with a way to
+  /// check again (`retryPollSendStatus`), instead of a dead end
+  /// indistinguishable from actually-still-sending.
   Future<void> _pollSendStatus(String messageId) async {
     final db = _ref.read(appDatabaseProvider);
     final dio = _ref.read(dioClientProvider);
@@ -388,6 +472,21 @@ class SyncEngine {
       }
       delay = Duration(seconds: min(delay.inSeconds * 2, 30));
     }
+
+    await _flagPollTimedOut(db, messageId);
+  }
+
+  Future<void> _flagPollTimedOut(AppDatabase db, String messageId) async {
+    final row = await db.messageDao.getById(messageId);
+    if (row == null) return;
+    Map<String, dynamic> metadata;
+    try {
+      metadata = jsonDecode(row.metadataJson) as Map<String, dynamic>;
+    } catch (_) {
+      metadata = {};
+    }
+    metadata['poll_timed_out'] = true;
+    await db.messageDao.setMetadataJson(messageId, jsonEncode(metadata));
   }
 
   void dispose() {

@@ -1979,6 +1979,21 @@ class $MessagesTable extends Messages
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _isImportantMeta = const VerificationMeta(
+    'isImportant',
+  );
+  @override
+  late final GeneratedColumn<bool> isImportant = GeneratedColumn<bool>(
+    'is_important',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_important" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _hasAttachmentsMeta = const VerificationMeta(
     'hasAttachments',
   );
@@ -2095,6 +2110,7 @@ class $MessagesTable extends Messages
     rawMimeUrl,
     isRead,
     isStarred,
+    isImportant,
     hasAttachments,
     attachmentsJson,
     rawHeadersJson,
@@ -2272,6 +2288,15 @@ class $MessagesTable extends Messages
         isStarred.isAcceptableOrUnknown(data['is_starred']!, _isStarredMeta),
       );
     }
+    if (data.containsKey('is_important')) {
+      context.handle(
+        _isImportantMeta,
+        isImportant.isAcceptableOrUnknown(
+          data['is_important']!,
+          _isImportantMeta,
+        ),
+      );
+    }
     if (data.containsKey('has_attachments')) {
       context.handle(
         _hasAttachmentsMeta,
@@ -2430,6 +2455,10 @@ class $MessagesTable extends Messages
         DriftSqlType.bool,
         data['${effectivePrefix}is_starred'],
       )!,
+      isImportant: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_important'],
+      )!,
       hasAttachments: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}has_attachments'],
@@ -2493,6 +2522,7 @@ class MessageRow extends DataClass implements Insertable<MessageRow> {
   final String? rawMimeUrl;
   final bool isRead;
   final bool isStarred;
+  final bool isImportant;
   final bool hasAttachments;
   final String attachmentsJson;
   final String rawHeadersJson;
@@ -2523,6 +2553,7 @@ class MessageRow extends DataClass implements Insertable<MessageRow> {
     this.rawMimeUrl,
     required this.isRead,
     required this.isStarred,
+    required this.isImportant,
     required this.hasAttachments,
     required this.attachmentsJson,
     required this.rawHeadersJson,
@@ -2574,6 +2605,7 @@ class MessageRow extends DataClass implements Insertable<MessageRow> {
     }
     map['is_read'] = Variable<bool>(isRead);
     map['is_starred'] = Variable<bool>(isStarred);
+    map['is_important'] = Variable<bool>(isImportant);
     map['has_attachments'] = Variable<bool>(hasAttachments);
     map['attachments_json'] = Variable<String>(attachmentsJson);
     map['raw_headers_json'] = Variable<String>(rawHeadersJson);
@@ -2632,6 +2664,7 @@ class MessageRow extends DataClass implements Insertable<MessageRow> {
           : Value(rawMimeUrl),
       isRead: Value(isRead),
       isStarred: Value(isStarred),
+      isImportant: Value(isImportant),
       hasAttachments: Value(hasAttachments),
       attachmentsJson: Value(attachmentsJson),
       rawHeadersJson: Value(rawHeadersJson),
@@ -2678,6 +2711,7 @@ class MessageRow extends DataClass implements Insertable<MessageRow> {
       rawMimeUrl: serializer.fromJson<String?>(json['rawMimeUrl']),
       isRead: serializer.fromJson<bool>(json['isRead']),
       isStarred: serializer.fromJson<bool>(json['isStarred']),
+      isImportant: serializer.fromJson<bool>(json['isImportant']),
       hasAttachments: serializer.fromJson<bool>(json['hasAttachments']),
       attachmentsJson: serializer.fromJson<String>(json['attachmentsJson']),
       rawHeadersJson: serializer.fromJson<String>(json['rawHeadersJson']),
@@ -2713,6 +2747,7 @@ class MessageRow extends DataClass implements Insertable<MessageRow> {
       'rawMimeUrl': serializer.toJson<String?>(rawMimeUrl),
       'isRead': serializer.toJson<bool>(isRead),
       'isStarred': serializer.toJson<bool>(isStarred),
+      'isImportant': serializer.toJson<bool>(isImportant),
       'hasAttachments': serializer.toJson<bool>(hasAttachments),
       'attachmentsJson': serializer.toJson<String>(attachmentsJson),
       'rawHeadersJson': serializer.toJson<String>(rawHeadersJson),
@@ -2746,6 +2781,7 @@ class MessageRow extends DataClass implements Insertable<MessageRow> {
     Value<String?> rawMimeUrl = const Value.absent(),
     bool? isRead,
     bool? isStarred,
+    bool? isImportant,
     bool? hasAttachments,
     String? attachmentsJson,
     String? rawHeadersJson,
@@ -2780,6 +2816,7 @@ class MessageRow extends DataClass implements Insertable<MessageRow> {
     rawMimeUrl: rawMimeUrl.present ? rawMimeUrl.value : this.rawMimeUrl,
     isRead: isRead ?? this.isRead,
     isStarred: isStarred ?? this.isStarred,
+    isImportant: isImportant ?? this.isImportant,
     hasAttachments: hasAttachments ?? this.hasAttachments,
     attachmentsJson: attachmentsJson ?? this.attachmentsJson,
     rawHeadersJson: rawHeadersJson ?? this.rawHeadersJson,
@@ -2826,6 +2863,9 @@ class MessageRow extends DataClass implements Insertable<MessageRow> {
           : this.rawMimeUrl,
       isRead: data.isRead.present ? data.isRead.value : this.isRead,
       isStarred: data.isStarred.present ? data.isStarred.value : this.isStarred,
+      isImportant: data.isImportant.present
+          ? data.isImportant.value
+          : this.isImportant,
       hasAttachments: data.hasAttachments.present
           ? data.hasAttachments.value
           : this.hasAttachments,
@@ -2873,6 +2913,7 @@ class MessageRow extends DataClass implements Insertable<MessageRow> {
           ..write('rawMimeUrl: $rawMimeUrl, ')
           ..write('isRead: $isRead, ')
           ..write('isStarred: $isStarred, ')
+          ..write('isImportant: $isImportant, ')
           ..write('hasAttachments: $hasAttachments, ')
           ..write('attachmentsJson: $attachmentsJson, ')
           ..write('rawHeadersJson: $rawHeadersJson, ')
@@ -2908,6 +2949,7 @@ class MessageRow extends DataClass implements Insertable<MessageRow> {
     rawMimeUrl,
     isRead,
     isStarred,
+    isImportant,
     hasAttachments,
     attachmentsJson,
     rawHeadersJson,
@@ -2942,6 +2984,7 @@ class MessageRow extends DataClass implements Insertable<MessageRow> {
           other.rawMimeUrl == this.rawMimeUrl &&
           other.isRead == this.isRead &&
           other.isStarred == this.isStarred &&
+          other.isImportant == this.isImportant &&
           other.hasAttachments == this.hasAttachments &&
           other.attachmentsJson == this.attachmentsJson &&
           other.rawHeadersJson == this.rawHeadersJson &&
@@ -2974,6 +3017,7 @@ class MessagesCompanion extends UpdateCompanion<MessageRow> {
   final Value<String?> rawMimeUrl;
   final Value<bool> isRead;
   final Value<bool> isStarred;
+  final Value<bool> isImportant;
   final Value<bool> hasAttachments;
   final Value<String> attachmentsJson;
   final Value<String> rawHeadersJson;
@@ -3005,6 +3049,7 @@ class MessagesCompanion extends UpdateCompanion<MessageRow> {
     this.rawMimeUrl = const Value.absent(),
     this.isRead = const Value.absent(),
     this.isStarred = const Value.absent(),
+    this.isImportant = const Value.absent(),
     this.hasAttachments = const Value.absent(),
     this.attachmentsJson = const Value.absent(),
     this.rawHeadersJson = const Value.absent(),
@@ -3037,6 +3082,7 @@ class MessagesCompanion extends UpdateCompanion<MessageRow> {
     this.rawMimeUrl = const Value.absent(),
     this.isRead = const Value.absent(),
     this.isStarred = const Value.absent(),
+    this.isImportant = const Value.absent(),
     this.hasAttachments = const Value.absent(),
     this.attachmentsJson = const Value.absent(),
     this.rawHeadersJson = const Value.absent(),
@@ -3075,6 +3121,7 @@ class MessagesCompanion extends UpdateCompanion<MessageRow> {
     Expression<String>? rawMimeUrl,
     Expression<bool>? isRead,
     Expression<bool>? isStarred,
+    Expression<bool>? isImportant,
     Expression<bool>? hasAttachments,
     Expression<String>? attachmentsJson,
     Expression<String>? rawHeadersJson,
@@ -3107,6 +3154,7 @@ class MessagesCompanion extends UpdateCompanion<MessageRow> {
       if (rawMimeUrl != null) 'raw_mime_url': rawMimeUrl,
       if (isRead != null) 'is_read': isRead,
       if (isStarred != null) 'is_starred': isStarred,
+      if (isImportant != null) 'is_important': isImportant,
       if (hasAttachments != null) 'has_attachments': hasAttachments,
       if (attachmentsJson != null) 'attachments_json': attachmentsJson,
       if (rawHeadersJson != null) 'raw_headers_json': rawHeadersJson,
@@ -3141,6 +3189,7 @@ class MessagesCompanion extends UpdateCompanion<MessageRow> {
     Value<String?>? rawMimeUrl,
     Value<bool>? isRead,
     Value<bool>? isStarred,
+    Value<bool>? isImportant,
     Value<bool>? hasAttachments,
     Value<String>? attachmentsJson,
     Value<String>? rawHeadersJson,
@@ -3173,6 +3222,7 @@ class MessagesCompanion extends UpdateCompanion<MessageRow> {
       rawMimeUrl: rawMimeUrl ?? this.rawMimeUrl,
       isRead: isRead ?? this.isRead,
       isStarred: isStarred ?? this.isStarred,
+      isImportant: isImportant ?? this.isImportant,
       hasAttachments: hasAttachments ?? this.hasAttachments,
       attachmentsJson: attachmentsJson ?? this.attachmentsJson,
       rawHeadersJson: rawHeadersJson ?? this.rawHeadersJson,
@@ -3251,6 +3301,9 @@ class MessagesCompanion extends UpdateCompanion<MessageRow> {
     if (isStarred.present) {
       map['is_starred'] = Variable<bool>(isStarred.value);
     }
+    if (isImportant.present) {
+      map['is_important'] = Variable<bool>(isImportant.value);
+    }
     if (hasAttachments.present) {
       map['has_attachments'] = Variable<bool>(hasAttachments.value);
     }
@@ -3305,6 +3358,7 @@ class MessagesCompanion extends UpdateCompanion<MessageRow> {
           ..write('rawMimeUrl: $rawMimeUrl, ')
           ..write('isRead: $isRead, ')
           ..write('isStarred: $isStarred, ')
+          ..write('isImportant: $isImportant, ')
           ..write('hasAttachments: $hasAttachments, ')
           ..write('attachmentsJson: $attachmentsJson, ')
           ..write('rawHeadersJson: $rawHeadersJson, ')
@@ -5377,6 +5431,18 @@ class $OutboxEntriesTable extends OutboxEntries
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _retryAfterUntilMeta = const VerificationMeta(
+    'retryAfterUntil',
+  );
+  @override
+  late final GeneratedColumn<DateTime> retryAfterUntil =
+      GeneratedColumn<DateTime>(
+        'retry_after_until',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -5407,6 +5473,7 @@ class $OutboxEntriesTable extends OutboxEntries
     status,
     retryCount,
     lastError,
+    retryAfterUntil,
     createdAt,
     updatedAt,
   ];
@@ -5462,6 +5529,15 @@ class $OutboxEntriesTable extends OutboxEntries
         lastError.isAcceptableOrUnknown(data['last_error']!, _lastErrorMeta),
       );
     }
+    if (data.containsKey('retry_after_until')) {
+      context.handle(
+        _retryAfterUntilMeta,
+        retryAfterUntil.isAcceptableOrUnknown(
+          data['retry_after_until']!,
+          _retryAfterUntilMeta,
+        ),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -5511,6 +5587,10 @@ class $OutboxEntriesTable extends OutboxEntries
         DriftSqlType.string,
         data['${effectivePrefix}last_error'],
       ),
+      retryAfterUntil: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}retry_after_until'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -5535,6 +5615,7 @@ class OutboxEntry extends DataClass implements Insertable<OutboxEntry> {
   final String status;
   final int retryCount;
   final String? lastError;
+  final DateTime? retryAfterUntil;
   final DateTime createdAt;
   final DateTime updatedAt;
   const OutboxEntry({
@@ -5544,6 +5625,7 @@ class OutboxEntry extends DataClass implements Insertable<OutboxEntry> {
     required this.status,
     required this.retryCount,
     this.lastError,
+    this.retryAfterUntil,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -5557,6 +5639,9 @@ class OutboxEntry extends DataClass implements Insertable<OutboxEntry> {
     map['retry_count'] = Variable<int>(retryCount);
     if (!nullToAbsent || lastError != null) {
       map['last_error'] = Variable<String>(lastError);
+    }
+    if (!nullToAbsent || retryAfterUntil != null) {
+      map['retry_after_until'] = Variable<DateTime>(retryAfterUntil);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -5573,6 +5658,9 @@ class OutboxEntry extends DataClass implements Insertable<OutboxEntry> {
       lastError: lastError == null && nullToAbsent
           ? const Value.absent()
           : Value(lastError),
+      retryAfterUntil: retryAfterUntil == null && nullToAbsent
+          ? const Value.absent()
+          : Value(retryAfterUntil),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -5590,6 +5678,7 @@ class OutboxEntry extends DataClass implements Insertable<OutboxEntry> {
       status: serializer.fromJson<String>(json['status']),
       retryCount: serializer.fromJson<int>(json['retryCount']),
       lastError: serializer.fromJson<String?>(json['lastError']),
+      retryAfterUntil: serializer.fromJson<DateTime?>(json['retryAfterUntil']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -5604,6 +5693,7 @@ class OutboxEntry extends DataClass implements Insertable<OutboxEntry> {
       'status': serializer.toJson<String>(status),
       'retryCount': serializer.toJson<int>(retryCount),
       'lastError': serializer.toJson<String?>(lastError),
+      'retryAfterUntil': serializer.toJson<DateTime?>(retryAfterUntil),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -5616,6 +5706,7 @@ class OutboxEntry extends DataClass implements Insertable<OutboxEntry> {
     String? status,
     int? retryCount,
     Value<String?> lastError = const Value.absent(),
+    Value<DateTime?> retryAfterUntil = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => OutboxEntry(
@@ -5625,6 +5716,9 @@ class OutboxEntry extends DataClass implements Insertable<OutboxEntry> {
     status: status ?? this.status,
     retryCount: retryCount ?? this.retryCount,
     lastError: lastError.present ? lastError.value : this.lastError,
+    retryAfterUntil: retryAfterUntil.present
+        ? retryAfterUntil.value
+        : this.retryAfterUntil,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -5640,6 +5734,9 @@ class OutboxEntry extends DataClass implements Insertable<OutboxEntry> {
           ? data.retryCount.value
           : this.retryCount,
       lastError: data.lastError.present ? data.lastError.value : this.lastError,
+      retryAfterUntil: data.retryAfterUntil.present
+          ? data.retryAfterUntil.value
+          : this.retryAfterUntil,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -5654,6 +5751,7 @@ class OutboxEntry extends DataClass implements Insertable<OutboxEntry> {
           ..write('status: $status, ')
           ..write('retryCount: $retryCount, ')
           ..write('lastError: $lastError, ')
+          ..write('retryAfterUntil: $retryAfterUntil, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -5668,6 +5766,7 @@ class OutboxEntry extends DataClass implements Insertable<OutboxEntry> {
     status,
     retryCount,
     lastError,
+    retryAfterUntil,
     createdAt,
     updatedAt,
   );
@@ -5681,6 +5780,7 @@ class OutboxEntry extends DataClass implements Insertable<OutboxEntry> {
           other.status == this.status &&
           other.retryCount == this.retryCount &&
           other.lastError == this.lastError &&
+          other.retryAfterUntil == this.retryAfterUntil &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -5692,6 +5792,7 @@ class OutboxEntriesCompanion extends UpdateCompanion<OutboxEntry> {
   final Value<String> status;
   final Value<int> retryCount;
   final Value<String?> lastError;
+  final Value<DateTime?> retryAfterUntil;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   const OutboxEntriesCompanion({
@@ -5701,6 +5802,7 @@ class OutboxEntriesCompanion extends UpdateCompanion<OutboxEntry> {
     this.status = const Value.absent(),
     this.retryCount = const Value.absent(),
     this.lastError = const Value.absent(),
+    this.retryAfterUntil = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
   });
@@ -5711,6 +5813,7 @@ class OutboxEntriesCompanion extends UpdateCompanion<OutboxEntry> {
     this.status = const Value.absent(),
     this.retryCount = const Value.absent(),
     this.lastError = const Value.absent(),
+    this.retryAfterUntil = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
   }) : operation = Value(operation),
@@ -5724,6 +5827,7 @@ class OutboxEntriesCompanion extends UpdateCompanion<OutboxEntry> {
     Expression<String>? status,
     Expression<int>? retryCount,
     Expression<String>? lastError,
+    Expression<DateTime>? retryAfterUntil,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
   }) {
@@ -5734,6 +5838,7 @@ class OutboxEntriesCompanion extends UpdateCompanion<OutboxEntry> {
       if (status != null) 'status': status,
       if (retryCount != null) 'retry_count': retryCount,
       if (lastError != null) 'last_error': lastError,
+      if (retryAfterUntil != null) 'retry_after_until': retryAfterUntil,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
     });
@@ -5746,6 +5851,7 @@ class OutboxEntriesCompanion extends UpdateCompanion<OutboxEntry> {
     Value<String>? status,
     Value<int>? retryCount,
     Value<String?>? lastError,
+    Value<DateTime?>? retryAfterUntil,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
   }) {
@@ -5756,6 +5862,7 @@ class OutboxEntriesCompanion extends UpdateCompanion<OutboxEntry> {
       status: status ?? this.status,
       retryCount: retryCount ?? this.retryCount,
       lastError: lastError ?? this.lastError,
+      retryAfterUntil: retryAfterUntil ?? this.retryAfterUntil,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -5782,6 +5889,9 @@ class OutboxEntriesCompanion extends UpdateCompanion<OutboxEntry> {
     if (lastError.present) {
       map['last_error'] = Variable<String>(lastError.value);
     }
+    if (retryAfterUntil.present) {
+      map['retry_after_until'] = Variable<DateTime>(retryAfterUntil.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -5800,6 +5910,7 @@ class OutboxEntriesCompanion extends UpdateCompanion<OutboxEntry> {
           ..write('status: $status, ')
           ..write('retryCount: $retryCount, ')
           ..write('lastError: $lastError, ')
+          ..write('retryAfterUntil: $retryAfterUntil, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -6651,6 +6762,7 @@ typedef $$MessagesTableCreateCompanionBuilder =
       Value<String?> rawMimeUrl,
       Value<bool> isRead,
       Value<bool> isStarred,
+      Value<bool> isImportant,
       Value<bool> hasAttachments,
       Value<String> attachmentsJson,
       Value<String> rawHeadersJson,
@@ -6684,6 +6796,7 @@ typedef $$MessagesTableUpdateCompanionBuilder =
       Value<String?> rawMimeUrl,
       Value<bool> isRead,
       Value<bool> isStarred,
+      Value<bool> isImportant,
       Value<bool> hasAttachments,
       Value<String> attachmentsJson,
       Value<String> rawHeadersJson,
@@ -6806,6 +6919,11 @@ class $$MessagesTableFilterComposer
 
   ColumnFilters<bool> get isStarred => $composableBuilder(
     column: $table.isStarred,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isImportant => $composableBuilder(
+    column: $table.isImportant,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6964,6 +7082,11 @@ class $$MessagesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get isImportant => $composableBuilder(
+    column: $table.isImportant,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get hasAttachments => $composableBuilder(
     column: $table.hasAttachments,
     builder: (column) => ColumnOrderings(column),
@@ -7091,6 +7214,11 @@ class $$MessagesTableAnnotationComposer
   GeneratedColumn<bool> get isStarred =>
       $composableBuilder(column: $table.isStarred, builder: (column) => column);
 
+  GeneratedColumn<bool> get isImportant => $composableBuilder(
+    column: $table.isImportant,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<bool> get hasAttachments => $composableBuilder(
     column: $table.hasAttachments,
     builder: (column) => column,
@@ -7180,6 +7308,7 @@ class $$MessagesTableTableManager
                 Value<String?> rawMimeUrl = const Value.absent(),
                 Value<bool> isRead = const Value.absent(),
                 Value<bool> isStarred = const Value.absent(),
+                Value<bool> isImportant = const Value.absent(),
                 Value<bool> hasAttachments = const Value.absent(),
                 Value<String> attachmentsJson = const Value.absent(),
                 Value<String> rawHeadersJson = const Value.absent(),
@@ -7211,6 +7340,7 @@ class $$MessagesTableTableManager
                 rawMimeUrl: rawMimeUrl,
                 isRead: isRead,
                 isStarred: isStarred,
+                isImportant: isImportant,
                 hasAttachments: hasAttachments,
                 attachmentsJson: attachmentsJson,
                 rawHeadersJson: rawHeadersJson,
@@ -7244,6 +7374,7 @@ class $$MessagesTableTableManager
                 Value<String?> rawMimeUrl = const Value.absent(),
                 Value<bool> isRead = const Value.absent(),
                 Value<bool> isStarred = const Value.absent(),
+                Value<bool> isImportant = const Value.absent(),
                 Value<bool> hasAttachments = const Value.absent(),
                 Value<String> attachmentsJson = const Value.absent(),
                 Value<String> rawHeadersJson = const Value.absent(),
@@ -7275,6 +7406,7 @@ class $$MessagesTableTableManager
                 rawMimeUrl: rawMimeUrl,
                 isRead: isRead,
                 isStarred: isStarred,
+                isImportant: isImportant,
                 hasAttachments: hasAttachments,
                 attachmentsJson: attachmentsJson,
                 rawHeadersJson: rawHeadersJson,
@@ -8398,6 +8530,7 @@ typedef $$OutboxEntriesTableCreateCompanionBuilder =
       Value<String> status,
       Value<int> retryCount,
       Value<String?> lastError,
+      Value<DateTime?> retryAfterUntil,
       required DateTime createdAt,
       required DateTime updatedAt,
     });
@@ -8409,6 +8542,7 @@ typedef $$OutboxEntriesTableUpdateCompanionBuilder =
       Value<String> status,
       Value<int> retryCount,
       Value<String?> lastError,
+      Value<DateTime?> retryAfterUntil,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
     });
@@ -8449,6 +8583,11 @@ class $$OutboxEntriesTableFilterComposer
 
   ColumnFilters<String> get lastError => $composableBuilder(
     column: $table.lastError,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get retryAfterUntil => $composableBuilder(
+    column: $table.retryAfterUntil,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -8502,6 +8641,11 @@ class $$OutboxEntriesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get retryAfterUntil => $composableBuilder(
+    column: $table.retryAfterUntil,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -8543,6 +8687,11 @@ class $$OutboxEntriesTableAnnotationComposer
 
   GeneratedColumn<String> get lastError =>
       $composableBuilder(column: $table.lastError, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get retryAfterUntil => $composableBuilder(
+    column: $table.retryAfterUntil,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -8588,6 +8737,7 @@ class $$OutboxEntriesTableTableManager
                 Value<String> status = const Value.absent(),
                 Value<int> retryCount = const Value.absent(),
                 Value<String?> lastError = const Value.absent(),
+                Value<DateTime?> retryAfterUntil = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => OutboxEntriesCompanion(
@@ -8597,6 +8747,7 @@ class $$OutboxEntriesTableTableManager
                 status: status,
                 retryCount: retryCount,
                 lastError: lastError,
+                retryAfterUntil: retryAfterUntil,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
               ),
@@ -8608,6 +8759,7 @@ class $$OutboxEntriesTableTableManager
                 Value<String> status = const Value.absent(),
                 Value<int> retryCount = const Value.absent(),
                 Value<String?> lastError = const Value.absent(),
+                Value<DateTime?> retryAfterUntil = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
               }) => OutboxEntriesCompanion.insert(
@@ -8617,6 +8769,7 @@ class $$OutboxEntriesTableTableManager
                 status: status,
                 retryCount: retryCount,
                 lastError: lastError,
+                retryAfterUntil: retryAfterUntil,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
               ),

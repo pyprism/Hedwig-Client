@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hedwig_client/core/api/error_interceptor.dart';
 import 'package:hedwig_client/core/error/failure.dart';
+import 'package:hedwig_client/core/sync/sync_engine.dart';
 import 'package:hedwig_client/core/widgets/empty_state.dart';
 import 'package:hedwig_client/core/widgets/error_display.dart';
 import 'package:hedwig_client/core/widgets/loading_widget.dart';
@@ -217,6 +218,21 @@ class _MessageCard extends ConsumerWidget {
               children: [
                 if (message.direction == 'outbound') ...[
                   _StatusChip(status: message.status),
+                  if (message.metadata['poll_timed_out'] == true &&
+                      (message.status == 'queued' ||
+                          message.status == 'sending'))
+                    Tooltip(
+                      message:
+                          'Still ${message.status} after checking for a '
+                          'while — tap to check again',
+                      child: IconButton(
+                        icon: const Icon(Icons.refresh, size: 18),
+                        visualDensity: VisualDensity.compact,
+                        onPressed: () => ref
+                            .read(syncEngineProvider)
+                            .retryPollSendStatus(message.id),
+                      ),
+                    ),
                   const SizedBox(width: 6),
                 ],
                 if (message.hasAttachments)
@@ -1278,9 +1294,14 @@ bool _replyToMismatch(MailMessage message) {
 }
 
 bool _isImportant(MailMessage message) {
+  // `message.isImportant` is the user-toggled source of truth (synced via
+  // PATCH .../state/ `is_important`, a top-level field server-side despite
+  // older docs describing it as nested under `metadata`). The header/metadata
+  // checks below are a secondary heuristic for mail the sender marked
+  // important that the user never explicitly toggled.
+  if (message.isImportant) return true;
   final metadata = message.metadata;
-  return metadata['is_important'] == true ||
-      metadata['importance']?.toString().toLowerCase() == 'high' ||
+  return metadata['importance']?.toString().toLowerCase() == 'high' ||
       _headerValue(message.rawHeaders, 'Importance')?.toLowerCase() == 'high' ||
       _headerValue(message.rawHeaders, 'X-Priority')?.startsWith('1') == true;
 }

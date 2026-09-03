@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hedwig_client/core/api/dio_client.dart';
+import 'package:hedwig_client/core/api/paginated_fetch.dart';
 import 'package:hedwig_client/core/widgets/confirm_delete_dialog.dart';
 import 'package:hedwig_client/core/widgets/empty_state.dart';
 import 'package:hedwig_client/core/widgets/loading_widget.dart';
@@ -43,14 +44,12 @@ class EmailProvider {
 }
 
 @riverpod
-Future<List<EmailProvider>> adminProviders(Ref ref) async {
-  final res = await ref
-      .watch(dioClientProvider)
-      .get('providers/email-providers/', queryParameters: {'page_size': 100});
-  final results = (res.data['results'] as List? ?? [])
-      .cast<Map<String, dynamic>>();
-  return results.map(EmailProvider.fromJson).toList();
-}
+Future<List<EmailProvider>> adminProviders(Ref ref) => fetchAllPages(
+  ref.watch(dioClientProvider),
+  'providers/email-providers/',
+  EmailProvider.fromJson,
+  queryParameters: {'page_size': 100},
+);
 
 class AdminProvidersScreen extends ConsumerWidget {
   const AdminProvidersScreen({super.key});

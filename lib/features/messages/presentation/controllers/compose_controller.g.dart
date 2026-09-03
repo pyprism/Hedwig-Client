@@ -41,7 +41,7 @@ final class ComposeControllerProvider
   }
 }
 
-String _$composeControllerHash() => r'57eecaa3a24d676872b9dba4e19dd77a555691c1';
+String _$composeControllerHash() => r'c7354263423c9a3fde2987bfc1a9ff87ea07c375';
 
 abstract class _$ComposeController extends $Notifier<AsyncValue<void>> {
   AsyncValue<void> build();

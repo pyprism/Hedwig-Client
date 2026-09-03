@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hedwig_client/core/api/dio_client.dart';
+import 'package:hedwig_client/core/api/paginated_fetch.dart';
 import 'package:hedwig_client/core/widgets/confirm_delete_dialog.dart';
 import 'package:hedwig_client/core/widgets/empty_state.dart';
 import 'package:hedwig_client/core/widgets/loading_widget.dart';
@@ -21,6 +22,7 @@ class AdminMailbox {
     required this.receiveEnabled,
     required this.localPart,
     required this.quotaBytes,
+    required this.isCatchAll,
     this.domainId,
   });
 
@@ -32,6 +34,7 @@ class AdminMailbox {
   final bool receiveEnabled;
   final String localPart;
   final int quotaBytes;
+  final bool isCatchAll;
   final String? domainId;
 
   factory AdminMailbox.fromJson(Map<String, dynamic> j) => AdminMailbox(
@@ -43,20 +46,18 @@ class AdminMailbox {
     receiveEnabled: j['receive_enabled'] as bool? ?? true,
     localPart: j['local_part'] as String? ?? '',
     quotaBytes: (j['quota_bytes'] as num?)?.toInt() ?? 0,
+    isCatchAll: j['is_catch_all'] as bool? ?? false,
     domainId: j['domain'] as String?,
   );
 }
 
 @riverpod
-Future<List<AdminMailbox>> adminMailboxes(Ref ref) async {
-  final res = await ref
-      .watch(dioClientProvider)
-      .get('mail/mailboxes/', queryParameters: {'page_size': 100});
-  return (res.data['results'] as List? ?? [])
-      .cast<Map<String, dynamic>>()
-      .map(AdminMailbox.fromJson)
-      .toList();
-}
+Future<List<AdminMailbox>> adminMailboxes(Ref ref) => fetchAllPages(
+  ref.watch(dioClientProvider),
+  'mail/mailboxes/',
+  AdminMailbox.fromJson,
+  queryParameters: {'page_size': 100},
+);
 
 class AdminMailboxesScreen extends ConsumerWidget {
   const AdminMailboxesScreen({super.key});
@@ -82,57 +83,93 @@ class AdminMailboxesScreen extends ConsumerWidget {
               subtitle: 'Create a mailbox on a verified domain.',
             );
           }
-          return ListView.builder(
-            itemCount: mailboxes.length,
-            itemBuilder: (context, i) {
-              final m = mailboxes[i];
-              return ListTile(
-                leading: Icon(
-                  Icons.inbox,
-                  color: m.isActive
-                      ? Theme.of(context).colorScheme.primary
-                      : Theme.of(context).colorScheme.outline,
-                ),
-                title: Text(m.emailAddress),
-                subtitle: m.displayName != null ? Text(m.displayName!) : null,
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (!m.sendEnabled)
-                      const Tooltip(
-                        message: 'Send disabled',
-                        child: Icon(
-                          Icons.block,
-                          size: 16,
-                          color: Colors.orange,
-                        ),
+          final domainsMissingCatchAll = _domainsMissingCatchAll(mailboxes);
+          return Column(
+            children: [
+              if (domainsMissingCatchAll.isNotEmpty)
+                _NoCatchAllBanner(domains: domainsMissingCatchAll),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: mailboxes.length,
+                  itemBuilder: (context, i) {
+                    final m = mailboxes[i];
+                    return ListTile(
+                      leading: Icon(
+                        Icons.inbox,
+                        color: m.isActive
+                            ? Theme.of(context).colorScheme.primary
+                            : Theme.of(context).colorScheme.outline,
                       ),
-                    if (!m.isActive)
-                      const Tooltip(
-                        message: 'Inactive',
-                        child: Icon(
-                          Icons.pause_circle_outline,
-                          size: 16,
-                          color: Colors.grey,
-                        ),
+                      title: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(child: Text(m.emailAddress)),
+                          if (m.isCatchAll) ...[
+                            const SizedBox(width: 8),
+                            Tooltip(
+                              message:
+                                  'Catch-all — receives mail to any unrecognized '
+                                  'address on ${m.emailAddress.split('@').last}',
+                              child: Chip(
+                                label: const Text('Unassigned mail'),
+                                labelStyle: Theme.of(
+                                  context,
+                                ).textTheme.labelSmall,
+                                visualDensity: VisualDensity.compact,
+                                materialTapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
-                    PopupMenuButton<String>(
-                      onSelected: (v) {
-                        if (v == 'edit') {
-                          _showEditDialog(context, ref, m);
-                        } else if (v == 'delete') {
-                          _deleteMailbox(context, ref, m);
-                        }
-                      },
-                      itemBuilder: (context) => const [
-                        PopupMenuItem(value: 'edit', child: Text('Edit')),
-                        PopupMenuItem(value: 'delete', child: Text('Delete')),
-                      ],
-                    ),
-                  ],
+                      subtitle: m.displayName != null
+                          ? Text(m.displayName!)
+                          : null,
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (!m.sendEnabled)
+                            const Tooltip(
+                              message: 'Send disabled',
+                              child: Icon(
+                                Icons.block,
+                                size: 16,
+                                color: Colors.orange,
+                              ),
+                            ),
+                          if (!m.isActive)
+                            const Tooltip(
+                              message: 'Inactive',
+                              child: Icon(
+                                Icons.pause_circle_outline,
+                                size: 16,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          PopupMenuButton<String>(
+                            onSelected: (v) {
+                              if (v == 'edit') {
+                                _showEditDialog(context, ref, m);
+                              } else if (v == 'delete') {
+                                _deleteMailbox(context, ref, m);
+                              }
+                            },
+                            itemBuilder: (context) => const [
+                              PopupMenuItem(value: 'edit', child: Text('Edit')),
+                              PopupMenuItem(
+                                value: 'delete',
+                                child: Text('Delete'),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
-              );
-            },
+              ),
+            ],
           );
         },
       ),
@@ -144,17 +181,33 @@ class AdminMailboxesScreen extends ConsumerWidget {
     final displayNameCtrl = TextEditingController();
     final quotaCtrl = TextEditingController();
 
-    // Fetch domains for picker
+    // Fetch domains for picker. `domainsLoadFailed` is tracked separately
+    // from `domains.isEmpty` so a network/403 failure while fetching domains
+    // doesn't render identically to "no domains configured yet" — both used
+    // to collapse into the same empty/disabled picker, risking an admin
+    // submitting a mailbox with no domain context because they couldn't tell
+    // the difference.
     List<Map<String, dynamic>> domains = [];
     String? selectedDomainId;
-    try {
-      final res = await ref
-          .read(dioClientProvider)
-          .get('providers/domains/', queryParameters: {'page_size': 100});
-      domains = (res.data['results'] as List? ?? [])
-          .cast<Map<String, dynamic>>();
-      if (domains.isNotEmpty) selectedDomainId = domains.first['id'] as String;
-    } catch (_) {}
+    bool domainsLoadFailed = false;
+    Future<void> loadDomains() async {
+      try {
+        domains = await fetchAllPages(
+          ref.read(dioClientProvider),
+          'providers/domains/',
+          (m) => m,
+          queryParameters: {'page_size': 100},
+        );
+        domainsLoadFailed = false;
+        if (domains.isNotEmpty) {
+          selectedDomainId = domains.first['id'] as String;
+        }
+      } catch (_) {
+        domainsLoadFailed = true;
+      }
+    }
+
+    await loadDomains();
 
     if (!context.mounted) {
       localPartCtrl.dispose();
@@ -163,55 +216,91 @@ class AdminMailboxesScreen extends ConsumerWidget {
       return;
     }
 
+    bool isCatchAll = false;
+
     await showDialog<void>(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setState) => AlertDialog(
           title: const Text('New mailbox'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (domains.isNotEmpty)
-                DropdownButtonFormField<String>(
-                  initialValue: selectedDomainId,
-                  decoration: const InputDecoration(labelText: 'Domain'),
-                  items: domains
-                      .map(
-                        (d) => DropdownMenuItem(
-                          value: d['id'] as String,
-                          child: Text(
-                            '${d['name'] ?? ''}'
-                            '${d['status'] != null && d['status'] != 'verified' ? ' (${d['status']})' : ''}',
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (domainsLoadFailed)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Couldn\'t load domains.',
+                          style: TextStyle(
+                            color: Theme.of(ctx).colorScheme.error,
                           ),
                         ),
-                      )
-                      .toList(),
-                  onChanged: (v) => setState(() => selectedDomainId = v),
-                )
-              else
-                const Text('No domains found. Add one under Admin → Domains.'),
-              const SizedBox(height: 8),
-              TextField(
-                controller: localPartCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Local part (before @)',
+                      ),
+                      TextButton(
+                        onPressed: () async {
+                          await loadDomains();
+                          setState(() {});
+                        },
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  )
+                else if (domains.isNotEmpty)
+                  DropdownButtonFormField<String>(
+                    initialValue: selectedDomainId,
+                    decoration: const InputDecoration(labelText: 'Domain'),
+                    items: domains
+                        .map(
+                          (d) => DropdownMenuItem(
+                            value: d['id'] as String,
+                            child: Text(
+                              '${d['name'] ?? ''}'
+                              '${d['status'] != null && d['status'] != 'verified' ? ' (${d['status']})' : ''}',
+                            ),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (v) => setState(() => selectedDomainId = v),
+                  )
+                else
+                  const Text(
+                    'No domains found. Add one under Admin → Domains.',
+                  ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: localPartCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Local part (before @)',
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: displayNameCtrl,
-                decoration: const InputDecoration(labelText: 'Display name'),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: quotaCtrl,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Storage quota (MB)',
-                  hintText: 'Blank or 0 = unlimited',
+                const SizedBox(height: 8),
+                TextField(
+                  controller: displayNameCtrl,
+                  decoration: const InputDecoration(labelText: 'Display name'),
                 ),
-              ),
-            ],
+                const SizedBox(height: 8),
+                TextField(
+                  controller: quotaCtrl,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Storage quota (MB)',
+                    hintText: 'Blank or 0 = unlimited',
+                  ),
+                ),
+                SwitchListTile(
+                  value: isCatchAll,
+                  onChanged: (v) => setState(() => isCatchAll = v),
+                  title: const Text('Catch-all (unassigned mail)'),
+                  subtitle: const Text(
+                    'Receives mail to any address on this domain that no '
+                    'other mailbox or alias claims. At most one per domain.',
+                  ),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
@@ -236,14 +325,19 @@ class AdminMailboxesScreen extends ConsumerWidget {
                                   'display_name': displayNameCtrl.text.trim(),
                                 if (quotaMb != null)
                                   'quota_bytes': quotaMb * _bytesPerMb,
+                                'is_catch_all': isCatchAll,
                               },
                             );
                         ref.invalidate(adminMailboxesProvider);
-                      } catch (e) {
+                      } on DioException catch (e) {
                         if (context.mounted) {
-                          ScaffoldMessenger.of(
-                            context,
-                          ).showSnackBar(SnackBar(content: Text('Error: $e')));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Error: ${e.response?.data ?? e.message}',
+                              ),
+                            ),
+                          );
                         }
                       }
                     },
@@ -275,13 +369,22 @@ class AdminMailboxesScreen extends ConsumerWidget {
 
     List<Map<String, dynamic>> domains = [];
     String? selectedDomainId = mailbox.domainId;
-    try {
-      final res = await ref
-          .read(dioClientProvider)
-          .get('providers/domains/', queryParameters: {'page_size': 100});
-      domains = (res.data['results'] as List? ?? [])
-          .cast<Map<String, dynamic>>();
-    } catch (_) {}
+    bool domainsLoadFailed = false;
+    Future<void> loadDomains() async {
+      try {
+        domains = await fetchAllPages(
+          ref.read(dioClientProvider),
+          'providers/domains/',
+          (m) => m,
+          queryParameters: {'page_size': 100},
+        );
+        domainsLoadFailed = false;
+      } catch (_) {
+        domainsLoadFailed = true;
+      }
+    }
+
+    await loadDomains();
 
     if (!context.mounted) {
       localPartCtrl.dispose();
@@ -293,6 +396,7 @@ class AdminMailboxesScreen extends ConsumerWidget {
     bool sendEnabled = mailbox.sendEnabled;
     bool receiveEnabled = mailbox.receiveEnabled;
     bool isActive = mailbox.isActive;
+    bool isCatchAll = mailbox.isCatchAll;
 
     await showDialog<void>(
       context: context,
@@ -303,7 +407,31 @@ class AdminMailboxesScreen extends ConsumerWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (domains.isNotEmpty)
+                // `domainsLoadFailed` is tracked separately from
+                // `domains.isEmpty` so a load failure (offline, 403) doesn't
+                // render identically to "no domains configured" — both used
+                // to collapse into the same empty/disabled picker.
+                if (domainsLoadFailed)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Couldn\'t load domains.',
+                          style: TextStyle(
+                            color: Theme.of(ctx).colorScheme.error,
+                          ),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () async {
+                          await loadDomains();
+                          setState(() {});
+                        },
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  )
+                else if (domains.isNotEmpty)
                   DropdownButtonFormField<String>(
                     initialValue: selectedDomainId,
                     decoration: const InputDecoration(labelText: 'Domain'),
@@ -356,6 +484,16 @@ class AdminMailboxesScreen extends ConsumerWidget {
                   title: const Text('Active'),
                   contentPadding: EdgeInsets.zero,
                 ),
+                SwitchListTile(
+                  value: isCatchAll,
+                  onChanged: (v) => setState(() => isCatchAll = v),
+                  title: const Text('Catch-all (unassigned mail)'),
+                  subtitle: const Text(
+                    'Receives mail to any address on this domain that no '
+                    'other mailbox or alias claims. At most one per domain.',
+                  ),
+                  contentPadding: EdgeInsets.zero,
+                ),
               ],
             ),
           ),
@@ -383,6 +521,7 @@ class AdminMailboxesScreen extends ConsumerWidget {
                                 'receive_enabled': receiveEnabled,
                                 'is_active': isActive,
                                 'quota_bytes': quotaMb * _bytesPerMb,
+                                'is_catch_all': isCatchAll,
                               },
                             );
                         ref.invalidate(adminMailboxesProvider);
@@ -430,5 +569,56 @@ class AdminMailboxesScreen extends ConsumerWidget {
         );
       }
     }
+  }
+}
+
+/// Domains (by name, derived from `email_address` — this screen doesn't
+/// fetch the domains list separately) that have at least one active,
+/// receive-enabled mailbox but none marked catch-all: mail to any address on
+/// that domain nobody explicitly provisioned is being silently dropped.
+List<String> _domainsMissingCatchAll(List<AdminMailbox> mailboxes) {
+  final receivingDomains = <String>{};
+  final catchAllDomains = <String>{};
+  for (final m in mailboxes) {
+    final domain = m.emailAddress.split('@').last;
+    if (domain.isEmpty) continue;
+    if (m.isActive && m.receiveEnabled) receivingDomains.add(domain);
+    if (m.isCatchAll) catchAllDomains.add(domain);
+  }
+  return receivingDomains.difference(catchAllDomains).toList()..sort();
+}
+
+class _NoCatchAllBanner extends StatelessWidget {
+  const _NoCatchAllBanner({required this.domains});
+
+  final List<String> domains;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      width: double.infinity,
+      color: scheme.errorContainer,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.warning_amber_rounded, color: scheme.onErrorContainer),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              domains.length == 1
+                  ? 'Mail to any unrecognized address on "${domains.first}" '
+                        'is being silently discarded — no mailbox on that '
+                        'domain is marked catch-all.'
+                  : '${domains.length} domains have no catch-all mailbox — '
+                        'mail to unrecognized addresses on '
+                        '${domains.join(", ")} is being silently discarded.',
+              style: TextStyle(color: scheme.onErrorContainer),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

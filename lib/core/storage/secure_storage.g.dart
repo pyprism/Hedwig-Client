@@ -54,7 +54,7 @@ final class SecureStorageProvider
   }
 }
 
-String _$secureStorageHash() => r'97f21970d5a31566856cff3edf2185f36a625602';
+String _$secureStorageHash() => r'209f3a568b10f04ba185d623f6bbeb9fdc14a0a5';
 
 @ProviderFor(tokenStorage)
 final tokenStorageProvider = TokenStorageProvider._();

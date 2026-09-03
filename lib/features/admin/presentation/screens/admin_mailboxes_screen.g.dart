@@ -48,4 +48,4 @@ final class AdminMailboxesProvider
   }
 }
 
-String _$adminMailboxesHash() => r'43b21f0a066b2d3d884fa1b881a506954081a759';
+String _$adminMailboxesHash() => r'2e8cd83a806ae4c63225d4b0da3c6166edba3055';

@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hedwig_client/core/api/dio_client.dart';
@@ -203,6 +205,212 @@ void main() {
         expect(await db.outboxDao.getPending(), isEmpty);
       },
     );
+
+    test('a 429 with Retry-After gates the next attempt beyond what plain '
+        'exponential backoff alone would have allowed', () async {
+      final db = _memoryDb();
+      addTearDown(db.close);
+      final dio = _MockDio();
+      when(() => dio.patch(any(), data: any(named: 'data'))).thenThrow(
+        DioException(
+          requestOptions: RequestOptions(path: ''),
+          response: Response(
+            requestOptions: RequestOptions(path: ''),
+            statusCode: 429,
+            headers: Headers.fromMap({
+              'retry-after': ['100'],
+            }),
+          ),
+        ),
+      );
+
+      await db.outboxDao.enqueue(
+        operation: 'state_change',
+        payloadJson: jsonEncode({
+          'id': 'm1',
+          'body': {'folder': 'inbox'},
+        }),
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          appDatabaseProvider.overrideWithValue(db),
+          dioClientProvider.overrideWithValue(dio),
+          isOnlineProvider.overrideWith((ref) => Stream.value(true)),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(syncEngineProvider).flushOutbox();
+      verify(
+        () => dio.patch('mail/messages/m1/state/', data: any(named: 'data')),
+      ).called(1);
+
+      final afterFirstFailure = (await db.outboxDao.getPending()).single;
+      expect(afterFirstFailure.retryCount, 1);
+      expect(afterFirstFailure.retryAfterUntil != null, isTrue);
+
+      // Rewind updatedAt so plain exponential backoff for retryCount=1
+      // (2s) has already elapsed — a fix that ignored Retry-After would
+      // now allow (and thus immediately re-dispatch) this entry.
+      await db
+          .update(db.outboxEntries)
+          .replace(
+            afterFirstFailure.copyWith(
+              updatedAt: DateTime.now().subtract(const Duration(seconds: 10)),
+            ),
+          );
+
+      await container.read(syncEngineProvider).flushOutbox();
+
+      // Still gated by the ~100s Retry-After window: no second dispatch
+      // (verify() marks the first call as consumed, so a second call is
+      // the only thing that could satisfy this).
+      verifyNever(
+        () => dio.patch('mail/messages/m1/state/', data: any(named: 'data')),
+      );
+    });
+
+    test('send_message reconcile failure drops the optimistic row, stays done, '
+        'and never retries (would double-send)', () async {
+      final db = _memoryDb();
+      addTearDown(db.close);
+      final dio = _MockDio();
+      // Server accepted the send (2xx) but the response body doesn't
+      // parse as a MailMessage — simulates an unexpected shape rather
+      // than a network failure.
+      when(() => dio.post(any(), data: any(named: 'data'))).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: ''),
+          statusCode: 202,
+          data: {'unexpected': 'shape'},
+        ),
+      );
+
+      await db.messageDao.upsertAll([
+        MessagesCompanion.insert(
+          id: 'local-abc',
+          mailboxId: 'mb1',
+          direction: 'outbound',
+          status: 'queued',
+          folder: const Value('sent'),
+          fromAddress: 'support@example.com',
+          subject: 'Hi',
+          createdAt: DateTime.now().toUtc(),
+        ),
+      ]);
+      await db.outboxDao.enqueue(
+        operation: 'send_message',
+        payloadJson: jsonEncode({
+          'localId': 'local-abc',
+          'body': {'subject': 'Hi'},
+        }),
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          appDatabaseProvider.overrideWithValue(db),
+          dioClientProvider.overrideWithValue(dio),
+          isOnlineProvider.overrideWith((ref) => Stream.value(true)),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(syncEngineProvider).flushOutbox();
+
+      // Not retried/left pending or failed: the send already succeeded
+      // server-side, so this must not be re-dispatched.
+      expect(await db.outboxDao.getPending(), isEmpty);
+      verify(
+        () => dio.post('mail/messages/send/', data: any(named: 'data')),
+      ).called(1);
+      // The optimistic placeholder is gone rather than stuck forever as a
+      // permanent duplicate; the real message reappears on next refresh.
+      expect(await db.messageDao.getById('local-abc') == null, isTrue);
+    });
+
+    test('_pollSendStatus flags poll_timed_out after giving up, and '
+        'retryPollSendStatus clears it once a terminal status arrives', () {
+      fakeAsync((async) {
+        final db = _memoryDb();
+        addTearDown(db.close);
+        final dio = _MockDio();
+        // Every poll response reports a still-non-terminal status.
+        when(() => dio.get(any())).thenAnswer(
+          (_) async => Response(
+            requestOptions: RequestOptions(path: ''),
+            statusCode: 200,
+            data: {
+              'id': 'srv-1',
+              'mailbox': 'mb1',
+              'direction': 'outbound',
+              'status': 'sending',
+              'from_address': 'support@example.com',
+              'subject': 'Hi',
+              'to_addresses': [],
+            },
+          ),
+        );
+
+        final container = ProviderContainer(
+          overrides: [
+            appDatabaseProvider.overrideWithValue(db),
+            dioClientProvider.overrideWithValue(dio),
+            isOnlineProvider.overrideWith((ref) => Stream.value(true)),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        MessageRow? row;
+        unawaited(
+          container.read(syncEngineProvider).retryPollSendStatus('srv-1').then((
+            _,
+          ) async {
+            row = await db.messageDao.getById('srv-1');
+          }),
+        );
+
+        // 8 attempts with delays 2,4,8,16,30,30,30,30s ≈ 150s total.
+        async.elapse(const Duration(seconds: 155));
+
+        expect(row != null, isTrue);
+        final metadata = jsonDecode(row!.metadataJson) as Map<String, dynamic>;
+        expect(metadata['poll_timed_out'], isTrue);
+
+        // A retry that finally gets a terminal status clears the flag,
+        // since messageToRow overwrites metadata wholesale with the
+        // server's (which never carries this client-only key).
+        when(() => dio.get(any())).thenAnswer(
+          (_) async => Response(
+            requestOptions: RequestOptions(path: ''),
+            statusCode: 200,
+            data: {
+              'id': 'srv-1',
+              'mailbox': 'mb1',
+              'direction': 'outbound',
+              'status': 'sent',
+              'from_address': 'support@example.com',
+              'subject': 'Hi',
+              'to_addresses': [],
+            },
+          ),
+        );
+        MessageRow? retried;
+        unawaited(
+          container.read(syncEngineProvider).retryPollSendStatus('srv-1').then((
+            _,
+          ) async {
+            retried = await db.messageDao.getById('srv-1');
+          }),
+        );
+        async.elapse(const Duration(seconds: 5));
+
+        expect(retried!.status, 'sent');
+        final retriedMetadata =
+            jsonDecode(retried!.metadataJson) as Map<String, dynamic>;
+        expect(retriedMetadata.containsKey('poll_timed_out'), isFalse);
+      });
+    });
   });
 
   group('Draft backend sync', () {

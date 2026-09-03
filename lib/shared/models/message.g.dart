@@ -70,6 +70,7 @@ _MailMessage _$MailMessageFromJson(Map<String, dynamic> json) => _MailMessage(
   rawMimeUrl: json['raw_mime_url'] as String?,
   isRead: json['is_read'] as bool? ?? false,
   isStarred: json['is_starred'] as bool? ?? false,
+  isImportant: json['is_important'] as bool? ?? false,
   hasAttachments: json['has_attachments'] as bool? ?? false,
   attachments:
       (json['attachments'] as List<dynamic>?)
@@ -115,6 +116,7 @@ Map<String, dynamic> _$MailMessageToJson(_MailMessage instance) =>
       'raw_mime_url': instance.rawMimeUrl,
       'is_read': instance.isRead,
       'is_starred': instance.isStarred,
+      'is_important': instance.isImportant,
       'has_attachments': instance.hasAttachments,
       'attachments': instance.attachments,
       'raw_headers': instance.rawHeaders,

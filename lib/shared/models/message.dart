@@ -54,6 +54,7 @@ abstract class MailMessage with _$MailMessage {
     String? rawMimeUrl,
     @Default(false) bool isRead,
     @Default(false) bool isStarred,
+    @Default(false) bool isImportant,
     @Default(false) bool hasAttachments,
     @Default([]) List<Attachment> attachments,
     @Default({}) Map<String, dynamic> rawHeaders,

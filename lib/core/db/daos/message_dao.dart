@@ -92,11 +92,15 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
     String id, {
     bool? isRead,
     bool? isStarred,
+    bool? isImportant,
     String? folder,
   }) => (update(messages)..where((m) => m.id.equals(id))).write(
     MessagesCompanion(
       isRead: isRead != null ? Value(isRead) : const Value.absent(),
       isStarred: isStarred != null ? Value(isStarred) : const Value.absent(),
+      isImportant: isImportant != null
+          ? Value(isImportant)
+          : const Value.absent(),
       folder: folder != null ? Value(folder) : const Value.absent(),
     ),
   );
@@ -108,6 +112,7 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
     List<String> ids, {
     bool? isRead,
     bool? isStarred,
+    bool? isImportant,
     String? folder,
   }) {
     if (ids.isEmpty) return Future.value();
@@ -115,6 +120,9 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
       MessagesCompanion(
         isRead: isRead != null ? Value(isRead) : const Value.absent(),
         isStarred: isStarred != null ? Value(isStarred) : const Value.absent(),
+        isImportant: isImportant != null
+            ? Value(isImportant)
+            : const Value.absent(),
         folder: folder != null ? Value(folder) : const Value.absent(),
       ),
     );

@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hedwig_client/core/api/dio_client.dart';
+import 'package:hedwig_client/core/api/paginated_fetch.dart';
 import 'package:hedwig_client/core/widgets/confirm_delete_dialog.dart';
 import 'package:hedwig_client/core/widgets/empty_state.dart';
 import 'package:hedwig_client/core/widgets/loading_widget.dart';
@@ -49,15 +50,12 @@ class AccessGrant {
 }
 
 @riverpod
-Future<List<AccessGrant>> adminAccessGrants(Ref ref) async {
-  final res = await ref
-      .watch(dioClientProvider)
-      .get('mail/mailbox-accesses/', queryParameters: {'page_size': 100});
-  return (res.data['results'] as List? ?? [])
-      .cast<Map<String, dynamic>>()
-      .map(AccessGrant.fromJson)
-      .toList();
-}
+Future<List<AccessGrant>> adminAccessGrants(Ref ref) => fetchAllPages(
+  ref.watch(dioClientProvider),
+  'mail/mailbox-accesses/',
+  AccessGrant.fromJson,
+  queryParameters: {'page_size': 100},
+);
 
 class AdminAccessScreen extends ConsumerWidget {
   const AdminAccessScreen({super.key});

@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hedwig_client/core/api/dio_client.dart';
+import 'package:hedwig_client/core/api/paginated_fetch.dart';
 import 'package:hedwig_client/core/widgets/confirm_delete_dialog.dart';
 import 'package:hedwig_client/core/widgets/empty_state.dart';
 import 'package:hedwig_client/core/widgets/loading_widget.dart';
@@ -47,15 +48,12 @@ class AdminDomain {
 }
 
 @riverpod
-Future<List<AdminDomain>> adminDomains(Ref ref) async {
-  final res = await ref
-      .watch(dioClientProvider)
-      .get('providers/domains/', queryParameters: {'page_size': 100});
-  return (res.data['results'] as List? ?? [])
-      .cast<Map<String, dynamic>>()
-      .map(AdminDomain.fromJson)
-      .toList();
-}
+Future<List<AdminDomain>> adminDomains(Ref ref) => fetchAllPages(
+  ref.watch(dioClientProvider),
+  'providers/domains/',
+  AdminDomain.fromJson,
+  queryParameters: {'page_size': 100},
+);
 
 class AdminDomainsScreen extends ConsumerWidget {
   const AdminDomainsScreen({super.key});
@@ -143,11 +141,12 @@ Future<void> _showAddDialog(BuildContext context, WidgetRef ref) async {
   List<Map<String, dynamic>> providers = [];
   String? selectedProviderId;
   try {
-    final res = await ref
-        .read(dioClientProvider)
-        .get('providers/email-providers/', queryParameters: {'page_size': 100});
-    providers = (res.data['results'] as List? ?? [])
-        .cast<Map<String, dynamic>>();
+    providers = await fetchAllPages(
+      ref.read(dioClientProvider),
+      'providers/email-providers/',
+      (m) => m,
+      queryParameters: {'page_size': 100},
+    );
     if (providers.isNotEmpty) {
       selectedProviderId = providers.first['id'] as String;
     }
@@ -258,11 +257,12 @@ Future<void> _showEditDialog(
   List<Map<String, dynamic>> providers = [];
   String? selectedProviderId = domain.providerId;
   try {
-    final res = await ref
-        .read(dioClientProvider)
-        .get('providers/email-providers/', queryParameters: {'page_size': 100});
-    providers = (res.data['results'] as List? ?? [])
-        .cast<Map<String, dynamic>>();
+    providers = await fetchAllPages(
+      ref.read(dioClientProvider),
+      'providers/email-providers/',
+      (m) => m,
+      queryParameters: {'page_size': 100},
+    );
   } catch (_) {}
 
   if (!context.mounted) return;

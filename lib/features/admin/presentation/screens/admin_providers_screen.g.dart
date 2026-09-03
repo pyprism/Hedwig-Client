@@ -48,4 +48,4 @@ final class AdminProvidersProvider
   }
 }
 
-String _$adminProvidersHash() => r'cfc59451c46e255453c863ecb82f1d93ffc3135c';
+String _$adminProvidersHash() => r'9b8c0adcc8600aa44497e3841dcc8ade4708571b';

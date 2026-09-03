@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hedwig_client/core/api/dio_client.dart';
+import 'package:hedwig_client/core/api/paginated_fetch.dart';
 import 'package:hedwig_client/core/widgets/confirm_delete_dialog.dart';
 import 'package:hedwig_client/core/widgets/empty_state.dart';
 import 'package:hedwig_client/core/widgets/loading_widget.dart';
@@ -45,15 +46,12 @@ class AdminUser {
 }
 
 @riverpod
-Future<List<AdminUser>> adminUsers(Ref ref) async {
-  final res = await ref
-      .watch(dioClientProvider)
-      .get('accounts/users/', queryParameters: {'page_size': 100});
-  return (res.data['results'] as List? ?? [])
-      .cast<Map<String, dynamic>>()
-      .map(AdminUser.fromJson)
-      .toList();
-}
+Future<List<AdminUser>> adminUsers(Ref ref) => fetchAllPages(
+  ref.watch(dioClientProvider),
+  'accounts/users/',
+  AdminUser.fromJson,
+  queryParameters: {'page_size': 100},
+);
 
 class AdminUsersScreen extends ConsumerWidget {
   const AdminUsersScreen({super.key});
