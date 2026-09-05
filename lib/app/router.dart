@@ -6,6 +6,7 @@ import 'package:hedwig_client/features/admin/presentation/screens/admin_delivery
 import 'package:hedwig_client/features/admin/presentation/screens/admin_ingest_issues_screen.dart';
 import 'package:hedwig_client/features/admin/presentation/screens/admin_domains_screen.dart';
 import 'package:hedwig_client/features/admin/presentation/screens/admin_mailboxes_screen.dart';
+import 'package:hedwig_client/features/admin/presentation/screens/admin_unassigned_mail_screen.dart';
 import 'package:hedwig_client/features/admin/presentation/screens/admin_providers_screen.dart';
 import 'package:hedwig_client/features/admin/presentation/screens/admin_screen.dart';
 import 'package:hedwig_client/features/admin/presentation/screens/admin_users_screen.dart';
@@ -203,6 +204,10 @@ GoRouter router(Ref ref) {
       GoRoute(
         path: '/admin/ingest-issues',
         builder: (context, _) => const AdminIngestIssuesScreen(),
+      ),
+      GoRoute(
+        path: '/admin/unassigned-mail',
+        builder: (context, _) => const AdminUnassignedMailScreen(),
       ),
     ],
     errorBuilder: (_, state) =>
