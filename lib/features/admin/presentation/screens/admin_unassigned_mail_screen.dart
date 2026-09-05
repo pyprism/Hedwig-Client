@@ -185,9 +185,8 @@ class AdminUnassignedMailScreen extends ConsumerWidget {
       ref.invalidate(adminMailboxesProvider);
       ref.invalidate(adminUnassignedMailProvider);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Created ${a.email}.')),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Created ${a.email}.')));
       }
     } on DioException catch (e) {
       if (context.mounted) {
