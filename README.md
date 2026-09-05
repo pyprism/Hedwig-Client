@@ -52,7 +52,8 @@ cd deploy/ansible
 # copy and edit values
 cp deploy_config.yaml.example deploy_config.yaml
 
-ansible-playbook update.yaml --ask-become-pass -i hosts
+# now from project root
+./deploy.sh
 ```
 
 ## Icon Credit
