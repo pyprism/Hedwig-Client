@@ -59,6 +59,12 @@ class AdminScreen extends StatelessWidget {
             subtitle: 'Inbound mail that failed to route (no mailbox match, quota, etc.)',
             route: '/admin/ingest-issues',
           ),
+          _AdminTile(
+            icon: Icons.forward_to_inbox_outlined,
+            title: 'Unassigned mail',
+            subtitle: 'Addresses that landed in a catch-all with no mailbox of their own',
+            route: '/admin/unassigned-mail',
+          ),
         ],
       ),
     );
