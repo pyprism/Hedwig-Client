@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:hedwig_client/core/storage/secure_storage.dart';
 import 'package:hedwig_client/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -45,21 +46,32 @@ class AuthInterceptor extends Interceptor {
       return;
     }
 
+    late final String newAccess;
     try {
       // Concurrent 401s (e.g. several requests fired at once right after
       // navigating to /inbox) share one in-flight refresh instead of each
       // racing their own — only the first triggers a network call, the
       // rest await its result and retry with the new token.
-      final newAccess = await _refreshAccessToken(err.requestOptions.baseUrl);
+      newAccess = await _refreshAccessToken(err.requestOptions.baseUrl);
+    } catch (error) {
+      // A short network outage or a temporary server error must not destroy a
+      // still-valid 30-day refresh token. Log out only when the server has
+      // definitively rejected the refresh credential (or none exists).
+      if (shouldLogoutAfterRefreshFailure(error)) await _logout();
+      handler.next(err);
+      return;
+    }
 
-      final retryOptions = err.requestOptions;
-      retryOptions.headers['Authorization'] = 'Bearer $newAccess';
-      final retryDio = Dio(_bareOptions(err.requestOptions.baseUrl));
+    final retryOptions = err.requestOptions;
+    retryOptions.headers['Authorization'] = 'Bearer $newAccess';
+    final retryDio = Dio(_bareOptions(err.requestOptions.baseUrl));
+    try {
       final retryResponse = await retryDio.fetch(retryOptions);
       handler.resolve(retryResponse);
-    } catch (_) {
-      await _logout();
-      handler.next(err);
+    } on DioException catch (retryError) {
+      // Refresh succeeded, so a failed application request is not an auth
+      // failure and must not clear the newly rotated token pair.
+      handler.next(retryError);
     }
   }
 
@@ -87,10 +99,7 @@ class AuthInterceptor extends Interceptor {
         final storage = _ref.read(tokenStorageProvider);
         final refreshToken = await storage.getRefreshToken();
         if (refreshToken == null) {
-          throw DioException(
-            requestOptions: RequestOptions(path: 'token/refresh/'),
-            error: 'No refresh token available',
-          );
+          throw const MissingRefreshTokenException();
         }
 
         // Fresh Dio without our interceptors avoids infinite 401 retry loops.
@@ -101,7 +110,7 @@ class AuthInterceptor extends Interceptor {
         );
 
         final newAccess = response.data['access'] as String;
-        final newRefresh = response.data['refresh'] as String;
+        final newRefresh = response.data['refresh'] as String? ?? refreshToken;
         await storage.saveTokens(access: newAccess, refresh: newRefresh);
         completer.complete(newAccess);
       } catch (e) {
@@ -130,4 +139,17 @@ class AuthInterceptor extends Interceptor {
         normalized == 'token/blacklist/' ||
         normalized == 'accounts/users/register/';
   }
+}
+
+@visibleForTesting
+bool shouldLogoutAfterRefreshFailure(Object error) {
+  if (error is MissingRefreshTokenException) return true;
+  if (error is! DioException) return false;
+  final status = error.response?.statusCode;
+  return status == 400 || status == 401;
+}
+
+@visibleForTesting
+class MissingRefreshTokenException implements Exception {
+  const MissingRefreshTokenException();
 }
