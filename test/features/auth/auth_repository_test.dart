@@ -99,8 +99,41 @@ void main() {
       },
     );
 
+    test('failed login still remembers the normalized server URL', () async {
+      when(
+        () => dio.post('token/', data: any(named: 'data')),
+      ).thenThrow(DioException(requestOptions: RequestOptions(path: 'token/')));
+
+      await expectLater(
+        repo().login(
+          baseUrl: 'https://api.example.test/// ',
+          username: 'alice',
+          password: 'wrong',
+        ),
+        throwsA(isA<DioException>()),
+      );
+
+      expect(container.read(appConfigProvider), 'https://api.example.test');
+    });
+
+    test('successful logout retains the server URL', () async {
+      final tokenStorage = container.read(tokenStorageProvider);
+      await tokenStorage.saveTokens(access: 'acc', refresh: 'ref');
+      await container
+          .read(appConfigProvider.notifier)
+          .setBaseUrl('https://api.example.test');
+      when(() => dio.post('token/blacklist/', data: any(named: 'data')))
+          .thenAnswer((_) async => _res(null));
+
+      await repo().logout();
+
+      expect(await tokenStorage.getAccessToken(), isNull);
+      expect(await tokenStorage.getRefreshToken(), isNull);
+      expect(container.read(appConfigProvider), 'https://api.example.test');
+    });
+
     test(
-      'logout clears local tokens and config even if the remote call fails',
+      'logout clears tokens but retains the server URL when remote call fails',
       () async {
         final tokenStorage = container.read(tokenStorageProvider);
         await tokenStorage.saveTokens(access: 'acc', refresh: 'ref');
@@ -114,7 +147,7 @@ void main() {
 
         expect(await tokenStorage.getAccessToken(), isNull);
         expect(await tokenStorage.getRefreshToken(), isNull);
-        expect(container.read(appConfigProvider), isNull);
+        expect(container.read(appConfigProvider), 'https://api.example.test');
       },
     );
 
