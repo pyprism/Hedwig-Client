@@ -100,6 +100,5 @@ class AuthRepository {
       } catch (_) {}
     }
     await tokenStorage.clearTokens();
-    await appConfig.clear();
   }
 }
