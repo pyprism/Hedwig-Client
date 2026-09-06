@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hedwig_client/core/api/error_interceptor.dart';
+import 'package:hedwig_client/core/config/app_config.dart';
+import 'package:hedwig_client/core/config/env_config.dart';
 import 'package:hedwig_client/core/error/failure.dart';
 import 'package:hedwig_client/features/auth/presentation/controllers/auth_controller.dart';
 
@@ -14,13 +16,21 @@ class RegisterScreen extends ConsumerStatefulWidget {
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _serverCtrl = TextEditingController();
+  late final TextEditingController _serverCtrl;
   final _usernameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _displayNameCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   bool _obscure = true;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _serverCtrl = TextEditingController(
+      text: ref.read(appConfigProvider) ?? EnvConfig.defaultApiUrl,
+    );
+  }
 
   @override
   void dispose() {
