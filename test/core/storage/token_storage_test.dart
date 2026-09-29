@@ -51,14 +51,28 @@ void main() {
       verify(() => secureStorage.delete(key: 'refresh_token')).called(1);
     });
 
-    test('read errors are treated as missing tokens and cleared', () async {
-      when(() => secureStorage.read(key: 'access_token'))
-          .thenThrow(Exception('corrupt crypto payload'));
-      when(() => secureStorage.delete(key: 'access_token'))
-          .thenAnswer((_) async {});
+    test(
+      'read errors are retried and never delete the token off-web',
+      () async {
+        when(() => secureStorage.read(key: 'access_token'))
+            .thenThrow(Exception('keystore not ready'));
 
-      expect(await tokenStorage.getAccessToken(), isNull);
-      verify(() => secureStorage.delete(key: 'access_token')).called(1);
+        expect(await tokenStorage.getAccessToken(), isNull);
+        verify(() => secureStorage.read(key: 'access_token')).called(3);
+        verifyNever(() => secureStorage.delete(key: any(named: 'key')));
+      },
+    );
+
+    test('transient read error recovers on retry', () async {
+      var calls = 0;
+      when(() => secureStorage.read(key: 'refresh_token'))
+          .thenAnswer((_) async {
+            if (++calls < 2) throw Exception('keystore not ready');
+            return 'refresh';
+          });
+
+      expect(await tokenStorage.getRefreshToken(), 'refresh');
+      verifyNever(() => secureStorage.delete(key: any(named: 'key')));
     });
 
     test('clearTokens swallows storage delete errors', () async {
