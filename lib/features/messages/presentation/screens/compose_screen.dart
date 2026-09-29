@@ -374,13 +374,17 @@ class _ComposeScreenState extends ConsumerState<ComposeScreen> {
 
     for (final file in files.take(remainingSlots)) {
       final fileSize = await file.length();
-      if (fileSize > availableBytes) {
+      if (fileSize != null && fileSize > availableBytes) {
         skippedBytes++;
         continue;
       }
 
       final bytes = await file.readAsBytes();
-      if (bytes.isEmpty && fileSize > 0) {
+      if (bytes.length > availableBytes) {
+        skippedBytes++;
+        continue;
+      }
+      if (bytes.isEmpty && (fileSize ?? 0) > 0) {
         missingBytes++;
         continue;
       }
