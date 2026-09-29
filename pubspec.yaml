@@ -2,7 +2,7 @@ name: hedwig_client
 description: Hedwig — a Gmail-like client for the Hedwig shared-mailbox platform.
 publish_to: 'none'
 
-version: 1.0.0+2
+version: 1.0.0+3
 
 environment:
   sdk: ^3.13.2
