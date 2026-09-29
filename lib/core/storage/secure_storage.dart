@@ -31,16 +31,27 @@ class TokenStorage {
   // the auth interceptor and aborts the request before it is even sent. Treat
   // an unreadable token as absent and drop the corrupt entry so the app
   // self-heals: the user is sent to login and writes a fresh, valid token.
+  //
+  // Only web self-heals by deleting. On Android the Keystore can throw
+  // transiently at cold start (not ready, BadPadding); deleting there would
+  // destroy a valid 30-day refresh token and log the user out. Retry, then
+  // treat as absent for this launch without deleting.
   Future<String?> _readResilient(String key) async {
-    try {
-      return await _storage.read(key: key);
-    } catch (e) {
-      debugPrint('[TokenStorage] unreadable "$key" ($e) — clearing it');
+    for (var attempt = 0; attempt < 3; attempt++) {
+      try {
+        return await _storage.read(key: key);
+      } catch (e) {
+        debugPrint('[TokenStorage] read "$key" failed ($e), attempt $attempt');
+        if (kIsWeb) break;
+        await Future<void>.delayed(Duration(milliseconds: 200 * (attempt + 1)));
+      }
+    }
+    if (kIsWeb) {
       try {
         await _storage.delete(key: key);
       } catch (_) {}
-      return null;
     }
+    return null;
   }
 
   Future<void> saveTokens({
