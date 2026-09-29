@@ -14,7 +14,11 @@ class AuthController extends _$AuthController {
   Future<AuthState> build() async {
     final storage = ref.watch(tokenStorageProvider);
     final accessToken = await storage.getAccessToken();
-    if (accessToken == null) return const AuthState.unauthenticated();
+    // Expired/missing access token is fine if a refresh token exists: getMe()
+    // 401s and the interceptor refreshes.
+    if (accessToken == null && await storage.getRefreshToken() == null) {
+      return const AuthState.unauthenticated();
+    }
 
     final cache = ref.read(userCacheProvider);
     try {
