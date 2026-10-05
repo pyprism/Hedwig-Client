@@ -39,7 +39,7 @@ dependencies:
   sqlite3_flutter_libs: ^0.6.0+eol
 
   # Connectivity
-  connectivity_plus: ^7.3.1
+  connectivity_plus: ^7.3.2
 
   # File selection
   file_picker: ^13.1.0
